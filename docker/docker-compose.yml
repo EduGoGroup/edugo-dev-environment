@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # BASE DE DATOS POSTGRESQL
+  # ========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: edugo-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-edugo}
+      POSTGRES_USER: ${POSTGRES_USER:-edugo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edugo123}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-edugo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # BASE DE DATOS MONGODB
+  # ========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: edugo-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # MESSAGE QUEUE RABBITMQ
+  # ========================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: edugo-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"      # AMQP
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"  # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # API MOBILE
+  # ========================================
+  api-mobile:
+    image: ghcr.io/medinatello/api-mobile:${API_MOBILE_VERSION:-latest}
+    container_name: edugo-api-mobile
+    ports:
+      - "${API_MOBILE_PORT:-8081}:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-edugo}
+      - DB_PASS=${POSTGRES_PASSWORD:-edugo123}
+      - DB_NAME=${POSTGRES_DB:-edugo}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=${RABBITMQ_USER:-edugo}
+      - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-edugo123}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+      - PORT=8080
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # API ADMINISTRACIÓN
+  # ========================================
+  api-administracion:
+    image: ghcr.io/medinatello/api-administracion:${API_ADMIN_VERSION:-latest}
+    container_name: edugo-api-administracion
+    ports:
+      - "${API_ADMIN_PORT:-8082}:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-edugo}
+      - DB_PASS=${POSTGRES_PASSWORD:-edugo123}
+      - DB_NAME=${POSTGRES_DB:-edugo}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+      - PORT=8080
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # WORKER
+  # ========================================
+  worker:
+    image: ghcr.io/medinatello/worker:${WORKER_VERSION:-latest}
+    container_name: edugo-worker
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-edugo}
+      - DB_PASS=${POSTGRES_PASSWORD:-edugo123}
+      - DB_NAME=${POSTGRES_DB:-edugo}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=${MONGO_USER:-edugo}
+      - MONGO_PASS=${MONGO_PASSWORD:-edugo123}
+      - MONGO_DB=${MONGO_DB:-edugo}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=${RABBITMQ_USER:-edugo}
+      - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-edugo123}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mongodb-data:
+  rabbitmq-data:
+
+networks:
+  edugo-network:
+    driver: bridge
