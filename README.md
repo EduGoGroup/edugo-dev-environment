@@ -20,7 +20,7 @@ Este repositorio contiene todo lo necesario para ejecutar **EduGo** localmente u
 
 ```bash
 # 1. Clonar este repositorio
-git clone https://github.com/medinatello/edugo-dev-environment.git
+git clone git@github.com:EduGoGroup/edugo-dev-environment.git
 cd edugo-dev-environment
 
 # 2. Ejecutar script de setup
@@ -208,12 +208,12 @@ open -a Docker
 # Reintentar: docker ps
 ```
 
-### Problema: "pull access denied for ghcr.io/medinatello/api-mobile"
+### Problema: "pull access denied for ghcr.io/edugogroup/api-mobile"
 
 **Solución:**
 ```bash
 # Login nuevamente con tu GitHub token
-echo "TU_GITHUB_TOKEN" | docker login ghcr.io -u medinatello --password-stdin
+echo "TU_GITHUB_TOKEN" | docker login ghcr.io -u TU_USUARIO_GITHUB --password-stdin
 
 # Verificar login
 docker info | grep ghcr.io
@@ -289,7 +289,7 @@ docker-compose up -d    # Recrea todo
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                  GITHUB CONTAINER REGISTRY               │
-│                     (ghcr.io/medinatello)                │
+│                     (ghcr.io/edugogroup)                 │
 │                                                          │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
 │  │ api-mobile   │  │ api-admin    │  │   worker     │  │
