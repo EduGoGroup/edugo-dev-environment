@@ -268,6 +268,8 @@ docker-compose up -d    # Recrea todo
 
 ## 📚 Documentación Adicional
 
+- 🚀 **[Guía de Inicio Rápido](docs/GUIA_INICIO_RAPIDO.md)** ← EMPIEZA AQUÍ
+- 📦 [Sistema de Versionamiento](docs/VERSIONAMIENTO.md)
 - 📖 [Configuración Detallada](docs/SETUP.md)
 - 📖 [Variables de Entorno](docs/VARIABLES.md)
 - 📖 [Troubleshooting Completo](docs/TROUBLESHOOTING.md)
