@@ -184,14 +184,29 @@ nano docker/.env
 
 ## 🐳 Versiones de Imágenes
 
-Por defecto, se usan las imágenes `latest` de cada servicio. Puedes usar versiones específicas:
+Por defecto, se usan las imágenes `latest` de cada servicio desde GitHub Container Registry.
+
+**Imágenes disponibles:**
+- `ghcr.io/edugogroup/edugo-api-mobile`
+- `ghcr.io/edugogroup/edugo-api-administracion`
+- `ghcr.io/edugogroup/edugo-worker`
+
+**Usar versiones específicas:**
 
 ```bash
 # En docker/.env
-API_MOBILE_VERSION=develop        # Usar versión de develop
-API_MOBILE_VERSION=a1b2c3d         # Usar SHA específico
-API_MOBILE_VERSION=v1.2.3          # Usar tag de versión
+API_MOBILE_VERSION=1.0.0          # Versión específica
+API_MOBILE_VERSION=1.0            # Último patch de 1.0
+API_MOBILE_VERSION=1              # Último minor de 1.x
+API_MOBILE_VERSION=latest         # Última versión publicada
+
+# También puedes usar:
+API_ADMIN_VERSION=1.0.0
+WORKER_VERSION=1.0.0
 ```
+
+**Ver versiones disponibles:**
+- https://github.com/orgs/EduGoGroup/packages
 
 ---
 
