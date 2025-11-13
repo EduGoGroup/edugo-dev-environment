@@ -7,6 +7,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: edugo-postgres
+    profiles: ["full", "db-only", "api-only", "mobile-only", "admin-only", "worker-only"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-edugo}
       POSTGRES_USER: ${POSTGRES_USER:-edugo}
@@ -30,6 +31,7 @@ services:
   mongodb:
     image: mongo:7.0
     container_name: edugo-mongodb
+    profiles: ["full", "db-only", "api-only", "mobile-only", "admin-only", "worker-only"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
@@ -52,6 +54,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: edugo-rabbitmq
+    profiles: ["full", "db-only", "api-only", "mobile-only", "worker-only"]
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
@@ -75,6 +78,7 @@ services:
   api-mobile:
     image: ghcr.io/edugogroup/edugo-api-mobile:${API_MOBILE_VERSION:-latest}
     container_name: edugo-api-mobile
+    profiles: ["full", "api-only", "mobile-only"]
     ports:
       - "${API_MOBILE_PORT:-8081}:8080"
     environment:
@@ -109,6 +113,7 @@ services:
   api-administracion:
     image: ghcr.io/edugogroup/edugo-api-administracion:${API_ADMIN_VERSION:-latest}
     container_name: edugo-api-administracion
+    profiles: ["full", "api-only", "admin-only"]
     ports:
       - "${API_ADMIN_PORT:-8082}:8080"
     environment:
@@ -136,6 +141,7 @@ services:
   worker:
     image: ghcr.io/edugogroup/edugo-worker:${WORKER_VERSION:-latest}
     container_name: edugo-worker
+    profiles: ["full", "worker-only"]
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
