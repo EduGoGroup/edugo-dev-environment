@@ -351,3 +351,47 @@ Privado - EduGo © 2025
 
 **Última actualización:** 30 de Octubre, 2025
 **Mantenedor:** Equipo EduGo
+
+## 🚀 Inicio Rápido con Profiles
+
+### Perfiles Disponibles
+
+```bash
+# Todo el stack (default)
+./scripts/setup.sh
+
+# Solo bases de datos
+./scripts/setup.sh --profile db-only
+
+# APIs sin worker
+./scripts/setup.sh --profile api-only
+
+# Con datos de prueba
+./scripts/setup.sh --profile api-only --seed
+```
+
+### Profiles
+
+| Profile | Servicios | Uso Recomendado |
+|---------|-----------|-----------------|
+| `full` | Todos | Desarrollo completo |
+| `db-only` | PostgreSQL + MongoDB + RabbitMQ | Testing de migraciones |
+| `api-only` | DBs + APIs | Desarrollo de APIs |
+| `mobile-only` | DBs + API Mobile | App móvil |
+| `admin-only` | DBs + API Admin | Panel admin |
+| `worker-only` | DBs + Worker | Testing de workers |
+
+Ver [docs/PROFILES.md](docs/PROFILES.md) para más detalles.
+
+## 🛑 Detener Servicios
+
+```bash
+# Detener todo
+./scripts/stop.sh
+
+# Detener perfil específico
+./scripts/stop.sh --profile db-only
+
+# Eliminar volúmenes
+./scripts/stop.sh --volumes
+```
