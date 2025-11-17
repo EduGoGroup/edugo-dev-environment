@@ -76,24 +76,32 @@ services:
   # API MOBILE
   # ========================================
   api-mobile:
-    image: ghcr.io/edugogroup/edugo-api-mobile:${API_MOBILE_VERSION:-latest}
+    # Construir desde código local (incluye cambios de Sprint 03)
+    build:
+      context: ../../edugo-api-mobile
+      dockerfile: Dockerfile
+    # image: ghcr.io/edugogroup/edugo-api-mobile:${API_MOBILE_VERSION:-latest}  # Imagen pre-construida (deshabilitada)
     container_name: edugo-api-mobile
     profiles: ["full", "api-only", "mobile-only"]
     ports:
       - "${API_MOBILE_PORT:-8081}:8080"
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${POSTGRES_USER:-edugo}
-      - DB_PASS=${POSTGRES_PASSWORD:-edugo123}
-      - DB_NAME=${POSTGRES_DB:-edugo}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@mongodb:27017/${MONGO_DB:-edugo}?authSource=admin
-      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@rabbitmq:5672/
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USER=${RABBITMQ_USER:-edugo}
-      - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-edugo123}
+      # Variables requeridas por config/validator.go
+      - DATABASE_POSTGRES_HOST=postgres
+      - DATABASE_POSTGRES_PORT=5432
+      - DATABASE_POSTGRES_USER=${POSTGRES_USER:-edugo}
+      - DATABASE_POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
+      - DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
+      - DATABASE_POSTGRES_SSLMODE=disable
+      - DATABASE_MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@mongodb:27017/${MONGO_DB:-edugo}?authSource=admin
+      - DATABASE_MONGODB_DATABASE=${MONGO_DB:-edugo}
+      - MESSAGING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@rabbitmq:5672/
+      - STORAGE_S3_ACCESS_KEY_ID=${S3_ACCESS_KEY:-dev-access-key}
+      - STORAGE_S3_SECRET_ACCESS_KEY=${S3_SECRET_KEY:-dev-secret-key}
+      - STORAGE_S3_BUCKET_NAME=${S3_BUCKET:-edugo-materials-dev}
+      - STORAGE_S3_REGION=us-east-1
+      # Variables adicionales
+      - APP_ENV=development
       - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
       - PORT=8080
       - ENV=development
