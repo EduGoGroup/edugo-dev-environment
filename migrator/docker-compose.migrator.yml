@@ -1,0 +1,47 @@
+# Propuesta de integración del servicio migrator en docker-compose
+#
+# Este archivo muestra cómo integrar el migrator en el docker-compose.yml principal
+# Para usarlo, agregar este servicio al archivo docker/docker-compose.yml
+
+services:
+  # ========================================
+  # MIGRATOR - Ejecuta migraciones automáticas
+  # ========================================
+  migrator:
+    build:
+      context: ../migrator
+      dockerfile: Dockerfile
+    image: edugogroup-migrator:latest
+    container_name: edugo-migrator
+    profiles:
+      - full
+      - db-only
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      # PostgreSQL
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-edugo}
+      - DB_USER=${POSTGRES_USER:-edugo}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
+
+      # MongoDB
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=${MONGO_USER:-edugo}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-edugo123}
+      - MONGO_DB_NAME=${MONGO_DB:-edugo}
+    networks:
+      - edugo-network
+    restart: "no"  # Solo ejecuta una vez y termina
+
+# NOTAS:
+# 1. El migrator se ejecuta automáticamente cuando se levantan los perfiles "full" o "db-only"
+# 2. Espera a que PostgreSQL y MongoDB estén healthy antes de ejecutar
+# 3. restart: "no" asegura que solo se ejecute una vez por levantamiento del stack
+# 4. Si necesitas re-ejecutar las migraciones, usa: docker compose restart migrator
+# 5. Para ver logs: docker compose logs migrator
