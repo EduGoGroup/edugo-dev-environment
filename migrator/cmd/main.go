@@ -95,9 +95,9 @@ func runMongoMigrations() error {
 	// Configurar variables de entorno
 	setMongoEnv()
 
-	// Ejecutar migraciones usando el CLI de mongodb
-	fmt.Println("Ejecutando migraciones de MongoDB...")
-	cmd := exec.Command("go", "run", "migrate.go", "up")
+	// Ejecutar migraciones usando el nuevo runner.go
+	fmt.Println("Ejecutando migraciones de MongoDB (structure + constraints)...")
+	cmd := exec.Command("go", "run", "runner.go", "all")
 	cmd.Dir = mongoPath
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
