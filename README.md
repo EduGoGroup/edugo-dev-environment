@@ -1,9 +1,21 @@
 # EduGo - Ambiente de Desarrollo Local
 
 **Versión:** 1.0.0
-**Última actualización:** 30 de Octubre, 2025
+**Última actualización:** 18 de Noviembre, 2025
 
 Este repositorio contiene todo lo necesario para ejecutar **EduGo** localmente usando Docker Compose.
+
+---
+
+## 📖 Guías Disponibles
+
+| Guía | Descripción | Cuándo Usar |
+|------|-------------|-------------|
+| **[🚀 Quick Start](docker/QUICK_START.md)** | Inicio rápido (5 min) | Primera vez, quiero empezar YA |
+| **[📚 Guía Completa](docker/README.md)** | Documentación detallada | Necesito entender todo el sistema |
+| **[✅ Reporte de Validación](docker/RESULTADO_VALIDACION.md)** | Estado y troubleshooting | Tengo problemas técnicos |
+
+**¿Primera vez usando este proyecto?** → Comienza con [Quick Start](docker/QUICK_START.md)
 
 ---
 
@@ -283,11 +295,14 @@ docker-compose up -d    # Recrea todo
 
 ## 📚 Documentación Adicional
 
-- 🚀 **[Guía de Inicio Rápido](docs/GUIA_INICIO_RAPIDO.md)** ← EMPIEZA AQUÍ
-- 📦 [Sistema de Versionamiento](docs/VERSIONAMIENTO.md)
-- 📖 [Configuración Detallada](docs/SETUP.md)
-- 📖 [Variables de Entorno](docs/VARIABLES.md)
-- 📖 [Troubleshooting Completo](docs/TROUBLESHOOTING.md)
+### Docker Compose
+- 🚀 **[Quick Start](docker/QUICK_START.md)** ← EMPIEZA AQUÍ
+- 📚 [Guía Completa Docker](docker/README.md) - 3 archivos docker-compose disponibles
+- ✅ [Reporte de Validación](docker/RESULTADO_VALIDACION.md) - Estado actual y soluciones
+
+### Documentación del Proyecto
+- 📖 [Documentación Dev Environment](docs/dev-environment/) - Especificaciones técnicas
+- 📖 [Templates de Workflow](docs/workflow-templates/) - Metodología de trabajo
 
 ---
 

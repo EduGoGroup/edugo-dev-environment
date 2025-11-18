@@ -1,106 +1,30 @@
-version: "3.8"
+# ========================================
+# DOCKER COMPOSE - SOLO APLICACIONES
+# ========================================
+# Este archivo levanta únicamente las aplicaciones EduGo:
+# - API Mobile
+# - API Administración
+# - Worker
+#
+# PREREQUISITO: Los servicios de infraestructura deben estar corriendo
+# Levanta primero: docker-compose -f docker-compose-infrastructure.yml up -d
+#
+# Uso:
+#   docker-compose -f docker-compose-apps.yml up -d
+#   docker-compose -f docker-compose-apps.yml down
 
 name: edugo
 
 services:
   # ========================================
-  # BASE DE DATOS POSTGRESQL
-  # ========================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: edugo-postgres
-    profiles:
-      [
-        "full",
-        "db-only",
-        "api-only",
-        "mobile-only",
-        "admin-only",
-        "worker-only",
-      ]
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-edugo}
-      POSTGRES_USER: ${POSTGRES_USER:-edugo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edugo123}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-edugo}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - edugo-network
-    restart: unless-stopped
-
-  # ========================================
-  # BASE DE DATOS MONGODB
-  # ========================================
-  mongodb:
-    image: mongo:7.0
-    container_name: edugo-mongodb
-    profiles:
-      [
-        "full",
-        "db-only",
-        "api-only",
-        "mobile-only",
-        "admin-only",
-        "worker-only",
-      ]
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
-    volumes:
-      - mongodb-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - edugo-network
-    restart: unless-stopped
-
-  # ========================================
-  # MESSAGE QUEUE RABBITMQ
-  # ========================================
-  rabbitmq:
-    image: rabbitmq:3.12-management-alpine
-    container_name: edugo-rabbitmq
-    profiles: ["full", "db-only", "api-only", "mobile-only", "worker-only"]
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
-    ports:
-      - "${RABBITMQ_PORT:-5672}:5672" # AMQP
-      - "${RABBITMQ_MGMT_PORT:-15672}:15672" # Management UI
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - edugo-network
-    restart: unless-stopped
-
-  # ========================================
   # API MOBILE
   # ========================================
   api-mobile:
-    # Construir desde código local
     build:
       context: ../../edugo-api-mobile
       dockerfile: Dockerfile
     image: edugogroup-api-mobile:latest
     container_name: edugo-api-mobile
-    profiles: ["full", "api-only", "mobile-only"]
     ports:
       - "${API_MOBILE_PORT:-8081}:8080"
     environment:
@@ -111,15 +35,15 @@ services:
 
       # Variables directamente bindeadas (sin prefijo)
       - DATABASE_POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      - DATABASE_MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@mongodb:27017/${MONGO_DB:-edugo}?authSource=admin
-      - MESSAGING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@rabbitmq:5672/
+      - DATABASE_MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@${MONGO_HOST:-mongodb}:${MONGO_PORT:-27017}/${MONGO_DB:-edugo}?authSource=admin
+      - MESSAGING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@${RABBITMQ_HOST:-rabbitmq}:${RABBITMQ_PORT:-5672}/
       - STORAGE_S3_ACCESS_KEY_ID=${S3_ACCESS_KEY:-AKIAIOSFODNN7EXAMPLE}
       - STORAGE_S3_SECRET_ACCESS_KEY=${S3_SECRET_KEY:-wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY}
       - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
 
       # Base de datos PostgreSQL
-      - DATABASE_POSTGRES_HOST=postgres
-      - DATABASE_POSTGRES_PORT=5432
+      - DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - DATABASE_POSTGRES_USER=${POSTGRES_USER:-edugo}
       - DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - DATABASE_POSTGRES_SSLMODE=disable
@@ -155,20 +79,13 @@ services:
       - LOGGING_FORMAT=${LOG_FORMAT:-json}
 
       # Variables para el entrypoint script
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - RABBIT_HOST=rabbitmq
-      - RABBIT_PORT=5672
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - MONGO_HOST=${MONGO_HOST:-mongodb}
+      - MONGO_PORT=${MONGO_PORT:-27017}
+      - RABBIT_HOST=${RABBITMQ_HOST:-rabbitmq}
+      - RABBIT_PORT=${RABBITMQ_PORT:-5672}
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     networks:
       - edugo-network
     restart: unless-stopped
@@ -176,14 +93,14 @@ services:
   # ========================================
   # API ADMINISTRACIÓN
   # ========================================
+  # NOTA: Requiere archivo de configuración config.yaml en el build
+  # Ver documentación de problemas conocidos
   api-administracion:
-    # Construir desde código local
     build:
       context: ../../edugo-api-administracion
       dockerfile: Dockerfile
     image: edugogroup-api-administracion:latest
     container_name: edugo-api-administracion
-    profiles: ["full", "api-only", "admin-only"]
     ports:
       - "${API_ADMIN_PORT:-8082}:8081"
     environment:
@@ -193,7 +110,7 @@ services:
 
       # Variables directamente bindeadas (sin prefijo)
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@mongodb:27017/${MONGO_DB:-edugo}?authSource=admin
+      - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@${MONGO_HOST:-mongodb}:${MONGO_PORT:-27017}/${MONGO_DB:-edugo}?authSource=admin
 
       # Variables con prefijo EDUGO_ADMIN_ (Viper las lee con AutomaticEnv)
       - EDUGO_ADMIN_SERVER_PORT=8081
@@ -201,8 +118,8 @@ services:
       - EDUGO_ADMIN_SERVER_READ_TIMEOUT=30s
       - EDUGO_ADMIN_SERVER_WRITE_TIMEOUT=30s
 
-      - EDUGO_ADMIN_DATABASE_POSTGRES_HOST=postgres
-      - EDUGO_ADMIN_DATABASE_POSTGRES_PORT=5432
+      - EDUGO_ADMIN_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - EDUGO_ADMIN_DATABASE_POSTGRES_USER=${POSTGRES_USER:-edugo}
       - EDUGO_ADMIN_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - EDUGO_ADMIN_DATABASE_POSTGRES_SSLMODE=disable
@@ -214,26 +131,22 @@ services:
       - EDUGO_ADMIN_LOGGING_LEVEL=${LOG_LEVEL:-debug}
       - EDUGO_ADMIN_LOGGING_FORMAT=${LOG_FORMAT:-json}
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
     networks:
       - edugo-network
     restart: unless-stopped
+    profiles: ["with-admin"] # Requiere solución de config file
 
   # ========================================
   # WORKER
   # ========================================
+  # NOTA: Requiere archivo de configuración config.yaml en el build
+  # Ver documentación de problemas conocidos
   worker:
-    # Construir desde código local
     build:
       context: ../../edugo-worker
       dockerfile: Dockerfile
     image: edugogroup-worker:latest
     container_name: edugo-worker
-    profiles: ["full", "worker-only"]
     environment:
       # Configuración de ambiente
       - APP_ENV=${APP_ENV:-development}
@@ -241,13 +154,13 @@ services:
 
       # Variables directamente bindeadas (sin prefijo)
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@mongodb:27017/${MONGO_DB:-edugo}?authSource=admin
-      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@rabbitmq:5672/
+      - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@${MONGO_HOST:-mongodb}:${MONGO_PORT:-27017}/${MONGO_DB:-edugo}?authSource=admin
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-edugo}:${RABBITMQ_PASSWORD:-edugo123}@${RABBITMQ_HOST:-rabbitmq}:${RABBITMQ_PORT:-5672}/
       - OPENAI_API_KEY=${OPENAI_API_KEY}
 
       # Variables con prefijo EDUGO_WORKER_ (Viper las lee con AutomaticEnv)
-      - EDUGO_WORKER_DATABASE_POSTGRES_HOST=postgres
-      - EDUGO_WORKER_DATABASE_POSTGRES_PORT=5432
+      - EDUGO_WORKER_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - EDUGO_WORKER_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - EDUGO_WORKER_DATABASE_POSTGRES_USER=${POSTGRES_USER:-edugo}
       - EDUGO_WORKER_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - EDUGO_WORKER_DATABASE_POSTGRES_SSLMODE=disable
@@ -269,22 +182,11 @@ services:
       - EDUGO_WORKER_LOGGING_LEVEL=${LOG_LEVEL:-debug}
       - EDUGO_WORKER_LOGGING_FORMAT=${LOG_FORMAT:-json}
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     networks:
       - edugo-network
     restart: unless-stopped
-
-volumes:
-  postgres-data:
-  mongodb-data:
-  rabbitmq-data:
+    profiles: ["with-worker"] # Requiere solución de config file
 
 networks:
   edugo-network:
-    driver: bridge
+    external: true # Usa la red creada por docker-compose-infrastructure.yml

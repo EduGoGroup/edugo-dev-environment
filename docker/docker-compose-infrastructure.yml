@@ -1,0 +1,114 @@
+# ========================================
+# DOCKER COMPOSE - SOLO INFRAESTRUCTURA
+# ========================================
+# Este archivo levanta únicamente los servicios externos:
+# - PostgreSQL
+# - MongoDB
+# - RabbitMQ
+# - Redis (opcional)
+#
+# Uso:
+#   docker-compose -f docker-compose-infrastructure.yml up -d
+#   docker-compose -f docker-compose-infrastructure.yml down
+
+name: edugo
+
+services:
+  # ========================================
+  # BASE DE DATOS POSTGRESQL
+  # ========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: edugo-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-edugo}
+      POSTGRES_USER: ${POSTGRES_USER:-edugo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edugo123}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-edugo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # BASE DE DATOS MONGODB
+  # ========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: edugo-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # MESSAGE QUEUE RABBITMQ
+  # ========================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: edugo-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672" # AMQP
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672" # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # REDIS (OPCIONAL)
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: edugo-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-edugo123}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+    profiles: ["with-redis"] # Opcional, activar con --profile with-redis
+
+volumes:
+  postgres-data:
+  mongodb-data:
+  rabbitmq-data:
+  redis-data:
+
+networks:
+  edugo-network:
+    driver: bridge

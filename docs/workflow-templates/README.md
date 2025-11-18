@@ -42,17 +42,17 @@ Scripts de automatización (update-progress.sh, recover.sh, etc.)
 ### Paso 1: Copiar Templates a tu Proyecto
 
 ```bash
-# Ir a tu proyecto en 00-Projects-Isolated
-cd /Users/jhoanmedina/source/EduGo/Analisys/00-Projects-Isolated/[proyecto]/
+# Ir a tu proyecto
+cd /path/to/tu-proyecto/
 
-# Copiar archivos base
-cp /path/to/workflow-templates/WORKFLOW_ORCHESTRATION.md ./
-cp /path/to/workflow-templates/TRACKING_SYSTEM.md ./
-cp /path/to/workflow-templates/PROGRESS_TEMPLATE.json ./PROGRESS.json
+# Copiar archivos base desde workflow-templates
+cp docs/workflow-templates/WORKFLOW_ORCHESTRATION.md ./
+cp docs/workflow-templates/TRACKING_SYSTEM.md ./
+cp docs/workflow-templates/PROGRESS_TEMPLATE.json ./PROGRESS.json
 
-# Copiar scripts
+# Copiar scripts (si existen)
 mkdir -p scripts
-cp -r /path/to/workflow-templates/scripts/* ./scripts/
+cp -r docs/workflow-templates/scripts/* ./scripts/ 2>/dev/null || true
 ```
 
 ### Paso 2: Adaptar PROGRESS.json
