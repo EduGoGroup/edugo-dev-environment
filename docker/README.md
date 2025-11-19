@@ -7,6 +7,7 @@ Esta guía explica cómo usar los 3 archivos docker-compose disponibles en este 
 1. **docker-compose.yml** - Instalación completa (infraestructura + aplicaciones)
 2. **docker-compose-infrastructure.yml** - Solo servicios externos (PostgreSQL, MongoDB, RabbitMQ, Redis)
 3. **docker-compose-apps.yml** - Solo aplicaciones EduGo (APIs + Worker)
+4. **docker-compose.migrate.yml** - ⚠️ Actualización forzada de base de datos (elimina y recrea)
 
 ---
 
@@ -115,6 +116,32 @@ docker-compose -f docker-compose-apps.yml down
 - API Mobile (puerto 8081)
 - API Administración (puerto 8082) - requiere config.yaml, usar `--profile admin`
 - Worker - requiere config.yaml, usar `--profile worker`
+
+---
+
+## 🔄 Opción 4: Actualización de Base de Datos
+
+**Cuándo usar**: Cuando el equipo de backend actualiza el esquema de base de datos
+
+⚠️ **ADVERTENCIA**: Este proceso **ELIMINA** completamente las bases de datos y las recrea desde cero.
+
+```bash
+# Actualizar esquema de base de datos (elimina y recrea)
+cd docker
+docker-compose -f docker-compose.migrate.yml up
+
+# Reiniciar servicios
+docker-compose up -d
+```
+
+**¿Qué hace?**:
+1. ✅ Construye imagen del migrator (obtiene últimas dependencias)
+2. ✅ Clona/actualiza repositorio edugo-infrastructure
+3. 🔥 Elimina PostgreSQL schema y MongoDB database
+4. ✅ Recrea con estructura más reciente
+5. ✅ Carga datos de prueba actualizados
+
+📖 **Documentación completa**: Ver [ACTUALIZAR_BASE_DATOS.md](./ACTUALIZAR_BASE_DATOS.md)
 
 ---
 

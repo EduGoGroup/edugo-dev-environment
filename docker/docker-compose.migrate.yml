@@ -1,0 +1,111 @@
+# ========================================
+# Docker Compose para ACTUALIZACIÓN DE BASE DE DATOS
+# ========================================
+# 
+# Este archivo es para actualizar el esquema de las bases de datos
+# cuando hay cambios en el repositorio edugo-infrastructure.
+#
+# IMPORTANTE: Este proceso ELIMINA y RECREA todas las bases de datos.
+# Solo debe usarse en entornos de DESARROLLO.
+#
+# USO:
+#   docker-compose -f docker-compose.migrate.yml up
+#
+# PROCESO:
+#   1. Construye la imagen del migrator (obtiene últimas dependencias)
+#   2. Ejecuta con FORCE_MIGRATION=true
+#   3. Elimina schemas/databases existentes
+#   4. Recrea desde cero con la última estructura
+#
+# ========================================
+
+name: edugo
+
+services:
+  # ========================================
+  # MIGRATOR - Actualización forzada de bases de datos
+  # ========================================
+  migrator:
+    build:
+      context: ../migrator
+      dockerfile: Dockerfile
+    image: edugogroup-migrator:latest
+    container_name: edugo-migrator-force
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      # ⚠️ FORCE_MIGRATION=true elimina y recrea las bases de datos
+      - FORCE_MIGRATION=true
+      
+      # PostgreSQL (variables para runner.go de postgres)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-edugo}
+      - POSTGRES_USER=${POSTGRES_USER:-edugo}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
+
+      # MongoDB (variables para runner.go de mongodb)
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=${MONGO_USER:-edugo}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-edugo123}
+      - MONGO_DB_NAME=${MONGO_DB:-edugo}
+    networks:
+      - edugo-network
+    restart: "no"
+
+  # ========================================
+  # BASE DE DATOS POSTGRESQL
+  # ========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: edugo-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-edugo}
+      POSTGRES_USER: ${POSTGRES_USER:-edugo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edugo123}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-edugo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+  # ========================================
+  # BASE DE DATOS MONGODB
+  # ========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: edugo-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mongodb-data:
+
+networks:
+  edugo-network:
+    driver: bridge

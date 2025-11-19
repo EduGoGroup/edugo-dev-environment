@@ -23,6 +23,12 @@ const (
 func main() {
 	fmt.Println("=== EduGo Migrator ===")
 	fmt.Println("Iniciando proceso de migraciones...")
+
+	// Verificar si se solicita migración forzada
+	forceMigration := os.Getenv("FORCE_MIGRATION") == "true"
+	if forceMigration {
+		fmt.Println("⚠️  MODO FORZADO ACTIVADO - Se eliminarán y recrearán todas las bases de datos")
+	}
 	fmt.Println()
 
 	// 1. Clonar/actualizar el repositorio de infraestructura
@@ -32,14 +38,14 @@ func main() {
 
 	// 2. Ejecutar migraciones de PostgreSQL
 	fmt.Println("\n--- PostgreSQL Migrations ---")
-	if err := runPostgresMigrations(); err != nil {
+	if err := runPostgresMigrations(forceMigration); err != nil {
 		fmt.Printf("⚠️  Error ejecutando migraciones de PostgreSQL: %v\n", err)
 		fmt.Println("Continuando con MongoDB...")
 	}
 
 	// 3. Ejecutar migraciones de MongoDB
 	fmt.Println("\n--- MongoDB Migrations ---")
-	if err := runMongoMigrations(); err != nil {
+	if err := runMongoMigrations(forceMigration); err != nil {
 		log.Fatalf("Error ejecutando migraciones de MongoDB: %v", err)
 	}
 
@@ -74,14 +80,23 @@ func ensureInfrastructureRepo() error {
 	return nil
 }
 
-func runPostgresMigrations() error {
+func runPostgresMigrations(force bool) error {
 	// Configurar variables de entorno
 	setPostgresEnv()
 
-	// Verificar si ya existen tablas (idempotencia)
-	if hasPostgresTables() {
-		fmt.Println("✅ PostgreSQL ya tiene tablas - migraciones omitidas (idempotente)")
-		return nil
+	// Si force=true, eliminar schema y recrear
+	if force {
+		fmt.Println("🔥 Eliminando schema público de PostgreSQL...")
+		if err := dropPostgresSchema(); err != nil {
+			return fmt.Errorf("error eliminando schema postgres: %w", err)
+		}
+		fmt.Println("✅ Schema eliminado exitosamente")
+	} else {
+		// Verificar si ya existen tablas (idempotencia)
+		if hasPostgresTables() {
+			fmt.Println("✅ PostgreSQL ya tiene tablas - migraciones omitidas (idempotente)")
+			return nil
+		}
 	}
 
 	postgresPath := filepath.Join(infraDir, "postgres")
@@ -106,14 +121,23 @@ func runPostgresMigrations() error {
 	return nil
 }
 
-func runMongoMigrations() error {
+func runMongoMigrations(force bool) error {
 	// Configurar variables de entorno
 	setMongoEnv()
 
-	// Verificar si ya existen colecciones (idempotencia)
-	if hasMongoCollections() {
-		fmt.Println("✅ MongoDB ya tiene colecciones - migraciones omitidas (idempotente)")
-		return nil
+	// Si force=true, eliminar base de datos completa
+	if force {
+		fmt.Println("🔥 Eliminando base de datos MongoDB...")
+		if err := dropMongoDatabase(); err != nil {
+			return fmt.Errorf("error eliminando database mongodb: %w", err)
+		}
+		fmt.Println("✅ Base de datos MongoDB eliminada exitosamente")
+	} else {
+		// Verificar si ya existen colecciones (idempotencia)
+		if hasMongoCollections() {
+			fmt.Println("✅ MongoDB ya tiene colecciones - migraciones omitidas (idempotente)")
+			return nil
+		}
 	}
 
 	mongoPath := filepath.Join(infraDir, "mongodb")
@@ -235,4 +259,83 @@ func hasMongoCollections() bool {
 
 	// Si hay al menos 1 colección, consideramos que ya está migrado
 	return len(collections) > 0
+}
+
+// dropPostgresSchema elimina y recrea el schema público en PostgreSQL
+func dropPostgresSchema() error {
+	host := os.Getenv("POSTGRES_HOST")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return fmt.Errorf("no se pudo conectar a PostgreSQL: %w", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("no se pudo hacer ping a PostgreSQL: %w", err)
+	}
+
+	// Eliminar schema público CASCADE (elimina todas las tablas, funciones, etc.)
+	_, err = db.Exec("DROP SCHEMA public CASCADE")
+	if err != nil {
+		return fmt.Errorf("error eliminando schema: %w", err)
+	}
+
+	// Recrear schema público
+	_, err = db.Exec("CREATE SCHEMA public")
+	if err != nil {
+		return fmt.Errorf("error creando schema: %w", err)
+	}
+
+	// Otorgar permisos
+	_, err = db.Exec("GRANT ALL ON SCHEMA public TO " + user)
+	if err != nil {
+		return fmt.Errorf("error otorgando permisos al usuario: %w", err)
+	}
+
+	_, err = db.Exec("GRANT ALL ON SCHEMA public TO public")
+	if err != nil {
+		return fmt.Errorf("error otorgando permisos públicos: %w", err)
+	}
+
+	return nil
+}
+
+// dropMongoDatabase elimina completamente la base de datos de MongoDB
+func dropMongoDatabase() error {
+	host := os.Getenv("MONGO_HOST")
+	port := os.Getenv("MONGO_PORT")
+	user := os.Getenv("MONGO_USER")
+	password := os.Getenv("MONGO_PASSWORD")
+	dbname := os.Getenv("MONGO_DB_NAME")
+
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", user, password, host, port)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		return fmt.Errorf("no se pudo conectar a MongoDB: %w", err)
+	}
+	defer client.Disconnect(context.Background())
+
+	if err := client.Ping(ctx, nil); err != nil {
+		return fmt.Errorf("no se pudo hacer ping a MongoDB: %w", err)
+	}
+
+	// Eliminar la base de datos completa
+	db := client.Database(dbname)
+	if err := db.Drop(ctx); err != nil {
+		return fmt.Errorf("error eliminando base de datos: %w", err)
+	}
+
+	return nil
 }
