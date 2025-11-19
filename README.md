@@ -46,6 +46,15 @@ docker-compose up -d
 # 4. Verificar que todo está corriendo
 docker-compose ps
 # Todos los servicios deben mostrar "Up"
+
+Los siguientes servicios se levantarán automáticamente:
+- **API Mobile** (8081)
+- **API Administración** (8082)
+- **Worker** (background)
+- **PostgreSQL** (5432)
+- **MongoDB** (27017)
+- **RabbitMQ** (5672, 15672)
+- **Migrator** (ejecuta migraciones automáticas)
 ```
 
 ---
@@ -367,34 +376,38 @@ Privado - EduGo © 2025
 **Última actualización:** 30 de Octubre, 2025
 **Mantenedor:** Equipo EduGo
 
-## 🚀 Inicio Rápido con Profiles
+## 🚀 Perfiles Disponibles (Opcional)
+
+Si deseas usar perfiles específicos para levantamientos parciales, puedes ejecutar:
+
+```bash
+# Solo bases de datos (sin APIs ni worker)
+cd docker
+docker-compose --profile db-only up -d
+
+# APIs sin worker
+docker-compose --profile api-only up -d
+
+# Solo worker
+docker-compose --profile worker-only up -d
+
+# Solo Mobile API
+docker-compose --profile mobile-only up -d
+
+# Solo Admin API
+docker-compose --profile admin-only up -d
+```
 
 ### Perfiles Disponibles
 
-```bash
-# Todo el stack (default)
-./scripts/setup.sh
-
-# Solo bases de datos
-./scripts/setup.sh --profile db-only
-
-# APIs sin worker
-./scripts/setup.sh --profile api-only
-
-# Con datos de prueba
-./scripts/setup.sh --profile api-only --seed
-```
-
-### Profiles
-
 | Profile | Servicios | Uso Recomendado |
 |---------|-----------|-----------------|
-| `full` | Todos | Desarrollo completo |
-| `db-only` | PostgreSQL + MongoDB + RabbitMQ | Testing de migraciones |
-| `api-only` | DBs + APIs | Desarrollo de APIs |
-| `mobile-only` | DBs + API Mobile | App móvil |
-| `admin-only` | DBs + API Admin | Panel admin |
-| `worker-only` | DBs + Worker | Testing de workers |
+| (sin profile) | Todos los servicios | Desarrollo completo (DEFAULT) |
+| `db-only` | PostgreSQL + MongoDB + RabbitMQ + Migrator | Testing de migraciones |
+| `api-only` | DBs + APIs + Migrator | Desarrollo de APIs |
+| `mobile-only` | DBs + API Mobile + Migrator | App móvil |
+| `admin-only` | DBs + API Admin + Migrator | Panel admin |
+| `worker-only` | DBs + Worker + Migrator | Testing de workers |
 
 Ver [docs/PROFILES.md](docs/PROFILES.md) para más detalles.
 

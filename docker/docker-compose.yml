@@ -1,5 +1,3 @@
-version: "3.8"
-
 name: edugo
 
 services:
@@ -9,15 +7,6 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: edugo-postgres
-    profiles:
-      [
-        "full",
-        "db-only",
-        "api-only",
-        "mobile-only",
-        "admin-only",
-        "worker-only",
-      ]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-edugo}
       POSTGRES_USER: ${POSTGRES_USER:-edugo}
@@ -41,15 +30,6 @@ services:
   mongodb:
     image: mongo:7.0
     container_name: edugo-mongodb
-    profiles:
-      [
-        "full",
-        "db-only",
-        "api-only",
-        "mobile-only",
-        "admin-only",
-        "worker-only",
-      ]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-edugo}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-edugo123}
@@ -72,7 +52,6 @@ services:
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: edugo-rabbitmq
-    profiles: ["full", "db-only", "api-only", "mobile-only", "worker-only"]
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
@@ -94,13 +73,8 @@ services:
   # API MOBILE
   # ========================================
   api-mobile:
-    # Construir desde código local
-    build:
-      context: ../../edugo-api-mobile
-      dockerfile: Dockerfile
-    image: edugogroup-api-mobile:latest
+    image: ghcr.io/edugogroup/edugo-api-mobile:${API_MOBILE_VERSION:-latest}
     container_name: edugo-api-mobile
-    profiles: ["full", "api-only", "mobile-only"]
     ports:
       - "${API_MOBILE_PORT:-8081}:8080"
     environment:
@@ -177,13 +151,8 @@ services:
   # API ADMINISTRACIÓN
   # ========================================
   api-administracion:
-    # Construir desde código local
-    build:
-      context: ../../edugo-api-administracion
-      dockerfile: Dockerfile
-    image: edugogroup-api-administracion:latest
+    image: ghcr.io/edugogroup/edugo-api-administracion:${API_ADMIN_VERSION:-latest}
     container_name: edugo-api-administracion
-    profiles: ["full", "api-only", "admin-only"]
     ports:
       - "${API_ADMIN_PORT:-8082}:8081"
     environment:
@@ -227,13 +196,8 @@ services:
   # WORKER
   # ========================================
   worker:
-    # Construir desde código local
-    build:
-      context: ../../edugo-worker
-      dockerfile: Dockerfile
-    image: edugogroup-worker:latest
+    image: ghcr.io/edugogroup/edugo-worker:${WORKER_VERSION:-latest}
     container_name: edugo-worker
-    profiles: ["full", "worker-only"]
     environment:
       # Configuración de ambiente
       - APP_ENV=${APP_ENV:-development}
@@ -289,23 +253,20 @@ services:
       dockerfile: Dockerfile
     image: edugogroup-migrator:latest
     container_name: edugo-migrator
-    profiles:
-      - full
-      - db-only
     depends_on:
       postgres:
         condition: service_healthy
       mongodb:
         condition: service_healthy
     environment:
-      # PostgreSQL
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=${POSTGRES_DB:-edugo}
-      - DB_USER=${POSTGRES_USER:-edugo}
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
+      # PostgreSQL (variables para runner.go de postgres)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-edugo}
+      - POSTGRES_USER=${POSTGRES_USER:-edugo}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
 
-      # MongoDB
+      # MongoDB (variables para runner.go de mongodb)
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_USER=${MONGO_USER:-edugo}

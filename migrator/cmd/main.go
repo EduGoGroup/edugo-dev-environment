@@ -1,11 +1,18 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
+
+	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -68,21 +75,31 @@ func ensureInfrastructureRepo() error {
 }
 
 func runPostgresMigrations() error {
-	postgresPath := filepath.Join(infraDir, "postgres")
-
 	// Configurar variables de entorno
 	setPostgresEnv()
 
-	// Ejecutar migraciones usando el CLI de postgres
-	fmt.Println("Ejecutando migraciones de PostgreSQL...")
-	cmd := exec.Command("go", "run", "migrate.go", "up")
-	cmd.Dir = postgresPath
+	// Verificar si ya existen tablas (idempotencia)
+	if hasPostgresTables() {
+		fmt.Println("✅ PostgreSQL ya tiene tablas - migraciones omitidas (idempotente)")
+		return nil
+	}
+
+	postgresPath := filepath.Join(infraDir, "postgres")
+
+	// Primero ejecutar runner.go que incluye structure, constraints, seeds y testing
+	fmt.Println("Ejecutando runner de PostgreSQL (estructura, constraints, seeds y testing)...")
+
+	// Cambiar al directorio migrations dentro de postgres
+	migrationsPath := filepath.Join(postgresPath, "migrations")
+
+	cmd := exec.Command("go", "run", "../cmd/runner/runner.go")
+	cmd.Dir = migrationsPath
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error ejecutando migraciones postgres: %w", err)
+		return fmt.Errorf("error ejecutando runner postgres: %w", err)
 	}
 
 	fmt.Println("✅ Migraciones de PostgreSQL completadas")
@@ -90,21 +107,28 @@ func runPostgresMigrations() error {
 }
 
 func runMongoMigrations() error {
-	mongoPath := filepath.Join(infraDir, "mongodb")
-
 	// Configurar variables de entorno
 	setMongoEnv()
 
-	// Ejecutar migraciones usando el nuevo runner.go
-	fmt.Println("Ejecutando migraciones de MongoDB (structure + constraints)...")
-	cmd := exec.Command("go", "run", "runner.go", "all")
+	// Verificar si ya existen colecciones (idempotencia)
+	if hasMongoCollections() {
+		fmt.Println("✅ MongoDB ya tiene colecciones - migraciones omitidas (idempotente)")
+		return nil
+	}
+
+	mongoPath := filepath.Join(infraDir, "mongodb")
+
+	// Ejecutar runner.go que incluye structure y constraints
+	fmt.Println("Ejecutando runner de MongoDB (estructura y constraints)...")
+
+	cmd := exec.Command("go", "run", "./migrations/cmd/runner.go", "all")
 	cmd.Dir = mongoPath
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error ejecutando migraciones mongodb: %w", err)
+		return fmt.Errorf("error ejecutando runner mongodb: %w", err)
 	}
 
 	fmt.Println("✅ Migraciones de MongoDB completadas")
@@ -112,11 +136,12 @@ func runMongoMigrations() error {
 }
 
 func setPostgresEnv() {
-	setEnvIfEmpty("DB_HOST", "localhost")
-	setEnvIfEmpty("DB_PORT", "5432")
-	setEnvIfEmpty("DB_NAME", "edugo")
-	setEnvIfEmpty("DB_USER", "edugo")
-	setEnvIfEmpty("DB_PASSWORD", "edugo123")
+	// Variables para runner.go (usa POSTGRES_*)
+	setEnvIfEmpty("POSTGRES_HOST", "localhost")
+	setEnvIfEmpty("POSTGRES_PORT", "5432")
+	setEnvIfEmpty("POSTGRES_DB", "edugo")
+	setEnvIfEmpty("POSTGRES_USER", "edugo")
+	setEnvIfEmpty("POSTGRES_PASSWORD", "edugo123")
 }
 
 func setMongoEnv() {
@@ -131,4 +156,83 @@ func setEnvIfEmpty(key, defaultValue string) {
 	if os.Getenv(key) == "" {
 		os.Setenv(key, defaultValue)
 	}
+}
+
+// hasPostgresTables verifica si PostgreSQL ya tiene tablas creadas
+func hasPostgresTables() bool {
+	host := os.Getenv("POSTGRES_HOST")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Printf("⚠️  No se pudo conectar a PostgreSQL para verificar: %v\n", err)
+		return false
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		fmt.Printf("⚠️  No se pudo hacer ping a PostgreSQL: %v\n", err)
+		return false
+	}
+
+	// Verificar si existe la tabla 'users' (tabla principal)
+	var exists bool
+	query := `SELECT EXISTS (
+		SELECT FROM information_schema.tables
+		WHERE table_schema = 'public'
+		AND table_name = 'users'
+	)`
+
+	err = db.QueryRow(query).Scan(&exists)
+	if err != nil {
+		fmt.Printf("⚠️  Error verificando tablas: %v\n", err)
+		return false
+	}
+
+	return exists
+}
+
+// hasMongoCollections verifica si MongoDB ya tiene colecciones creadas
+func hasMongoCollections() bool {
+	host := os.Getenv("MONGO_HOST")
+	port := os.Getenv("MONGO_PORT")
+	user := os.Getenv("MONGO_USER")
+	password := os.Getenv("MONGO_PASSWORD")
+	dbname := os.Getenv("MONGO_DB_NAME")
+
+	// Conectar a MongoDB usando el driver
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", user, password, host, port)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		fmt.Printf("⚠️  No se pudo conectar a MongoDB: %v\n", err)
+		return false
+	}
+	defer client.Disconnect(context.Background())
+
+	// Verificar conexión
+	if err := client.Ping(ctx, nil); err != nil {
+		fmt.Printf("⚠️  No se pudo hacer ping a MongoDB: %v\n", err)
+		return false
+	}
+
+	// Obtener lista de colecciones
+	db := client.Database(dbname)
+	collections, err := db.ListCollectionNames(ctx, map[string]interface{}{})
+	if err != nil {
+		fmt.Printf("⚠️  Error listando colecciones: %v\n", err)
+		return false
+	}
+
+	// Si hay al menos 1 colección, consideramos que ya está migrado
+	return len(collections) > 0
 }
