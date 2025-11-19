@@ -1,87 +1,124 @@
-# EduGo Migrator
+# Migrator - EduGo Infrastructure v0.9.0
 
-Microproyecto en Go para ejecutar migraciones de base de datos automáticamente, utilizando el repositorio [edugo-infrastructure](https://github.com/EduGoGroup/edugo-infrastructure).
+Este módulo contiene ejemplos de integración con la última versión de `edugo-infrastructure` (v0.9.0) utilizando tests de integración con testcontainers.
 
-## 🎯 Propósito
+## 📦 Dependencias
 
-Este migrator automatiza la ejecución de migraciones de PostgreSQL y MongoDB, sincronizándose automáticamente con los últimos scripts del repositorio de infraestructura mediante `git clone/pull`.
+El proyecto utiliza las siguientes dependencias de `edugo-infrastructure`:
 
-## 🚀 Uso
-
-### Ejecución Manual
-
-```bash
-cd migrator
-go run cmd/main.go
+```go
+require (
+    github.com/EduGoGroup/edugo-infrastructure/postgres v0.9.0
+    github.com/EduGoGroup/edugo-infrastructure/mongodb v0.9.0
+)
 ```
 
-### Variables de Entorno
+## 🧪 Tests de Integración
 
-El migrator utiliza las siguientes variables de entorno (con valores por defecto para desarrollo local):
+### PostgreSQL
 
-**PostgreSQL:**
-- `DB_HOST` (default: `localhost`)
-- `DB_PORT` (default: `5432`)
-- `DB_NAME` (default: `edugo`)
-- `DB_USER` (default: `edugo`)
-- `DB_PASSWORD` (default: `edugo123`)
+El archivo `tests/postgres_integration_test.go` demuestra cómo:
 
-**MongoDB:**
-- `MONGO_HOST` (default: `localhost`)
-- `MONGO_PORT` (default: `27017`)
-- `MONGO_USER` (default: `edugo`)
-- `MONGO_PASSWORD` (default: `edugo123`)
-- `MONGO_DB_NAME` (default: `edugo`)
+1. **SetupSuite**: Configurar un contenedor PostgreSQL con testcontainers
+2. **Aplicar migraciones**: Usar `migrations.ApplyAll(db)` del paquete infrastructure
+3. **SetupTest**: Aplicar datos de prueba con `migrations.ApplyMockData(db)`
+4. **TearDownTest**: Limpiar datos entre tests
+5. **TearDownSuite**: Cerrar conexiones y detener contenedores
 
-## 📋 Funcionamiento
+**Ejemplo de uso:**
 
-1. **Sincronización**: Clona o actualiza el repositorio `edugo-infrastructure` en `.infrastructure/`
-2. **PostgreSQL**: Ejecuta migraciones pendientes usando `postgres/migrate.go`
-3. **MongoDB**: Ejecuta migraciones pendientes usando `mongodb/migrate.go`
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 
-## 🔧 Integración con Docker Compose
+func (s *Suite) SetupSuite() {
+    // Conectar a PostgreSQL (testcontainer o local)
+    db := conectarPostgres()
+    
+    // Aplicar migraciones
+    migrations.ApplyAll(db)
+}
 
-El migrator puede ejecutarse como un servicio en docker-compose para aplicar migraciones automáticamente al iniciar el stack:
+func (s *Suite) SetupTest() {
+    // Datos de prueba
+    migrations.ApplyMockData(db)
+}
+```
 
-```yaml
-services:
-  migrator:
-    build:
-      context: ../migrator
-      dockerfile: Dockerfile
-    image: edugogroup-migrator:latest
-    container_name: edugo-migrator
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-    environment:
-      - DB_HOST=postgres
-      - DB_NAME=edugo
-      - DB_USER=edugo
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      - MONGO_HOST=mongodb
-      - MONGO_USER=edugo
-      - MONGO_PASSWORD=${MONGO_PASSWORD:-edugo123}
-    profiles:
-      - infrastructure
+### MongoDB
+
+El archivo `tests/mongodb_integration_test.go` demuestra cómo:
+
+1. **SetupSuite**: Configurar un contenedor MongoDB con testcontainers
+2. **Aplicar migraciones**: Usar `migrations.ApplyAll(ctx, db)` del paquete infrastructure
+3. **SetupTest**: Aplicar datos de prueba con `migrations.ApplyMockData(ctx, db)`
+4. **TearDownTest**: Limpiar colecciones entre tests
+5. **TearDownSuite**: Desconectar y detener contenedores
+
+**Ejemplo de uso:**
+
+```go
+import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+
+func (s *Suite) SetupSuite() {
+    // Conectar a MongoDB
+    db := conectarMongo()
+    
+    // Aplicar migraciones
+    migrations.ApplyAll(ctx, db)
+}
+
+func (s *Suite) SetupTest() {
+    // Datos de prueba
+    migrations.ApplyMockData(ctx, db)
+}
+```
+
+## 🚀 Ejecutar Tests
+
+```bash
+# Compilar tests sin ejecutarlos
+go test -c ./tests
+
+# Ejecutar tests de PostgreSQL
+go test -v ./tests -run TestPostgresIntegration
+
+# Ejecutar tests de MongoDB
+go test -v ./tests -run TestMongoDBIntegration
+
+# Ejecutar todos los tests
+go test -v ./tests
 ```
 
 ## 📝 Notas
 
-- El migrator siempre obtiene la última versión de los scripts de migración
-- Las migraciones ya aplicadas son detectadas y omitidas automáticamente
-- Si una migración falla en PostgreSQL, el proceso continúa con MongoDB
-- El directorio `.infrastructure/` se crea automáticamente y debe añadirse a `.gitignore`
+- Los tests utilizan **testcontainers-go** para crear contenedores temporales
+- Docker debe estar corriendo para ejecutar los tests
+- Los contenedores se eliminan automáticamente después de los tests
+- Cada test se ejecuta con datos frescos gracias a `SetupTest` y `TearDownTest`
 
-## 🐛 Troubleshooting
+## 🔗 Referencias
 
-### Error: "database does not exist"
-Asegúrate de que las bases de datos PostgreSQL y MongoDB estén creadas y accesibles.
+- [edugo-infrastructure](https://github.com/EduGoGroup/edugo-infrastructure)
+- [postgres/USAGE_EXAMPLES.md](https://github.com/EduGoGroup/edugo-infrastructure/tree/main/postgres)
+- [mongodb/USAGE_EXAMPLES.md](https://github.com/EduGoGroup/edugo-infrastructure/tree/main/mongodb)
+- [testcontainers-go](https://golang.testcontainers.org/)
 
-### Error: "password authentication failed"
-Verifica que las credenciales en las variables de entorno coincidan con las configuradas en PostgreSQL/MongoDB.
+## ✅ Verificación
 
-### Error: "mongosh: executable file not found"
-Las migraciones de MongoDB requieren `mongosh` instalado. En Docker, esto se maneja automáticamente.
+Para verificar que todo está configurado correctamente:
+
+```bash
+# Descargar dependencias
+go mod download
+
+# Limpiar y actualizar dependencias
+go mod tidy
+
+# Compilar proyecto
+go build ./...
+
+# Compilar tests
+go test -c ./tests
+```
+
+Todos los comandos deben ejecutarse sin errores.
