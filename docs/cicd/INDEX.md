@@ -1,5 +1,13 @@
 # Índice - Plan de Implementación edugo-dev-environment
 
+⚠️ **CONTEXTO DE UBICACIÓN:**
+```
+📍 Estás en: 06-dev-environment/ (dentro de cicd-analysis)
+📍 Proyecto: edugo-dev-environment
+📍 Todas las rutas son relativas a este directorio
+⚠️ NO uses archivos de otros proyectos
+```
+
 **🎯 Punto de Entrada Principal**
 
 ---
@@ -7,8 +15,10 @@
 ## 🗺️ Navegación Rápida
 
 ### Para Empezar
-1. **[README.md](./README.md)** ⭐ - Lee esto primero (5 min)
-2. **[SPRINT-3-TASKS.md](./SPRINT-3-TASKS.md)** ⭐ - Plan de mejoras mínimas (10 min)
+1. **[START-HERE.md](./START-HERE.md)** 🎯 - Punto de inicio con migajas (3 min)
+2. **[PROMPTS.md](./PROMPTS.md)** ⭐ - Prompts para ejecutar fases (5 min)
+3. **[README.md](./README.md)** - Lee esto primero (5 min)
+4. **[SPRINT-3-TASKS.md](./sprints/SPRINT-3-TASKS.md)** - Plan de mejoras mínimas (10 min)
 
 ---
 
@@ -32,19 +42,28 @@ Total Estimado: 2-3 horas de mejoras opcionales
 
 ## 🚀 Quick Actions
 
-### Acción 1: Entender el Proyecto
+### Acción 1: Orientarte (SIEMPRE primero)
+```bash
+# Lee el punto de inicio con migajas
+open START-HERE.md
+
+# Consulta los prompts disponibles
+open PROMPTS.md
+```
+
+### Acción 2: Entender el Proyecto
 ```bash
 open README.md
 # Leer contexto: ¿Por qué NO tiene CI/CD?
 ```
 
-### Acción 2: Ver Tareas Opcionales
+### Acción 3: Ver Tareas Opcionales
 ```bash
-open SPRINT-3-TASKS.md
+open sprints/SPRINT-3-TASKS.md
 # Mejoras mínimas de documentación
 ```
 
-### Acción 3: Decidir si Implementar
+### Acción 4: Decidir si Implementar
 ```bash
 # Pregunta: ¿El docker-compose.yml es válido?
 # Pregunta: ¿Los scripts tienen buena documentación?
@@ -60,11 +79,24 @@ open SPRINT-3-TASKS.md
 06-dev-environment/
 ├── INDEX.md                    ← Estás aquí
 ├── README.md                  ← Contexto (por qué no tiene CI/CD)
-├── SPRINT-3-TASKS.md          ← Mejoras opcionales
-├── SCRIPTS/                   ← (vacío - no aplica)
-└── WORKFLOWS/                 ← (vacío - no aplica)
+├── docs/                      ← Documentación y análisis
+│   ├── RESUMEN.md
+│   ├── QUICK-START.md
+│   └── SPRINT-TRACKING.md
+├── sprints/                   ← Planes de sprint
+│   └── SPRINT-3-TASKS.md
+├── tracking/                  ← Seguimiento de ejecución
+│   ├── REGLAS.md
+│   ├── SPRINT-STATUS.md
+│   ├── logs/
+│   ├── errors/
+│   ├── decisions/
+│   └── reviews/
+└── assets/                    ← Recursos auxiliares
+    ├── workflows/
+    └── scripts/
 
-Total: 3 archivos markdown
+Total: Estructura organizada por tipo de contenido
 ```
 
 ---
@@ -72,7 +104,7 @@ Total: 3 archivos markdown
 ## 🎯 Por Rol
 
 ### Soy el Implementador
-→ Lee: **README.md** → **SPRINT-3-TASKS.md**  
+→ Lee: **README.md** → **sprints/SPRINT-3-TASKS.md**  
 → Ejecuta: Solo si quieres mejorar documentación  
 → Tiempo: 2-3 horas (opcional)
 
@@ -96,7 +128,7 @@ Total: 3 archivos markdown
 
 ### Nivel 2: Detalle (30 min)
 1. README.md - 10 min
-2. SPRINT-3-TASKS.md completo - 20 min
+2. sprints/SPRINT-3-TASKS.md completo - 20 min
 
 ---
 
@@ -177,7 +209,7 @@ Antes de comenzar:
 open README.md
 
 # Opción B: Ver mejoras opcionales
-open SPRINT-3-TASKS.md
+open sprints/SPRINT-3-TASKS.md
 
 # Opción C: No hacer nada (si está bien documentado)
 echo "✅ Proyecto correcto como está"
@@ -226,9 +258,9 @@ Este es el proyecto **MÁS SIMPLE** del ecosistema EduGo.
 **Nuevo:** Sistema completo de tracking y control de ejecución de sprints.
 
 ### Documentación:
-- **[SPRINT-TRACKING.md](SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
-- **[.sprint-tracking/REGLAS.md](.sprint-tracking/REGLAS.md)** - Reglas completas de ejecución
-- **[.sprint-tracking/SPRINT-STATUS.md](.sprint-tracking/SPRINT-STATUS.md)** - Estado en tiempo real
+- **[SPRINT-TRACKING.md](./docs/SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
+- **[REGLAS.md](./tracking/REGLAS.md)** - Reglas completas de ejecución
+- **[SPRINT-STATUS.md](./tracking/SPRINT-STATUS.md)** - Estado en tiempo real
 
 ### Características:
 - 🎯 **3 Fases:** Implementación → Resolución Stubs → Validación/CI/CD
@@ -237,5 +269,5 @@ Este es el proyecto **MÁS SIMPLE** del ecosistema EduGo.
 - ⏱️ **Control CI/CD:** Timeout de 5 minutos con polling
 - 🤖 **Clasificación Copilot:** Manejo inteligente de comentarios
 
-**Ver:** [SPRINT-TRACKING.md](SPRINT-TRACKING.md) para comenzar.
+**Ver:** [SPRINT-TRACKING.md](./docs/SPRINT-TRACKING.md) para comenzar.
 

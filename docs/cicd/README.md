@@ -1,5 +1,14 @@
 # Plan de Implementación - edugo-dev-environment
 
+⚠️ **CONTEXTO DE UBICACIÓN:**
+```
+📍 Estás en: 06-dev-environment/README.md
+📍 Proyecto: edugo-dev-environment
+📍 Todas las rutas son relativas a este directorio
+⚠️ NO uses archivos de otros proyectos
+🎯 Primer paso: Lee START-HERE.md
+```
+
 **Proyecto:** edugo-dev-environment  
 **Tipo:** C - Utilidad (Docker Compose)  
 **Generado:** 19 de Noviembre, 2025  
@@ -318,7 +327,7 @@ edugo-dev-environment/
 
 ### Si Decides Implementar Sprint 3 (Opcional)
 
-1. **Leer:** [SPRINT-3-TASKS.md](./SPRINT-3-TASKS.md)
+1. **Leer:** [SPRINT-3-TASKS.md](./sprints/SPRINT-3-TASKS.md)
 2. **Ejecutar:** Tareas una por una
 3. **Validar:** Probar scripts localmente
 4. **Documentar:** Actualizar README.md

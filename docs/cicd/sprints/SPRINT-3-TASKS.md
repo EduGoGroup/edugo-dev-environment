@@ -1153,7 +1153,7 @@ docker stats
 
 ## 🔧 Troubleshooting
 
-Si algo falla, ver [README.md - Solución de Problemas](../README.md#-solución-de-problemas-comunes).
+Si algo falla, ver [README.md - Solución de Problemas](../../README.md#-solución-de-problemas-comunes).
 ```
 
 **Checklist:**
