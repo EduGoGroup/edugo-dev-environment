@@ -217,3 +217,25 @@ Este es el proyecto **MÁS SIMPLE** del ecosistema EduGo.
 **Fecha:** 19 de Noviembre, 2025  
 **Versión:** 1.0  
 **Filosofía:** Minimalismo pragmático
+
+
+---
+
+## 🎯 Sistema de Seguimiento de Sprints
+
+**Nuevo:** Sistema completo de tracking y control de ejecución de sprints.
+
+### Documentación:
+- **[SPRINT-TRACKING.md](SPRINT-TRACKING.md)** - Punto de entrada, guía de uso
+- **[.sprint-tracking/REGLAS.md](.sprint-tracking/REGLAS.md)** - Reglas completas de ejecución
+- **[.sprint-tracking/SPRINT-STATUS.md](.sprint-tracking/SPRINT-STATUS.md)** - Estado en tiempo real
+
+### Características:
+- 🎯 **3 Fases:** Implementación → Resolución Stubs → Validación/CI/CD
+- 📊 **Tracking tiempo real:** Siempre sabes dónde estás
+- 📝 **Documentación automática:** Errores y decisiones registradas
+- ⏱️ **Control CI/CD:** Timeout de 5 minutos con polling
+- 🤖 **Clasificación Copilot:** Manejo inteligente de comentarios
+
+**Ver:** [SPRINT-TRACKING.md](SPRINT-TRACKING.md) para comenzar.
+
