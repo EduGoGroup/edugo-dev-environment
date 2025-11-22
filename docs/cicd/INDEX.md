@@ -183,8 +183,10 @@ Este plan es **MINIMALISTA** a propósito:
 ## 📞 Referencias Externas
 
 ### Documentación Base
-- [Análisis Estado Actual](../../01-ANALISIS-ESTADO-ACTUAL.md) (línea 230)
-- [Plan Ultrathink](../../PLAN-ULTRATHINK.md)
+
+**Nota:** Los siguientes documentos pertenecen al análisis centralizado en `/Users/jhoanmedina/source/EduGo/Analisys` y no están incluidos en este repositorio:
+- Análisis Estado Actual (referencia: `01-ANALISIS-ESTADO-ACTUAL.md`, línea 230)
+- Plan Ultrathink (referencia: `PLAN-ULTRATHINK.md`)
 
 ### Repositorio
 - **URL:** https://github.com/EduGoGroup/edugo-dev-environment

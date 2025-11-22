@@ -385,9 +385,11 @@ edugo-dev-environment/
 ## 🔗 Referencias
 
 ### Documentos Relacionados
-- [Análisis Estado Actual CI/CD](../../01-ANALISIS-ESTADO-ACTUAL.md)
-- [Plan Ultrathink](../../PLAN-ULTRATHINK.md)
-- [Matriz Comparativa](../../04-MATRIZ-COMPARATIVA.md)
+
+**Nota:** Los siguientes documentos pertenecen al análisis centralizado en `/Users/jhoanmedina/source/EduGo/Analisys` y no están incluidos en este repositorio:
+- Análisis Estado Actual CI/CD (referencia: `01-ANALISIS-ESTADO-ACTUAL.md`)
+- Plan Ultrathink (referencia: `PLAN-ULTRATHINK.md`)
+- Matriz Comparativa (referencia: `04-MATRIZ-COMPARATIVA.md`)
 
 ### Repositorio
 - **GitHub:** https://github.com/EduGoGroup/edugo-dev-environment

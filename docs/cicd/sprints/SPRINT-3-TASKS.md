@@ -606,7 +606,7 @@ git config core.hooksPath .githooks
 
 **Opción B: Symlink**
 ```bash
-ln -s ../../.githooks/pre-commit .git/hooks/pre-commit
+ln -s ../../../.githooks/pre-commit .git/hooks/pre-commit
 ```
 
 ### Desactivar el Hook
@@ -782,9 +782,11 @@ docker-compose ps
 
 ### Referencias
 
-Para más detalles sobre esta decisión:
-- [Análisis de Estado Actual CI/CD](../../00-Projects-Isolated/cicd-analysis/01-ANALISIS-ESTADO-ACTUAL.md#edugo-dev-environment)
-- [Plan de Implementación](../../00-Projects-Isolated/cicd-analysis/implementation-plans/06-dev-environment/README.md)
+**Nota:** Los siguientes documentos pertenecen al análisis centralizado en `/Users/jhoanmedina/source/EduGo/Analisys` y no están incluidos en este repositorio:
+- Análisis de Estado Actual CI/CD (referencia: `01-ANALISIS-ESTADO-ACTUAL.md#edugo-dev-environment`)
+- Plan de Implementación (referencia: `implementation-plans/06-dev-environment/README.md`)
+
+Para más contexto, consultar el README principal de este plan: [docs/cicd/README.md](../README.md)
 ```
 
 **Checklist:**
@@ -1153,7 +1155,7 @@ docker stats
 
 ## 🔧 Troubleshooting
 
-Si algo falla, ver [README.md - Solución de Problemas](../../README.md#-solución-de-problemas-comunes).
+Si algo falla, ver [README.md - Solución de Problemas](../../../README.md#-solución-de-problemas-comunes).
 ```
 
 **Checklist:**

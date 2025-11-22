@@ -230,7 +230,7 @@ echo "✅ dev-environment: No requiere cambios"
 ```bash
 # Leer plan detallado
 cd /Users/jhoanmedina/source/EduGo/repos-separados/edugo-dev-environment
-open ../../../Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/06-dev-environment/SPRINT-3-TASKS.md
+open docs/cicd/sprints/SPRINT-3-TASKS.md
 
 # Ejecutar tareas (2-3 horas)
 ```
@@ -265,9 +265,11 @@ open ../../../Analisys/00-Projects-Isolated/cicd-analysis/implementation-plans/0
 ## 📞 Referencias
 
 ### Documentos Relacionados
-- [Análisis Estado Actual](../../01-ANALISIS-ESTADO-ACTUAL.md#edugo-dev-environment)
-- [Plan Ultrathink](../../PLAN-ULTRATHINK.md)
-- [Matriz Comparativa](../../04-MATRIZ-COMPARATIVA.md)
+
+**Nota:** Los siguientes documentos pertenecen al análisis centralizado en `/Users/jhoanmedina/source/EduGo/Analisys` y no están incluidos en este repositorio:
+- Análisis Estado Actual (referencia: `01-ANALISIS-ESTADO-ACTUAL.md#edugo-dev-environment`)
+- Plan Ultrathink (referencia: `PLAN-ULTRATHINK.md`)
+- Matriz Comparativa (referencia: `04-MATRIZ-COMPARATIVA.md`)
 
 ### Repositorio
 - **GitHub:** https://github.com/EduGoGroup/edugo-dev-environment
