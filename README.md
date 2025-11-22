@@ -43,18 +43,26 @@ brew install --cask docker
 **Verificar si ya estás autenticado:**
 ```bash
 docker login ghcr.io
-# Si muestra "Login Succeeded" o "already logged in", continúa al Paso 2
 ```
 
-**Si NO estás autenticado:**
+**Si ves uno de estos mensajes, YA estás listo (NO necesitas crear token):**
+- ✅ `Login Succeeded`
+- ✅ `Authenticating with existing credentials...`
+- ✅ Cualquier mensaje que NO sea un error
 
-Necesitas un GitHub Personal Access Token:
+**Continúa directamente al Paso 2** 👉
+
+---
+
+**Si ves error de autenticación:**
+
+Necesitas crear un GitHub Personal Access Token:
 
 1. Ve a: https://github.com/settings/tokens
 2. Click en "Generate new token (classic)"
 3. Selecciona scope: `read:packages`
 4. Copia el token (formato: `ghp_...`)
-5. Ejecuta:
+5. Ejecuta el login:
    ```bash
    docker login ghcr.io
    # Username: tu-usuario-github

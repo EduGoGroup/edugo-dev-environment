@@ -251,7 +251,6 @@ services:
     build:
       context: ../migrator
       dockerfile: Dockerfile
-    image: edugogroup-migrator:latest
     container_name: edugo-migrator
     depends_on:
       postgres:
