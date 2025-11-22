@@ -1,760 +1,822 @@
-# EduGo - Ambiente de Desarrollo Local
+# EduGo - Ambiente de Desarrollo Backend
 
-**Versión:** 1.0.0
-**Última actualización:** 18 de Noviembre, 2025
+**Para Desarrolladores Frontend** 🎨
 
-Este repositorio contiene todo lo necesario para ejecutar **EduGo** localmente usando Docker Compose.
-
----
-
-## 📖 Guías Disponibles
-
-| Guía | Descripción | Cuándo Usar |
-|------|-------------|-------------|
-| **[🚀 Quick Start](docker/QUICK_START.md)** | Inicio rápido (5 min) | Primera vez, quiero empezar YA |
-| **[📝 Ejemplo End-to-End](docs/EXAMPLE.md)** | Guía paso a paso completa | Quiero ver todo el flujo en detalle |
-| **[📚 Guía Completa](docker/README.md)** | Documentación detallada | Necesito entender todo el sistema |
-| **[✅ Reporte de Validación](docker/RESULTADO_VALIDACION.md)** | Estado y troubleshooting | Tengo problemas técnicos |
-
-**¿Primera vez usando este proyecto?** → Comienza con [Quick Start](docker/QUICK_START.md) o [Ejemplo End-to-End](docs/EXAMPLE.md)
+Este repositorio te permite levantar **todo el backend de EduGo** en tu Mac con un solo comando.
 
 ---
 
-## 🚀 Inicio Rápido
+## 🎯 ¿Qué Obtienes?
 
-### Pre-requisitos
+Después de seguir esta guía (5-10 minutos), tendrás corriendo:
 
-- ✅ [Docker Desktop](https://docs.docker.com/desktop/install/mac-install/) instalado y corriendo
-- ✅ Git instalado
-- ✅ Acceso a GitHub Container Registry (ghcr.io)
-- ✅ GitHub Personal Access Token con scope `read:packages`
+- ✅ **API Mobile** en http://localhost:8081
+- ✅ **API Administración** en http://localhost:8082  
+- ✅ **Worker** procesando PDFs en background
+- ✅ **PostgreSQL** con datos de prueba
+- ✅ **MongoDB** para almacenar documentos
+- ✅ **RabbitMQ** para mensajería
 
-### Setup Inicial (Primera vez)
+**Todo funcional y listo para conectar tu app frontend.**
+
+---
+
+## ⚡ Inicio Rápido (3 Pasos)
+
+### Paso 1: Instalar Docker Desktop
 
 ```bash
-# 1. Clonar este repositorio
-git clone git@github.com:EduGoGroup/edugo-dev-environment.git
+# macOS
+brew install --cask docker
+
+# O descarga desde: https://www.docker.com/products/docker-desktop
+```
+
+**Abrir Docker Desktop** y esperar a que inicie (ver ícono en barra de menú).
+
+---
+
+### Paso 2: Clonar y Configurar
+
+```bash
+# Clonar este repositorio
+git clone https://github.com/EduGoGroup/edugo-dev-environment.git
 cd edugo-dev-environment
 
-# 2. Ejecutar script de setup
+# Ejecutar setup (pedirá tu GitHub token)
 ./scripts/setup.sh
-# Te pedirá tu GitHub Personal Access Token
+```
 
-# 3. Levantar servicios
-cd docker
-docker-compose up -d
+**Cuando pida credenciales:**
+- **Usuario:** tu-usuario-github  
+- **Token:** [Crear token aquí](https://github.com/settings/tokens) con scope `read:packages`
 
-# 4. Verificar que todo está corriendo
-docker-compose ps
-# Todos los servicios deben mostrar "Up"
+---
 
-Los siguientes servicios se levantarán automáticamente:
-- **API Mobile** (8081)
-- **API Administración** (8082)
-- **Worker** (background)
-- **PostgreSQL** (5432)
-- **MongoDB** (27017)
-- **RabbitMQ** (5672, 15672)
-- **Migrator** (ejecuta migraciones automáticas)
+### Paso 3: ¡Listo! 🎉
+
+Verifica que todo esté corriendo:
+
+```bash
+# Ver servicios
+cd docker && docker-compose ps
+
+# Probar API Mobile
+curl http://localhost:8081/health
+
+# Probar API Admin
+curl http://localhost:8082/health
+```
+
+**Resultado esperado:**
+```json
+{
+  "status": "ok",
+  "database": "connected",
+  "mongodb": "connected",
+  "rabbitmq": "connected"
+}
 ```
 
 ---
 
-## 📦 Servicios Incluidos
+## 📡 Endpoints de las APIs
 
-| Servicio | Puerto Local | URL | Estado |
-|----------|-------------|-----|--------|
-| **API Mobile** | 8081 | http://localhost:8081 | Backend REST API |
-| **API Administración** | 8082 | http://localhost:8082 | Backend Admin Panel |
-| **Worker** | - | (background) | Procesador de PDFs |
-| **PostgreSQL** | 5432 | localhost:5432 | Base de datos relacional |
-| **MongoDB** | 27017 | localhost:27017 | Base de datos NoSQL |
-| **RabbitMQ** | 5672, 15672 | http://localhost:15672 | Message Queue + UI |
+### API Mobile (Puerto 8081)
 
-### Endpoints de Health Check
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/v1/auth/login` | POST | Login de usuarios |
+| `/api/v1/auth/register` | POST | Registro de usuarios |
+| `/api/v1/users` | GET | Listar usuarios |
+| `/api/v1/courses` | GET | Listar cursos |
+| `/api/v1/documents` | POST | Subir PDF |
 
-```bash
-# API Mobile
-curl http://localhost:8081/health
+**Documentación completa:** http://localhost:8081/swagger
 
-# API Administración
-curl http://localhost:8082/health
+### API Administración (Puerto 8082)
 
-# RabbitMQ Management UI
-open http://localhost:15672
-# Usuario: edugo
-# Password: edugo123
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/v1/admin/users` | GET | Gestionar usuarios |
+| `/api/v1/admin/institutions` | GET | Gestionar instituciones |
+| `/api/v1/admin/reports` | GET | Reportes |
+
+**Documentación completa:** http://localhost:8082/swagger
+
+---
+
+## 🧪 Datos de Prueba
+
+El ambiente viene con datos de prueba pre-cargados:
+
+### Usuarios de Prueba
+
+| Email | Password | Rol |
+|-------|----------|-----|
+| `admin@edugo.com` | `admin123` | Administrador |
+| `profesor@edugo.com` | `profesor123` | Profesor |
+| `estudiante@edugo.com` | `estudiante123` | Estudiante |
+
+### Ejemplo: Login desde tu Frontend
+
+```javascript
+// React / Vue / Angular
+const response = await fetch('http://localhost:8081/api/v1/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'estudiante@edugo.com',
+    password: 'estudiante123'
+  })
+});
+
+const { token, user } = await response.json();
+console.log('Token JWT:', token);
+console.log('Usuario:', user);
 ```
 
 ---
 
 ## 🔄 Comandos Útiles
 
-### Ver logs de todos los servicios
+### Iniciar el Backend
 
 ```bash
 cd docker
-docker-compose logs -f
+docker-compose up -d
 ```
 
-### Ver logs de un servicio específico
-
-```bash
-docker-compose logs -f api-mobile
-docker-compose logs -f worker
-docker-compose logs -f postgres
-```
-
-### Reiniciar un servicio
-
-```bash
-docker-compose restart api-mobile
-```
-
-### Detener servicios (mantiene datos)
+### Detener el Backend
 
 ```bash
 docker-compose stop
 ```
 
-### Detener y eliminar contenedores (mantiene datos)
+### Ver Logs (Debugging)
 
 ```bash
-docker-compose down
-```
+# Todos los servicios
+docker-compose logs -f
 
-### Actualizar a última versión de las imágenes
-
-```bash
-# Desde raíz de edugo-dev-environment
-./scripts/update-images.sh
-
-# Luego reiniciar
-cd docker
-docker-compose down
-docker-compose up -d
-```
-
-### Limpiar ambiente completo
-
-```bash
-# Desde raíz de edugo-dev-environment
-./scripts/cleanup.sh
-
-# El script preguntará si deseas:
-# - Eliminar volúmenes (datos de BD)
-# - Limpiar imágenes no usadas
-# - Eliminar imágenes de EduGo
-```
-
----
-
-## 🔐 Credenciales por Defecto (Desarrollo)
-
-### PostgreSQL
-- **Usuario:** `edugo`
-- **Password:** `edugo123`
-- **Database:** `edugo`
-- **Puerto:** 5432
-
-### MongoDB
-- **Usuario:** `edugo`
-- **Password:** `edugo123`
-- **Database:** `edugo`
-- **Puerto:** 27017
-
-### RabbitMQ
-- **Usuario:** `edugo`
-- **Password:** `edugo123`
-- **Puerto AMQP:** 5672
-- **Puerto Management UI:** 15672
-- **Management UI:** http://localhost:15672
-
-### JWT Secret (Desarrollo)
-- **Secret:** `dev-secret-key-change-in-production`
-
----
-
-## ⚙️ Configuración Personalizada
-
-### Editar variables de entorno
-
-```bash
-# Copiar ejemplo si no existe
-cp docker/.env.example docker/.env
-
-# Editar configuración
-nano docker/.env
-```
-
-### Variables Importantes
-
-| Variable | Descripción | Default |
-|----------|-------------|---------|
-| `POSTGRES_PASSWORD` | Password de PostgreSQL | `edugo123` |
-| `MONGO_PASSWORD` | Password de MongoDB | `edugo123` |
-| `RABBITMQ_PASSWORD` | Password de RabbitMQ | `edugo123` |
-| `JWT_SECRET` | Secret para tokens JWT | `dev-secret-key...` |
-| `OPENAI_API_KEY` | API Key de OpenAI (para worker) | `sk-...` |
-| `API_MOBILE_VERSION` | Versión de imagen Docker | `latest` |
-| `API_ADMIN_VERSION` | Versión de imagen Docker | `latest` |
-| `WORKER_VERSION` | Versión de imagen Docker | `latest` |
-
-**Ver archivo completo:** [`docker/.env.example`](docker/.env.example)
-
----
-
-## 🐳 Versiones de Imágenes
-
-Por defecto, se usan las imágenes `latest` de cada servicio desde GitHub Container Registry.
-
-**Imágenes disponibles:**
-- `ghcr.io/edugogroup/edugo-api-mobile`
-- `ghcr.io/edugogroup/edugo-api-administracion`
-- `ghcr.io/edugogroup/edugo-worker`
-
-**Usar versiones específicas:**
-
-```bash
-# En docker/.env
-API_MOBILE_VERSION=1.0.0          # Versión específica
-API_MOBILE_VERSION=1.0            # Último patch de 1.0
-API_MOBILE_VERSION=1              # Último minor de 1.x
-API_MOBILE_VERSION=latest         # Última versión publicada
-
-# También puedes usar:
-API_ADMIN_VERSION=1.0.0
-WORKER_VERSION=1.0.0
-```
-
-**Ver versiones disponibles:**
-- https://github.com/orgs/EduGoGroup/packages
-
----
-
-## 🔍 Troubleshooting
-
-### Problema: "Cannot connect to Docker daemon"
-
-**Solución:**
-```bash
-# Verificar que Docker Desktop está corriendo
-open -a Docker
-
-# Esperar a que inicie (ícono en la barra de menú)
-# Reintentar: docker ps
-```
-
-### Problema: "pull access denied for ghcr.io/edugogroup/api-mobile"
-
-**Solución:**
-```bash
-# Login nuevamente con tu GitHub token
-echo "TU_GITHUB_TOKEN" | docker login ghcr.io -u TU_USUARIO_GITHUB --password-stdin
-
-# Verificar login
-docker info | grep ghcr.io
-```
-
-### Problema: "Port 5432 already in use"
-
-**Solución:**
-```bash
-# Opción 1: Detener PostgreSQL local
-brew services stop postgresql
-
-# Opción 2: Cambiar puerto en docker/.env
-echo "POSTGRES_PORT=5433" >> docker/.env
-```
-
-### Problema: "Servicios no arrancan (unhealthy)"
-
-**Solución:**
-```bash
-# Ver logs del servicio problemático
-cd docker
-docker-compose logs postgres
-docker-compose logs mongodb
-docker-compose logs rabbitmq
-
-# Reiniciar desde cero
-docker-compose down -v  # Elimina volúmenes
-docker-compose up -d    # Recrea todo
-```
-
-### Problema: "Worker no procesa mensajes"
-
-**Solución:**
-1. Verificar RabbitMQ:
-   ```bash
-   docker-compose logs -f rabbitmq
-   open http://localhost:15672  # Ver UI
-   ```
-
-2. Verificar configuración de OPENAI_API_KEY:
-   ```bash
-   grep OPENAI_API_KEY docker/.env
-   ```
-
-3. Ver logs del worker:
-   ```bash
-   docker-compose logs -f worker
-   ```
-
-### Problema: "Error de conexión a base de datos"
-
-**Error:**
-```
-dial tcp [::1]:5432: connect: connection refused
-```
-
-**Solución:**
-```bash
-# Verificar que PostgreSQL está corriendo
-docker-compose ps postgres
-
-# Si no está corriendo, iniciarlo
-docker-compose up -d postgres
-
-# Verificar logs
-docker-compose logs postgres
-
-# Probar conexión manual
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "SELECT 1;"
-```
-
-### Problema: "Imágenes Docker no se descargan"
-
-**Error:**
-```
-Error response from daemon: pull access denied for ghcr.io/edugogroup/...
-```
-
-**Solución:**
-```bash
-# 1. Verificar autenticación
-docker login ghcr.io
-
-# 2. Verificar token tiene permisos read:packages
-echo $GITHUB_TOKEN | docker login ghcr.io -u TU_USUARIO --password-stdin
-
-# 3. Si el problema persiste, re-ejecutar setup
-./scripts/setup.sh
-
-# 4. Verificar que puedes ver el paquete en GitHub
-open https://github.com/orgs/EduGoGroup/packages
-```
-
-### Problema: "Migraciones no se ejecutan"
-
-**Síntomas:**
-- Las tablas no existen en PostgreSQL
-- Error "relation does not exist"
-
-**Solución:**
-```bash
-# Verificar logs del migrator
-docker-compose logs migrator
-
-# Ejecutar migraciones manualmente
-docker-compose run --rm migrator
-
-# Verificar tablas creadas
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "\dt"
-
-# Si sigue fallando, limpiar y reiniciar
-docker-compose down -v
-docker-compose up -d
-```
-
-### Problema: "Espacio en disco lleno"
-
-**Error:**
-```
-no space left on device
-```
-
-**Solución:**
-```bash
-# Ver uso de espacio de Docker
-docker system df
-
-# Limpiar contenedores detenidos
-docker container prune
-
-# Limpiar imágenes sin usar
-docker image prune -a
-
-# Limpiar volúmenes sin usar (⚠️ borra datos)
-docker volume prune
-
-# Limpieza completa (⚠️ borra todo)
-docker system prune -a --volumes
-```
-
-### Problema: "API responde 500 Internal Server Error"
-
-**Solución:**
-```bash
-# 1. Ver logs de la API
+# Solo API Mobile
 docker-compose logs -f api-mobile
 
-# 2. Verificar variables de entorno
-docker-compose exec api-mobile env | grep -E "DATABASE|MONGO|RABBITMQ"
+# Solo Worker
+docker-compose logs -f worker
+```
 
-# 3. Verificar conectividad a servicios
-docker-compose exec api-mobile ping -c 2 postgres
-docker-compose exec api-mobile ping -c 2 mongodb
-docker-compose exec api-mobile ping -c 2 rabbitmq
+### Reiniciar un Servicio
 
-# 4. Reiniciar API
+```bash
 docker-compose restart api-mobile
 ```
+
+### Reset Completo (Borra datos)
+
+```bash
+docker-compose down -v
+./scripts/setup.sh
+```
+
+---
+
+## 🔌 Conectar Tu Frontend
+
+### React / Next.js
+
+```javascript
+// lib/api.js
+const API_BASE_URL = 'http://localhost:8081/api/v1';
+
+export async function loginUser(email, password) {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  return response.json();
+}
+
+export async function getCourses(token) {
+  const response = await fetch(`${API_BASE_URL}/courses`, {
+    headers: { 
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  return response.json();
+}
+```
+
+### Vue.js
+
+```javascript
+// services/api.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8081/api/v1'
+});
+
+export default {
+  login(email, password) {
+    return api.post('/auth/login', { email, password });
+  },
+  
+  getCourses(token) {
+    return api.get('/courses', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+};
+```
+
+### Angular
+
+```typescript
+// services/api.service.ts
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  private apiUrl = 'http://localhost:8081/api/v1';
+
+  constructor(private http: HttpClient) {}
+
+  login(email: string, password: string) {
+    return this.http.post(`${this.apiUrl}/auth/login`, { email, password });
+  }
+
+  getCourses(token: string) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/courses`, { headers });
+  }
+}
+```
+
+---
+
+## 🐛 Problemas Comunes
+
+### "Cannot connect to Docker daemon"
+
+**Solución:** Abre Docker Desktop y espera a que inicie.
+
+```bash
+open -a Docker
+```
+
+### "Port 8081 already in use"
+
+**Solución:** Algo está usando el puerto. Detenerlo:
+
+```bash
+lsof -ti:8081 | xargs kill -9
+```
+
+### "pull access denied"
+
+**Solución:** Autenticarte en GitHub Container Registry:
+
+```bash
+docker login ghcr.io
+# Usuario: tu-github-username
+# Password: tu-personal-access-token
+```
+
+### "API responde 500"
+
+**Solución:** Ver logs del servicio:
+
+```bash
+cd docker
+docker-compose logs api-mobile
+```
+
+### Más Problemas?
+
+Ver [Troubleshooting Completo](#-troubleshooting-detallado) al final de este README.
+
+---
+
+## 🎨 Ejemplo Completo: App de Login
+
+```javascript
+// App.jsx (React)
+import { useState } from 'react';
+
+function App() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      const response = await fetch('http://localhost:8081/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      if (!response.ok) throw new Error('Login falló');
+      
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem('token', data.token);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (user) {
+    return (
+      <div>
+        <h1>Bienvenido, {user.firstName}!</h1>
+        <p>Email: {user.email}</p>
+        <p>Rol: {user.role}</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleLogin}>
+      <h1>Login EduGo</h1>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      
+      <input 
+        type="email" 
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      
+      <input 
+        type="password" 
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      
+      <button type="submit">Iniciar Sesión</button>
+      
+      <p>Usuario de prueba: estudiante@edugo.com / estudiante123</p>
+    </form>
+  );
+}
+
+export default App;
+```
+
+---
+
+## 📱 Testing con Postman
+
+1. **Importar colección:**
+   - Archivo: `docs/postman/EduGo-APIs.postman_collection.json` (si existe)
+   - O crear requests manualmente
+
+2. **Request de ejemplo:**
+
+```
+POST http://localhost:8081/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "estudiante@edugo.com",
+  "password": "estudiante123"
+}
+```
+
+3. **Guardar el token** y usarlo en otros requests:
+
+```
+GET http://localhost:8081/api/v1/courses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+## 🗄️ Acceso Directo a Bases de Datos
+
+### PostgreSQL (si necesitas consultar directo)
+
+```bash
+docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo
+```
+
+**Comandos útiles:**
+```sql
+-- Ver todas las tablas
+\dt
+
+-- Ver usuarios
+SELECT * FROM users;
+
+-- Ver cursos
+SELECT * FROM courses;
+
+-- Salir
+\q
+```
+
+### MongoDB (para documentos/PDFs)
+
+```bash
+docker exec -it edugo-dev-environment-mongodb-1 mongosh -u edugo -p edugo123 edugo
+```
+
+**Comandos útiles:**
+```javascript
+// Ver colecciones
+show collections
+
+// Ver documentos procesados
+db.documents.find().pretty()
+
+// Salir
+exit
+```
+
+### RabbitMQ UI (ver mensajes en cola)
+
+Abrir en navegador: http://localhost:15672
+
+**Credenciales:**
+- Usuario: `edugo`
+- Password: `edugo123`
 
 ---
 
 ## 📚 Documentación Adicional
 
-### Docker Compose
-- 🚀 **[Quick Start](docker/QUICK_START.md)** ← EMPIEZA AQUÍ
-- 📚 [Guía Completa Docker](docker/README.md) - 3 archivos docker-compose disponibles
-- ✅ [Reporte de Validación](docker/RESULTADO_VALIDACION.md) - Estado actual y soluciones
+Si necesitas más detalles:
 
-### Documentación del Proyecto
-- 📖 [Documentación Dev Environment](docs/dev-environment/) - Especificaciones técnicas
-- 📖 [Templates de Workflow](docs/workflow-templates/) - Metodología de trabajo
-
----
-
-## ⚠️ Notas Importantes
-
-- ⚠️ **Este ambiente es SOLO para desarrollo local**
-- ⚠️ **NO usar estas credenciales en producción**
-- ⚠️ Las imágenes se descargan de GitHub Container Registry (ghcr.io)
-- ⚠️ Necesitas estar autenticado en ghcr.io para descargar imágenes
-- ⚠️ El worker requiere OPENAI_API_KEY válida para funcionar
+| Documento | Para Qué |
+|-----------|----------|
+| [Quick Start](docker/QUICK_START.md) | Setup rápido con opciones |
+| [Ejemplo End-to-End](docs/EXAMPLE.md) | Tutorial completo paso a paso |
+| [Guía Completa](docker/README.md) | Documentación técnica detallada |
+| [Scripts](scripts/README.md) | Referencia de scripts disponibles |
 
 ---
 
-## 🏗️ Arquitectura
-
-### Diagrama de Componentes
+## 🏗️ Arquitectura (Para los Curiosos)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                  GITHUB CONTAINER REGISTRY               │
-│                     (ghcr.io/edugogroup)                 │
-│                                                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │ api-mobile   │  │ api-admin    │  │   worker     │  │
-│  │   :latest    │  │   :latest    │  │   :latest    │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  │
-└────────────┬────────────┬────────────┬──────────────────┘
-             │            │            │
-             │  docker pull (en setup.sh)
-             ↓            ↓            ↓
-┌────────────────────────────────────────────────────────┐
-│           DOCKER COMPOSE (tu Mac local)                │
-│                                                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │PostgreSQL│  │ MongoDB  │  │ RabbitMQ │            │
-│  │  :5432   │  │  :27017  │  │:5672/15672           │
-│  └──────────┘  └──────────┘  └──────────┘            │
-│                                                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │API Mobile│  │API Admin │  │  Worker  │            │
-│  │  :8081   │  │  :8082   │  │(background)          │
-│  └──────────┘  └──────────┘  └──────────┘            │
-└────────────────────────────────────────────────────────┘
+Tu App Frontend (React/Vue/Angular)
+        │
+        │ HTTP REST
+        ↓
+┌─────────────────────────────────────┐
+│   Docker Compose (Este Repo)       │
+│                                     │
+│  API Mobile (:8081) ─┐              │
+│                      │              │
+│  API Admin  (:8082) ─┼─→ PostgreSQL │
+│                      │              │
+│  Worker      ────────┼─→ MongoDB    │
+│                      │              │
+│  RabbitMQ     ───────┘              │
+└─────────────────────────────────────┘
 ```
 
-### Flujo de Datos
-
-```
-┌──────────────┐
-│ App Móvil    │
-│ (Flutter)    │
-└──────┬───────┘
-       │ HTTP REST
-       ↓
-┌──────────────┐      ┌──────────────┐
-│ API Mobile   │─────→│ PostgreSQL   │
-│ (Go)         │←─────│ (Datos)      │
-└──────┬───────┘      └──────────────┘
-       │
-       │ Publica mensaje
-       ↓
-┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-│ RabbitMQ     │─────→│ Worker       │─────→│ MongoDB      │
-│ (Queue)      │      │ (Go + AI)    │      │ (PDFs)       │
-└──────────────┘      └──────────────┘      └──────────────┘
-       ↑
-       │ Consume mensajes
-       │
-┌──────────────┐      ┌──────────────┐
-│ API Admin    │─────→│ PostgreSQL   │
-│ (Go)         │←─────│ (Config)     │
-└──────────────┘      └──────────────┘
-       ↑
-       │ HTTP REST
-       ┌──────────────┐
-       │ Panel Admin  │
-       │ (Web)        │
-       └──────────────┘
-```
-
-### Componentes Detallados
-
-| Componente | Tecnología | Propósito | Datos Persistentes |
-|------------|------------|-----------|-------------------|
-| **API Mobile** | Go 1.21+ | Backend para app móvil | PostgreSQL |
-| **API Admin** | Go 1.21+ | Backend para panel admin | PostgreSQL |
-| **Worker** | Go 1.21+ | Procesamiento asíncrono PDFs | MongoDB |
-| **PostgreSQL** | PostgreSQL 15 | BD relacional principal | Volumen Docker |
-| **MongoDB** | MongoDB 7.0 | BD documentos (PDFs) | Volumen Docker |
-| **RabbitMQ** | RabbitMQ 3.12 | Cola de mensajes | Volumen Docker |
-| **Migrator** | Go (custom) | Migraciones automáticas | N/A (init) |
+**Flujo típico:**
+1. Tu frontend hace login en API Mobile (puerto 8081)
+2. Recibe un token JWT
+3. Usa el token para obtener cursos, usuarios, etc.
+4. Cuando subes un PDF, el Worker lo procesa automáticamente
 
 ---
 
-## 🤔 ¿Por Qué Este Proyecto NO Tiene CI/CD?
+## 🛑 Detener y Limpiar
 
-**Pregunta común:** ¿Por qué no hay workflows de GitHub Actions en este repositorio?
-
-**Respuesta:** Este proyecto **intencionalmente NO tiene CI/CD** porque es un repositorio de **configuración**, no de **código**.
-
-### Análisis Técnico
-
-| Aspecto | Este Proyecto | Proyectos con CI/CD |
-|---------|---------------|---------------------|
-| **Tipo** | Configuración Docker | Código fuente (Go/Python/etc) |
-| **Contenido** | docker-compose.yml, scripts | Aplicaciones con lógica |
-| **Tests** | ❌ No aplica | ✅ Tests unitarios/integración |
-| **Builds** | ❌ No genera artefactos | ✅ Binarios, imágenes Docker |
-| **Despliegue** | ❌ Solo para desarrollo local | ✅ Staging/Production |
-| **Validación** | ✅ Local (instantánea) | ✅ CI/CD (distribuido) |
-
-### Razones Específicas
-
-1. **No hay código que testear**
-   - Los archivos YAML no tienen tests unitarios
-   - Los scripts bash son utilidades simples
-   - No hay lógica de negocio
-
-2. **La validación es mejor localmente**
-   - `docker-compose config` valida sintaxis al instante
-   - `./scripts/validate.sh` ejecuta en segundos
-   - Feedback inmediato vs esperar queue de CI
-
-3. **No hay despliegues automáticos**
-   - Este ambiente es solo para desarrollo local
-   - No se despliega a staging ni producción
-   - No se publican imágenes Docker
-
-4. **Costo vs Beneficio**
-   ```
-   Costo de CI/CD:
-   - ~50-100 minutos/mes de GitHub Actions
-   - Mantenimiento de workflows
-   - Complejidad adicional
-   
-   Beneficio:
-   - Validar sintaxis YAML (se hace mejor local)
-   - ¿?
-   
-   Conclusión: Costo > Beneficio
-   ```
-
-### Enfoque Alternativo: Validación Local
-
-En lugar de CI/CD completo, usamos **herramientas locales**:
-
-#### 1. Script de Validación
-
-```bash
-./scripts/validate.sh
-```
-
-**Qué hace:**
-- ✅ Valida sintaxis de todos los docker-compose
-- ✅ Lista servicios, volúmenes y puertos
-- ✅ Verifica variables de entorno
-- ⚡ Resultado en segundos
-
-#### 2. Pre-commit Hooks (Opcional)
-
-```bash
-git config core.hooksPath .githooks
-```
-
-**Qué hace:**
-- ✅ Valida automáticamente antes de commit
-- ✅ Previene commit de archivos `.env`
-- ✅ Asegura permisos correctos en scripts
-- ⚡ Bloquea commits con errores
-
-#### 3. Validación Nativa de Docker
+### Detener (Mantiene Datos)
 
 ```bash
 cd docker
-docker-compose config
+docker-compose stop
 ```
 
-**Qué hace:**
-- ✅ Valida sintaxis YAML
-- ✅ Expande variables de entorno
-- ✅ Muestra configuración final
-- ⚡ Herramienta oficial de Docker
+Próxima vez que hagas `docker-compose up -d`, todo sigue donde lo dejaste.
 
-### Filosofía
+### Reset Completo (Borra Todo)
 
-> **"No uses CI/CD para todo. Úsalo solo donde agregue valor."**
-
-**CI/CD es excelente para:**
-- ✅ `edugo-api-mobile` - Tests, builds, deploys
-- ✅ `edugo-api-administracion` - Tests, builds, deploys
-- ✅ `edugo-worker` - Tests, builds, deploys
-- ✅ `edugo-shared` - Tests, releases de paquetes
-
-**CI/CD NO es necesario para:**
-- ❌ Repos de configuración (este proyecto)
-- ❌ Repos de documentación pura
-- ❌ Repos de scripts de utilidad
-
-### Comparación: Con CI/CD vs Sin CI/CD
-
-#### Opción A: CON CI/CD (No Recomendado)
-
-**Workflows que podríamos crear:**
-```yaml
-# .github/workflows/validate.yml
-name: Validate
-on: [push, pull_request]
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Validate YAML
-        run: docker-compose config
-```
-
-**Problemas:**
-- ❌ Esperar 2-5 minutos por resultado
-- ❌ Consumir minutos de GitHub Actions
-- ❌ Validación que se hace mejor local
-- ❌ Mantenimiento de workflow
-
-#### Opción B: SIN CI/CD (Recomendado) ✅
-
-**Validación local:**
 ```bash
-./scripts/validate.sh  # 2 segundos
+cd docker
+docker-compose down -v
+
+# Re-inicializar
+cd ..
+./scripts/setup.sh
 ```
 
-**Beneficios:**
-- ✅ Feedback instantáneo
-- ✅ Cero minutos de GitHub Actions
-- ✅ Menos complejidad
-- ✅ Mejor experiencia de desarrollo
+---
 
-### Casos Especiales
+## ❓ FAQ Rápido
 
-**¿Cuándo SÍ agregar CI/CD a este proyecto?**
+**Q: ¿Necesito saber Go/Backend para usar esto?**  
+A: No. Solo ejecuta el setup y usa las APIs desde tu frontend.
 
-Solo si cambia su propósito:
+**Q: ¿Puedo cambiar los puertos?**  
+A: Sí, edita `docker/.env` y cambia `API_MOBILE_PORT=8081` a otro puerto.
 
-1. **Si genera imágenes Docker propias**
-   - Actualmente: Pull de `ghcr.io/edugogroup/*`
-   - Si cambia a build local → Sí CI/CD
+**Q: ¿Los datos se pierden al detener Docker?**  
+A: No, se mantienen en volúmenes. Solo se borran con `docker-compose down -v`.
 
-2. **Si se despliega a cloud**
-   - Actualmente: Solo desarrollo local
-   - Si se despliega a AWS/GCP → Sí CI/CD
+**Q: ¿Puedo trabajar offline?**  
+A: Después del primer setup, sí. Las imágenes quedan en tu Mac.
 
-3. **Si tiene tests de integración complejos**
-   - Actualmente: No hay tests
-   - Si se agregan tests E2E → Considerar CI/CD
-
-### Decisión Documentada
-
-**Fecha:** 22 de Noviembre, 2025  
-**Decisión:** NO implementar CI/CD en este repositorio  
-**Razón:** Es configuración, no código  
-**Alternativa:** Validación local con scripts  
-**Revisar decisión:** Solo si el propósito del repo cambia  
-
-### Referencias
-
-Para más contexto sobre esta decisión:
-- Ver análisis completo: [docs/cicd/README.md](docs/cicd/README.md)
-- Ver plan de implementación: [docs/cicd/sprints/SPRINT-3-TASKS.md](docs/cicd/sprints/SPRINT-3-TASKS.md)
+**Q: ¿Cómo actualizo las APIs a la última versión?**  
+A: `./scripts/update-images.sh` y reinicia con `docker-compose up -d`.
 
 ---
 
-## 📞 Soporte
+## 🤝 Soporte
 
-Si encuentras problemas:
+### Algo no funciona?
 
-1. Revisa la documentación en [`docs/`](docs/)
-2. Verifica logs: `docker-compose logs -f`
-3. Consulta troubleshooting: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+1. **Ver logs:** `docker-compose logs -f`
+2. **Reiniciar:** `docker-compose restart api-mobile`
+3. **Reset completo:** `docker-compose down -v && ./scripts/setup.sh`
+
+### Errores comunes resueltos
+
+Ver sección [Troubleshooting Detallado](#-troubleshooting-detallado) abajo.
+
+### Reportar un bug
+
+[Crear issue](https://github.com/EduGoGroup/edugo-dev-environment/issues/new)
 
 ---
 
-## 📝 Licencia
+## 🔧 Troubleshooting Detallado
 
-Privado - EduGo © 2025
+### Error: "Cannot connect to Docker daemon"
+
+**Causa:** Docker Desktop no está corriendo.
+
+**Solución:**
+```bash
+open -a Docker
+# Esperar a que el ícono aparezca en la barra de menú
+docker ps  # Verificar que funciona
+```
 
 ---
 
-**Última actualización:** 30 de Octubre, 2025
+### Error: "Port already in use"
+
+**Causa:** Otro servicio usa el puerto 5432, 8081, etc.
+
+**Solución:**
+```bash
+# Ver qué usa el puerto
+lsof -ti:5432  # PostgreSQL
+lsof -ti:8081  # API Mobile
+lsof -ti:8082  # API Admin
+
+# Matar el proceso
+lsof -ti:8081 | xargs kill -9
+
+# O cambiar puerto en docker/.env
+echo "API_MOBILE_PORT=8083" >> docker/.env
+```
+
+---
+
+### Error: "pull access denied for ghcr.io/edugogroup/..."
+
+**Causa:** No estás autenticado en GitHub Container Registry.
+
+**Solución:**
+```bash
+# Crear token en: https://github.com/settings/tokens
+# Scope: read:packages
+
+# Login
+docker login ghcr.io
+Username: tu-usuario-github
+Password: ghp_tu_token_aqui
+
+# Re-ejecutar setup
+./scripts/setup.sh
+```
+
+---
+
+### Error: API responde "dial tcp: connection refused"
+
+**Causa:** PostgreSQL o MongoDB no están corriendo.
+
+**Solución:**
+```bash
+# Ver estado
+cd docker
+docker-compose ps
+
+# Si postgres/mongodb están "Exited", reiniciar
+docker-compose up -d postgres mongodb
+
+# Ver logs
+docker-compose logs postgres mongodb
+```
+
+---
+
+### Error: "relation 'users' does not exist"
+
+**Causa:** Migraciones no se ejecutaron.
+
+**Solución:**
+```bash
+# Ejecutar migraciones manualmente
+docker-compose run --rm migrator
+
+# Verificar tablas
+docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "\dt"
+```
+
+---
+
+### Error: Worker no procesa PDFs
+
+**Causa:** RabbitMQ no está conectado o falta OPENAI_API_KEY.
+
+**Solución:**
+```bash
+# Ver logs del worker
+docker-compose logs -f worker
+
+# Verificar RabbitMQ
+docker-compose ps rabbitmq
+open http://localhost:15672  # UI
+
+# Verificar variables de entorno
+grep OPENAI_API_KEY docker/.env
+
+# Si falta, agregarla
+echo "OPENAI_API_KEY=sk-tu-key-aqui" >> docker/.env
+docker-compose restart worker
+```
+
+---
+
+### Error: "no space left on device"
+
+**Causa:** Docker llenó tu disco.
+
+**Solución:**
+```bash
+# Ver uso de Docker
+docker system df
+
+# Limpiar imágenes viejas
+docker image prune -a
+
+# Limpiar volúmenes sin usar (⚠️ cuidado)
+docker volume prune
+
+# Limpieza completa
+docker system prune -a --volumes
+```
+
+---
+
+### API responde 500 Internal Server Error
+
+**Causa:** Error en el código del backend o BD no disponible.
+
+**Solución:**
+```bash
+# Ver logs detallados
+docker-compose logs -f api-mobile
+
+# Verificar conectividad a BD
+docker-compose exec api-mobile ping postgres
+docker-compose exec api-mobile ping mongodb
+
+# Reiniciar API
+docker-compose restart api-mobile
+
+# Si persiste, ver variables
+docker-compose exec api-mobile env | grep DATABASE
+```
+
+---
+
+## 🎓 Para Saber Más
+
+### ¿Por Qué NO Hay CI/CD en Este Repo?
+
+Este proyecto es **configuración Docker**, no código fuente. La validación se hace localmente en segundos, no necesita CI/CD.
+
+**Más detalles:** Ver sección completa en la [documentación técnica](docs/cicd/README.md).
+
+### ¿Quieres Contribuir?
+
+1. Fork el repo
+2. Crea branch: `git checkout -b feature/mi-mejora`
+3. Haz cambios
+4. Valida: `./scripts/validate.sh`
+5. Push y crea PR
+
+### Scripts Disponibles
+
+- `./scripts/setup.sh` - Setup inicial
+- `./scripts/validate.sh` - Validar docker-compose
+- `./scripts/update-images.sh` - Actualizar imágenes
+- `./scripts/cleanup.sh` - Limpiar ambiente
+- `./scripts/stop.sh` - Detener servicios
+
+**Documentación completa:** [scripts/README.md](scripts/README.md)
+
+---
+
+## 📝 Credenciales por Defecto
+
+### ⚠️ SOLO PARA DESARROLLO LOCAL
+
+**PostgreSQL:**
+```
+Host: localhost
+Port: 5432
+User: edugo
+Password: edugo123
+Database: edugo
+```
+
+**MongoDB:**
+```
+Host: localhost
+Port: 27017
+User: edugo
+Password: edugo123
+Database: edugo
+```
+
+**RabbitMQ:**
+```
+Host: localhost
+AMQP Port: 5672
+Management UI: 15672
+User: edugo
+Password: edugo123
+```
+
+**Usuarios de Prueba:**
+```
+admin@edugo.com / admin123
+profesor@edugo.com / profesor123
+estudiante@edugo.com / estudiante123
+```
+
+---
+
+## 📦 ¿Qué Contiene Este Repo?
+
+```
+edugo-dev-environment/
+├── docker/
+│   ├── docker-compose.yml      ← Configuración principal
+│   └── .env                    ← Variables de entorno
+├── scripts/
+│   ├── setup.sh                ← Setup automático
+│   ├── validate.sh             ← Validar configuración
+│   └── ...
+├── docs/
+│   └── EXAMPLE.md              ← Tutorial completo
+└── README.md                   ← Este archivo
+```
+
+---
+
+## 🚀 ¡Comienza Ahora!
+
+```bash
+# 1. Clonar
+git clone https://github.com/EduGoGroup/edugo-dev-environment.git
+cd edugo-dev-environment
+
+# 2. Setup
+./scripts/setup.sh
+
+# 3. Verificar
+curl http://localhost:8081/health
+
+# 4. ¡A programar tu frontend! 🎨
+```
+
+---
+
+**Última actualización:** 22 de Noviembre, 2025  
+**Versión:** 2.0.0  
 **Mantenedor:** Equipo EduGo
 
-## 🚀 Perfiles Disponibles (Opcional)
-
-Si deseas usar perfiles específicos para levantamientos parciales, puedes ejecutar:
-
-```bash
-# Solo bases de datos (sin APIs ni worker)
-cd docker
-docker-compose --profile db-only up -d
-
-# APIs sin worker
-docker-compose --profile api-only up -d
-
-# Solo worker
-docker-compose --profile worker-only up -d
-
-# Solo Mobile API
-docker-compose --profile mobile-only up -d
-
-# Solo Admin API
-docker-compose --profile admin-only up -d
-```
-
-### Perfiles Disponibles
-
-| Profile | Servicios | Uso Recomendado |
-|---------|-----------|-----------------|
-| (sin profile) | Todos los servicios | Desarrollo completo (DEFAULT) |
-| `db-only` | PostgreSQL + MongoDB + RabbitMQ + Migrator | Testing de migraciones |
-| `api-only` | DBs + APIs + Migrator | Desarrollo de APIs |
-| `mobile-only` | DBs + API Mobile + Migrator | App móvil |
-| `admin-only` | DBs + API Admin + Migrator | Panel admin |
-| `worker-only` | DBs + Worker + Migrator | Testing de workers |
-
-Ver [docs/PROFILES.md](docs/PROFILES.md) para más detalles.
-
-## 🛑 Detener Servicios
-
-```bash
-# Detener todo
-./scripts/stop.sh
-
-# Detener perfil específico
-./scripts/stop.sh --profile db-only
-
-# Eliminar volúmenes
-./scripts/stop.sh --volumes
-```
+**¿Dudas?** Abre un [issue](https://github.com/EduGoGroup/edugo-dev-environment/issues) o consulta la [documentación completa](docs/EXAMPLE.md).
