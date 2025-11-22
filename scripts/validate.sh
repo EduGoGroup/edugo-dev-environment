@@ -38,8 +38,9 @@ cd "$DOCKER_DIR"
 # Lista de archivos docker-compose a validar
 COMPOSE_FILES=(
     "docker-compose.yml"
-    "docker-compose.full.yml"
-    "docker-compose.local.yml"
+    "docker-compose-apps.yml"
+    "docker-compose-infrastructure.yml"
+    "docker-compose.migrate.yml"
 )
 
 VALIDATED_COUNT=0

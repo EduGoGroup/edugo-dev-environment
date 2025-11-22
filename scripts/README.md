@@ -39,8 +39,9 @@ Valida la sintaxis de todos los archivos `docker-compose*.yml` sin levantar cont
 ### Archivos Validados
 
 - `docker/docker-compose.yml` (principal)
-- `docker/docker-compose.full.yml` (completo)
-- `docker/docker-compose.local.yml` (local)
+- `docker/docker-compose-apps.yml` (aplicaciones)
+- `docker/docker-compose-infrastructure.yml` (infraestructura)
+- `docker/docker-compose.migrate.yml` (migraciones)
 
 ### Salida Esperada
 
