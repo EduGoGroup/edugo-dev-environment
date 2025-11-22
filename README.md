@@ -23,7 +23,9 @@ Después de seguir esta guía (5-10 minutos), tendrás corriendo:
 
 ## ⚡ Inicio Rápido (3 Pasos)
 
-### Paso 1: Instalar Docker Desktop
+### Paso 1: Prerequisitos
+
+#### 1.1 Docker Desktop
 
 ```bash
 # macOS
@@ -34,22 +36,51 @@ brew install --cask docker
 
 **Abrir Docker Desktop** y esperar a que inicie (ver ícono en barra de menú).
 
+#### 1.2 Acceso a GitHub Container Registry
+
+**⚠️ IMPORTANTE:** Necesitas autenticación en GitHub para descargar las imágenes Docker.
+
+**Verificar si ya estás autenticado:**
+```bash
+docker login ghcr.io
+# Si muestra "Login Succeeded" o "already logged in", continúa al Paso 2
+```
+
+**Si NO estás autenticado:**
+
+Necesitas un GitHub Personal Access Token:
+
+1. Ve a: https://github.com/settings/tokens
+2. Click en "Generate new token (classic)"
+3. Selecciona scope: `read:packages`
+4. Copia el token (formato: `ghp_...`)
+5. Ejecuta:
+   ```bash
+   docker login ghcr.io
+   # Username: tu-usuario-github
+   # Password: pega-tu-token-aqui
+   ```
+
 ---
 
-### Paso 2: Clonar y Configurar
+### Paso 2: Clonar y Levantar
 
 ```bash
-# Clonar este repositorio
+# Clonar repositorio
 git clone https://github.com/EduGoGroup/edugo-dev-environment.git
 cd edugo-dev-environment
 
-# Ejecutar setup (pedirá tu GitHub token)
-./scripts/setup.sh
+# Levantar ambiente
+cd docker
+docker-compose up -d
 ```
 
-**Cuando pida credenciales:**
-- **Usuario:** tu-usuario-github  
-- **Token:** [Crear token aquí](https://github.com/settings/tokens) con scope `read:packages`
+**Esto levantará:**
+- PostgreSQL, MongoDB, RabbitMQ
+- API Mobile, API Admin, Worker
+- Migrator (ejecuta automáticamente y carga datos de prueba)
+
+**Tiempo estimado:** ~30 segundos primera vez, ~5 segundos subsecuentes
 
 ---
 
@@ -59,7 +90,7 @@ Verifica que todo esté corriendo:
 
 ```bash
 # Ver servicios
-cd docker && docker-compose ps
+docker-compose ps
 
 # Probar API Mobile
 curl http://localhost:8081/health
@@ -68,13 +99,23 @@ curl http://localhost:8081/health
 curl http://localhost:8082/health
 ```
 
-**Resultado esperado:**
+**Resultado esperado - API Mobile:**
 ```json
 {
-  "status": "ok",
-  "database": "connected",
-  "mongodb": "connected",
-  "rabbitmq": "connected"
+  "status": "healthy",
+  "service": "edugo-api-mobile",
+  "version": "1.0.0",
+  "postgres": "healthy",
+  "mongodb": "healthy",
+  "timestamp": "2025-11-22T12:43:19Z"
+}
+```
+
+**Resultado esperado - API Admin:**
+```json
+{
+  "service": "edugo-api-admin",
+  "status": "healthy"
 }
 ```
 
