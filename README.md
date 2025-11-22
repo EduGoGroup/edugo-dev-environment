@@ -12,10 +12,11 @@ Este repositorio contiene todo lo necesario para ejecutar **EduGo** localmente u
 | Guía | Descripción | Cuándo Usar |
 |------|-------------|-------------|
 | **[🚀 Quick Start](docker/QUICK_START.md)** | Inicio rápido (5 min) | Primera vez, quiero empezar YA |
+| **[📝 Ejemplo End-to-End](docs/EXAMPLE.md)** | Guía paso a paso completa | Quiero ver todo el flujo en detalle |
 | **[📚 Guía Completa](docker/README.md)** | Documentación detallada | Necesito entender todo el sistema |
 | **[✅ Reporte de Validación](docker/RESULTADO_VALIDACION.md)** | Estado y troubleshooting | Tengo problemas técnicos |
 
-**¿Primera vez usando este proyecto?** → Comienza con [Quick Start](docker/QUICK_START.md)
+**¿Primera vez usando este proyecto?** → Comienza con [Quick Start](docker/QUICK_START.md) o [Ejemplo End-to-End](docs/EXAMPLE.md)
 
 ---
 
