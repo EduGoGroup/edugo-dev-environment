@@ -408,7 +408,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ### PostgreSQL (si necesitas consultar directo)
 
 ```bash
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo
+docker exec -it postgres psql -U edugo -d edugo
 ```
 
 **Comandos útiles:**
@@ -429,7 +429,7 @@ SELECT * FROM courses;
 ### MongoDB (para documentos/PDFs)
 
 ```bash
-docker exec -it edugo-dev-environment-mongodb-1 mongosh -u edugo -p edugo123 edugo
+docker exec -it mongodb mongosh -u edugo -p edugo123 edugo
 ```
 
 **Comandos útiles:**
@@ -640,7 +640,7 @@ docker-compose logs postgres mongodb
 docker-compose run --rm migrator
 
 # Verificar tablas
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "\dt"
+docker exec -it postgres psql -U edugo -d edugo -c "\dt"
 ```
 
 ---

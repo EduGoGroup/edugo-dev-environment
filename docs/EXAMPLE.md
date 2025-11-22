@@ -244,7 +244,7 @@ open http://localhost:15672
 psql -h localhost -U edugo -d edugo
 
 # O usando Docker
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo
+docker exec -it postgres psql -U edugo -d edugo
 ```
 
 **Dentro de psql:**
@@ -272,7 +272,7 @@ SELECT COUNT(*) FROM users;
 mongosh mongodb://edugo:edugo123@localhost:27017/edugo
 
 # O usando Docker
-docker exec -it edugo-dev-environment-mongodb-1 mongosh -u edugo -p edugo123
+docker exec -it mongodb mongosh -u edugo -p edugo123
 ```
 
 **Dentro de mongosh:**
@@ -308,7 +308,7 @@ cd ..
 **Verificar datos cargados:**
 ```bash
 # PostgreSQL
-docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "SELECT COUNT(*) FROM users;"
+docker exec -it postgres psql -U edugo -d edugo -c "SELECT COUNT(*) FROM users;"
 ```
 
 **Esperado:**
@@ -409,7 +409,7 @@ docker-compose logs -f worker
 
 **Verificar en MongoDB:**
 ```bash
-docker exec -it edugo-dev-environment-mongodb-1 mongosh -u edugo -p edugo123 edugo
+docker exec -it mongodb mongosh -u edugo -p edugo123 edugo
 
 # En mongosh:
 db.documents.find().pretty()
