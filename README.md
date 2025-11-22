@@ -300,6 +300,116 @@ docker-compose up -d    # Recrea todo
    docker-compose logs -f worker
    ```
 
+### Problema: "Error de conexión a base de datos"
+
+**Error:**
+```
+dial tcp [::1]:5432: connect: connection refused
+```
+
+**Solución:**
+```bash
+# Verificar que PostgreSQL está corriendo
+docker-compose ps postgres
+
+# Si no está corriendo, iniciarlo
+docker-compose up -d postgres
+
+# Verificar logs
+docker-compose logs postgres
+
+# Probar conexión manual
+docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "SELECT 1;"
+```
+
+### Problema: "Imágenes Docker no se descargan"
+
+**Error:**
+```
+Error response from daemon: pull access denied for ghcr.io/edugogroup/...
+```
+
+**Solución:**
+```bash
+# 1. Verificar autenticación
+docker login ghcr.io
+
+# 2. Verificar token tiene permisos read:packages
+echo $GITHUB_TOKEN | docker login ghcr.io -u TU_USUARIO --password-stdin
+
+# 3. Si el problema persiste, re-ejecutar setup
+./scripts/setup.sh
+
+# 4. Verificar que puedes ver el paquete en GitHub
+open https://github.com/orgs/EduGoGroup/packages
+```
+
+### Problema: "Migraciones no se ejecutan"
+
+**Síntomas:**
+- Las tablas no existen en PostgreSQL
+- Error "relation does not exist"
+
+**Solución:**
+```bash
+# Verificar logs del migrator
+docker-compose logs migrator
+
+# Ejecutar migraciones manualmente
+docker-compose run --rm migrator
+
+# Verificar tablas creadas
+docker exec -it edugo-dev-environment-postgres-1 psql -U edugo -d edugo -c "\dt"
+
+# Si sigue fallando, limpiar y reiniciar
+docker-compose down -v
+docker-compose up -d
+```
+
+### Problema: "Espacio en disco lleno"
+
+**Error:**
+```
+no space left on device
+```
+
+**Solución:**
+```bash
+# Ver uso de espacio de Docker
+docker system df
+
+# Limpiar contenedores detenidos
+docker container prune
+
+# Limpiar imágenes sin usar
+docker image prune -a
+
+# Limpiar volúmenes sin usar (⚠️ borra datos)
+docker volume prune
+
+# Limpieza completa (⚠️ borra todo)
+docker system prune -a --volumes
+```
+
+### Problema: "API responde 500 Internal Server Error"
+
+**Solución:**
+```bash
+# 1. Ver logs de la API
+docker-compose logs -f api-mobile
+
+# 2. Verificar variables de entorno
+docker-compose exec api-mobile env | grep -E "DATABASE|MONGO|RABBITMQ"
+
+# 3. Verificar conectividad a servicios
+docker-compose exec api-mobile ping -c 2 postgres
+docker-compose exec api-mobile ping -c 2 mongodb
+docker-compose exec api-mobile ping -c 2 rabbitmq
+
+# 4. Reiniciar API
+docker-compose restart api-mobile
+```
+
 ---
 
 ## 📚 Documentación Adicional
@@ -326,6 +436,8 @@ docker-compose up -d    # Recrea todo
 ---
 
 ## 🏗️ Arquitectura
+
+### Diagrama de Componentes
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -354,6 +466,53 @@ docker-compose up -d    # Recrea todo
 │  └──────────┘  └──────────┘  └──────────┘            │
 └────────────────────────────────────────────────────────┘
 ```
+
+### Flujo de Datos
+
+```
+┌──────────────┐
+│ App Móvil    │
+│ (Flutter)    │
+└──────┬───────┘
+       │ HTTP REST
+       ↓
+┌──────────────┐      ┌──────────────┐
+│ API Mobile   │─────→│ PostgreSQL   │
+│ (Go)         │←─────│ (Datos)      │
+└──────┬───────┘      └──────────────┘
+       │
+       │ Publica mensaje
+       ↓
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│ RabbitMQ     │─────→│ Worker       │─────→│ MongoDB      │
+│ (Queue)      │      │ (Go + AI)    │      │ (PDFs)       │
+└──────────────┘      └──────────────┘      └──────────────┘
+       ↑
+       │ Consume mensajes
+       │
+┌──────────────┐      ┌──────────────┐
+│ API Admin    │─────→│ PostgreSQL   │
+│ (Go)         │←─────│ (Config)     │
+└──────────────┘      └──────────────┘
+       ↑
+       │ HTTP REST
+       ┌──────────────┐
+       │ Panel Admin  │
+       │ (Web)        │
+       └──────────────┘
+```
+
+### Componentes Detallados
+
+| Componente | Tecnología | Propósito | Datos Persistentes |
+|------------|------------|-----------|-------------------|
+| **API Mobile** | Go 1.21+ | Backend para app móvil | PostgreSQL |
+| **API Admin** | Go 1.21+ | Backend para panel admin | PostgreSQL |
+| **Worker** | Go 1.21+ | Procesamiento asíncrono PDFs | MongoDB |
+| **PostgreSQL** | PostgreSQL 15 | BD relacional principal | Volumen Docker |
+| **MongoDB** | MongoDB 7.0 | BD documentos (PDFs) | Volumen Docker |
+| **RabbitMQ** | RabbitMQ 3.12 | Cola de mensajes | Volumen Docker |
+| **Migrator** | Go (custom) | Migraciones automáticas | N/A (init) |
 
 ---
 
