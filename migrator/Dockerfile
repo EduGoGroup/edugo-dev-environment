@@ -1,6 +1,6 @@
 # Dockerfile para desarrollo - Migrator de EduGo
 # Este contenedor incluye el código fuente y herramientas de desarrollo
-FROM golang:1.24.10-alpine
+FROM golang:1.25-alpine
 
 # Instalar herramientas necesarias
 RUN apk add --no-cache \
