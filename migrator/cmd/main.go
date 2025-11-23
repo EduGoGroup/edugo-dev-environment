@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -58,7 +59,7 @@ func ensureInfrastructureRepo() error {
 	if _, err := os.Stat(infraDir); os.IsNotExist(err) {
 		// Clonar el repositorio si no existe
 		fmt.Println("Clonando edugo-infrastructure...")
-		cmd := exec.Command("git", "clone", infraRepoURL, infraDir)
+		cmd := exec.Command("git", "clone", "--branch", "main", infraRepoURL, infraDir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -73,6 +74,18 @@ func ensureInfrastructureRepo() error {
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("error actualizando repositorio: %w", err)
+		}
+	}
+
+	// Debug: Ver archivos de migraciones disponibles
+	structurePath := filepath.Join(infraDir, "postgres", "migrations", "structure")
+	files, err := os.ReadDir(structurePath)
+	if err == nil {
+		fmt.Printf("📁 Archivos en structure: %d\n", len(files))
+		for _, f := range files {
+			if strings.HasSuffix(f.Name(), ".sql") {
+				fmt.Printf("   - %s\n", f.Name())
+			}
 		}
 	}
 
