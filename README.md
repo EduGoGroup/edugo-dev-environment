@@ -161,22 +161,31 @@ El ambiente viene con datos de prueba pre-cargados:
 
 ### Usuarios de Prueba
 
+**Contraseña para TODOS los usuarios:** `edugo2024`
+
 | Email | Password | Rol |
 |-------|----------|-----|
-| `admin@edugo.com` | `admin123` | Administrador |
-| `profesor@edugo.com` | `profesor123` | Profesor |
-| `estudiante@edugo.com` | `estudiante123` | Estudiante |
+| `admin@edugo.test` | `edugo2024` | Administrador |
+| `teacher.math@edugo.test` | `edugo2024` | Profesor (Matemáticas) |
+| `teacher.science@edugo.test` | `edugo2024` | Profesor (Ciencias) |
+| `student1@edugo.test` | `edugo2024` | Estudiante |
+| `student2@edugo.test` | `edugo2024` | Estudiante |
+| `student3@edugo.test` | `edugo2024` | Estudiante |
+| `guardian1@edugo.test` | `edugo2024` | Tutor |
+| `guardian2@edugo.test` | `edugo2024` | Tutor |
+
+💡 **Tip**: ¿Necesitas crear tus propios usuarios de prueba? Usa: `./scripts/generate-password.sh tu-password`
 
 ### Ejemplo: Login desde tu Frontend
 
 ```javascript
 // React / Vue / Angular
-const response = await fetch('http://localhost:8081/api/v1/auth/login', {
+const response = await fetch('http://localhost:8081/v1/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    email: 'estudiante@edugo.com',
-    password: 'estudiante123'
+    email: 'student1@edugo.test',
+    password: 'edugo2024'
   })
 });
 
@@ -415,7 +424,7 @@ function App() {
       
       <button type="submit">Iniciar Sesión</button>
       
-      <p>Usuario de prueba: estudiante@edugo.com / estudiante123</p>
+      <p>Usuario de prueba: student1@edugo.test / edugo2024</p>
     </form>
   );
 }
@@ -434,12 +443,12 @@ export default App;
 2. **Request de ejemplo:**
 
 ```
-POST http://localhost:8081/api/v1/auth/login
+POST http://localhost:8081/v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "estudiante@edugo.com",
-  "password": "estudiante123"
+  "email": "student1@edugo.test",
+  "password": "edugo2024"
 }
 ```
 
@@ -821,9 +830,12 @@ Password: edugo123
 
 **Usuarios de Prueba:**
 ```
-admin@edugo.com / admin123
-profesor@edugo.com / profesor123
-estudiante@edugo.com / estudiante123
+Contraseña para TODOS: edugo2024
+
+admin@edugo.test / edugo2024
+teacher.math@edugo.test / edugo2024
+student1@edugo.test / edugo2024
+student2@edugo.test / edugo2024
 ```
 
 ---
