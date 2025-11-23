@@ -111,6 +111,7 @@ services:
       # Variables directamente bindeadas (sin prefijo)
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
       - MONGODB_URI=mongodb://${MONGO_USER:-edugo}:${MONGO_PASSWORD:-edugo123}@${MONGO_HOST:-mongodb}:${MONGO_PORT:-27017}/${MONGO_DB:-edugo}?authSource=admin
+      - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
 
       # Variables con prefijo EDUGO_ADMIN_ (Viper las lee con AutomaticEnv)
       - EDUGO_ADMIN_SERVER_PORT=8081
