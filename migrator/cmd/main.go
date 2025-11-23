@@ -64,53 +64,15 @@ func ensureInfrastructureRepo() error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("error clonando repositorio: %w", err)
 		}
-
-		// Después de clonar, checkout a nuestra rama con fixes
-		fmt.Println("Cambiando a rama fix/implement-real-demo-user-passwords...")
-		cmdCheckout := exec.Command("git", "checkout", "fix/implement-real-demo-user-passwords")
-		cmdCheckout.Dir = infraDir
-		cmdCheckout.Stdout = os.Stdout
-		cmdCheckout.Stderr = os.Stderr
-		if err := cmdCheckout.Run(); err != nil {
-			fmt.Println("⚠️  Rama fix no disponible, usando main...")
-		}
 	} else {
 		// Actualizar si ya existe
 		fmt.Println("Actualizando edugo-infrastructure...")
-
-		// Fetch all branches
-		cmdFetch := exec.Command("git", "fetch", "origin")
-		cmdFetch.Dir = infraDir
-		cmdFetch.Stdout = os.Stdout
-		cmdFetch.Stderr = os.Stderr
-		if err := cmdFetch.Run(); err != nil {
-			return fmt.Errorf("error fetching: %w", err)
-		}
-
-		// Checkout a nuestra rama con los fixes
-		cmdCheckout := exec.Command("git", "checkout", "fix/implement-real-demo-user-passwords")
-		cmdCheckout.Dir = infraDir
-		cmdCheckout.Stdout = os.Stdout
-		cmdCheckout.Stderr = os.Stderr
-		if err := cmdCheckout.Run(); err != nil {
-			// Si falla, usar main
-			fmt.Println("⚠️  Rama fix no disponible, usando main...")
-			cmdMain := exec.Command("git", "checkout", "main")
-			cmdMain.Dir = infraDir
-			cmdMain.Stdout = os.Stdout
-			cmdMain.Stderr = os.Stderr
-			if err := cmdMain.Run(); err != nil {
-				return fmt.Errorf("error checking out main: %w", err)
-			}
-		}
-
-		// Pull latest changes
-		cmdPull := exec.Command("git", "pull")
-		cmdPull.Dir = infraDir
-		cmdPull.Stdout = os.Stdout
-		cmdPull.Stderr = os.Stderr
-		if err := cmdPull.Run(); err != nil {
-			return fmt.Errorf("error pulling: %w", err)
+		cmd := exec.Command("git", "pull", "origin", "main")
+		cmd.Dir = infraDir
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("error actualizando repositorio: %w", err)
 		}
 	}
 

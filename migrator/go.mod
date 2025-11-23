@@ -1,10 +1,10 @@
 module github.com/EduGoGroup/edugo-dev-environment/migrator
 
-go 1.24.10
+go 1.25
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.9.0
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.9.0
+	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.10.1
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.10.1
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
