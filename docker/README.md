@@ -380,5 +380,6 @@ docker-compose -f docker-compose-infrastructure.yml down
 ## 📚 Documentación Adicional
 
 - [RESULTADO_VALIDACION.md](./RESULTADO_VALIDACION.md) - Reporte completo de validación
+- [PLAN_PRUEBAS_DOCKER_COMPOSE.md](./PLAN_PRUEBAS_DOCKER_COMPOSE.md) - Plan de pruebas detallado para cada docker-compose
 - [../docs/dev-environment/](../docs/dev-environment/) - Documentación del proyecto
 - Variables de entorno: `.env.example`

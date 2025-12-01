@@ -78,14 +78,6 @@ services:
       - LOGGING_LEVEL=${LOG_LEVEL:-debug}
       - LOGGING_FORMAT=${LOG_FORMAT:-json}
 
-      # Variables para el entrypoint script
-      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - MONGO_HOST=${MONGO_HOST:-mongodb}
-      - MONGO_PORT=${MONGO_PORT:-27017}
-      - RABBIT_HOST=${RABBITMQ_HOST:-rabbitmq}
-      - RABBIT_PORT=${RABBITMQ_PORT:-5672}
-
     networks:
       - edugo-network
     restart: unless-stopped

@@ -128,14 +128,6 @@ services:
       - LOGGING_LEVEL=${LOG_LEVEL:-debug}
       - LOGGING_FORMAT=${LOG_FORMAT:-json}
 
-      # Variables para el entrypoint script
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - RABBIT_HOST=rabbitmq
-      - RABBIT_PORT=5672
-
     depends_on:
       postgres:
         condition: service_healthy
@@ -284,3 +276,4 @@ volumes:
 networks:
   edugo-network:
     driver: bridge
+    name: edugo-network # Nombre fijo para compatibilidad con docker-compose-apps.yml

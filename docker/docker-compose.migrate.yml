@@ -1,7 +1,7 @@
 # ========================================
 # Docker Compose para ACTUALIZACIÓN DE BASE DE DATOS
 # ========================================
-# 
+#
 # Este archivo es para actualizar el esquema de las bases de datos
 # cuando hay cambios en el repositorio edugo-infrastructure.
 #
@@ -39,7 +39,7 @@ services:
     environment:
       # ⚠️ FORCE_MIGRATION=true elimina y recrea las bases de datos
       - FORCE_MIGRATION=true
-      
+
       # PostgreSQL (variables para runner.go de postgres)
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -109,3 +109,4 @@ volumes:
 networks:
   edugo-network:
     driver: bridge
+    name: edugo-network # Nombre fijo para compatibilidad con docker-compose-apps.yml
