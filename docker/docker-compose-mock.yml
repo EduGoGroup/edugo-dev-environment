@@ -43,9 +43,6 @@ services:
     container_name: edugo-api-mobile-mock
     ports:
       - "${API_MOBILE_PORT:-8081}:8080"
-    # Ejecutar binario directamente, saltando el entrypoint que espera servicios
-    entrypoint: ["/root/main"]
-    working_dir: /root
     environment:
       # ============================================
       # MODO MOCK - Variable que activa bifurcación
