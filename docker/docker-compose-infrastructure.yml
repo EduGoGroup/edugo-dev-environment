@@ -112,3 +112,4 @@ volumes:
 networks:
   edugo-network:
     driver: bridge
+    name: edugo-network # Nombre fijo para compatibilidad con docker-compose-apps.yml
