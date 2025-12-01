@@ -1,5 +1,30 @@
 # 🚀 EduGo - Inicio Rápido
 
+## 🎨 Modo Mock - Lo Más Rápido (30 segundos)
+
+**Para frontend developers que solo necesitan las APIs funcionando:**
+
+```bash
+cd edugo-dev-environment/docker
+
+# Levantar APIs en modo mock (sin bases de datos)
+docker-compose -f docker-compose-mock.yml up -d
+
+# Verificar
+curl http://localhost:8081/health
+curl http://localhost:8082/health
+```
+
+**¡Listo!** APIs corriendo sin PostgreSQL, MongoDB ni RabbitMQ.
+
+- API Mobile: http://localhost:8081
+- API Admin: http://localhost:8082
+- Login: `admin@edugo.test` / `edugo2024`
+
+> ⚠️ Los datos son mock (en memoria) y se reinician con cada restart.
+
+---
+
 ## Instalación Completa (5 minutos)
 
 ```bash
@@ -72,6 +97,16 @@ docker-compose down
 
 # Detener y eliminar volúmenes (CUIDADO: borra datos)
 docker-compose down -v
+
+# === MODO MOCK ===
+# Levantar modo mock
+docker-compose -f docker-compose-mock.yml up -d
+
+# Ver logs modo mock
+docker-compose -f docker-compose-mock.yml logs -f
+
+# Detener modo mock
+docker-compose -f docker-compose-mock.yml down
 ```
 
 ---

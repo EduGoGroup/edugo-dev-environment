@@ -8,6 +8,7 @@ Esta guía explica cómo usar los 3 archivos docker-compose disponibles en este 
 2. **docker-compose-infrastructure.yml** - Solo servicios externos (PostgreSQL, MongoDB, RabbitMQ, Redis)
 3. **docker-compose-apps.yml** - Solo aplicaciones EduGo (APIs + Worker)
 4. **docker-compose.migrate.yml** - ⚠️ Actualización forzada de base de datos (elimina y recrea)
+5. **docker-compose-mock.yml** - 🎨 Modo Mock: APIs sin infraestructura (ideal para frontend)
 
 ---
 
@@ -145,6 +146,73 @@ docker-compose up -d
 
 ---
 
+## 🎨 Opción 5: Modo Mock (Sin Infraestructura)
+
+**Cuándo usar**: 
+- Frontend developers que solo necesitan APIs funcionando
+- Diseño de UI sin preocuparse por bases de datos
+- Desarrollo rápido sin configuración de infraestructura
+- Máquinas con recursos limitados
+
+```bash
+# Levantar APIs en modo mock
+cd docker
+docker-compose -f docker-compose-mock.yml up -d
+
+# Ver logs
+docker-compose -f docker-compose-mock.yml logs -f
+
+# Detener
+docker-compose -f docker-compose-mock.yml down
+```
+
+**Servicios incluidos**:
+- API Mobile (puerto 8081) - Con datos mock en memoria
+- API Administración (puerto 8082) - Con datos mock en memoria
+
+**NO incluye** (no necesarios en modo mock):
+- ❌ PostgreSQL
+- ❌ MongoDB
+- ❌ RabbitMQ
+- ❌ Worker (requiere RabbitMQ + OpenAI)
+
+**Beneficios**:
+| Aspecto | Modo Normal | Modo Mock |
+|---------|-------------|-----------|
+| RAM requerida | ~2GB | ~200MB |
+| Tiempo de startup | ~30 segundos | ~3 segundos |
+| Configuración | Variables de BD | Ninguna |
+| Datos | Persistentes | En memoria (se reinician) |
+
+**Datos de prueba disponibles**:
+
+| Entidad | Cantidad | Ejemplo |
+|---------|----------|---------|
+| Usuarios | 8 | admin@edugo.test, teacher.math@edugo.test |
+| Escuelas | 3 | Escuela Primaria Demo, Colegio Secundario Demo |
+| Unidades | 12 | Matemáticas, Ciencias, Historia |
+| Materiales | 4 | PDFs, Videos educativos |
+| Memberships | 5 | Asignaciones de usuarios a escuelas |
+
+**Credenciales de prueba**:
+```
+Email: admin@edugo.test
+Password: edugo2024
+```
+
+**URLs importantes**:
+- API Mobile: http://localhost:8081/health
+- API Admin: http://localhost:8082/health
+- Login API Admin: `POST http://localhost:8082/v1/auth/login`
+
+**Limitaciones**:
+- ⚠️ Los datos NO persisten (se reinician con cada restart)
+- ⚠️ Sin transacciones reales de base de datos
+- ⚠️ Solo para desarrollo/diseño, NO para testing de integración
+- ⚠️ Worker NO disponible (requiere RabbitMQ + OpenAI)
+
+---
+
 ## 🔍 Validación y Testing
 
 ### Validar API Mobile
@@ -237,6 +305,7 @@ docker volume rm edugo-postgres-data edugo-mongodb-data edugo-rabbitmq-data edug
 
 ## 📊 Estado Actual del Proyecto
 
+### Modo Completo (docker-compose.yml)
 | Servicio | Estado | Puerto | Swagger | Notas |
 |----------|--------|--------|---------|-------|
 | PostgreSQL | ✅ Funcionando | 5432 | - | Health check OK |
@@ -244,8 +313,18 @@ docker volume rm edugo-postgres-data edugo-mongodb-data edugo-rabbitmq-data edug
 | RabbitMQ | ✅ Funcionando | 5672, 15672 | - | Management UI disponible |
 | Redis | ✅ Funcionando | 6379 | - | Opcional (profile redis) |
 | API Mobile | ✅ Funcionando | 8081 | ✅ | Completamente operativa |
-| API Admin | ⚠️ Requiere config | 8082 | - | Necesita config.yaml en Dockerfile |
-| Worker | ⚠️ Requiere config | - | - | Necesita config.yaml en Dockerfile |
+| API Admin | ✅ Funcionando | 8082 | ✅ | Completamente operativa |
+| Worker | ✅ Funcionando | - | - | Requiere OPENAI_API_KEY |
+
+### Modo Mock (docker-compose-mock.yml)
+| Servicio | Estado | Puerto | Notas |
+|----------|--------|--------|-------|
+| API Mobile | ✅ Funcionando | 8081 | Datos mock en memoria |
+| API Admin | ✅ Funcionando | 8082 | Datos mock en memoria |
+| PostgreSQL | ❌ No requerido | - | Reemplazado por mock |
+| MongoDB | ❌ No requerido | - | Reemplazado por mock |
+| RabbitMQ | ❌ No requerido | - | Reemplazado por mock |
+| Worker | ❌ No disponible | - | Requiere infraestructura real |
 
 Para más detalles sobre problemas y soluciones, consulta [RESULTADO_VALIDACION.md](./RESULTADO_VALIDACION.md)
 
@@ -253,9 +332,24 @@ Para más detalles sobre problemas y soluciones, consulta [RESULTADO_VALIDACION.
 
 ## 🎯 Workflows Recomendados
 
+### 🎨 Desarrollo Frontend (Recomendado para UI/UX)
+```bash
+# Levantar APIs en modo mock - Sin bases de datos
+cd docker
+docker-compose -f docker-compose-mock.yml up -d
+
+# APIs disponibles inmediatamente
+# - http://localhost:8081 (API Mobile)
+# - http://localhost:8082 (API Admin)
+# Login: admin@edugo.test / edugo2024
+
+# Cuando termines
+docker-compose -f docker-compose-mock.yml down
+```
+
 ### Desarrollo Full-Stack Local
 ```bash
-# Levantar todo
+# Levantar todo (con bases de datos reales)
 docker-compose --profile full up -d
 # Trabajar en tu código
 # Ver logs cuando necesites
