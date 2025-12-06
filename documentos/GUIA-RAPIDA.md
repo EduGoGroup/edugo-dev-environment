@@ -98,47 +98,43 @@ curl -X POST http://localhost:8081/v1/auth/login \
 
 ---
 
-## Comandos Esenciales
-
-### Iniciar
+## Comandos con Makefile (Recomendado)
 
 ```bash
-cd docker
-docker-compose up -d
+make help        # Ver todos los comandos disponibles
+
+make up          # Iniciar servicios
+make down        # Detener servicios
+make restart     # Reiniciar servicios
+make status      # Ver estado
+
+make logs        # Ver todos los logs
+make logs-api    # Ver logs de API Mobile
+make logs-admin  # Ver logs de API Admin
+
+make diagnose    # Ejecutar diagnóstico completo
+make health      # Verificar health de APIs
+
+make psql        # Conectar a PostgreSQL
+make mongo       # Conectar a MongoDB
+
+make reset       # Reset completo (borra datos)
 ```
 
-### Detener
+## Comandos Docker Compose (Alternativa)
 
 ```bash
-cd docker
+# Iniciar
+cd docker && docker-compose up -d
+
+# Detener
 docker-compose stop
-```
 
-### Ver Logs
-
-```bash
-# Todos los servicios
-docker-compose logs -f
-
-# Solo un servicio
+# Ver logs
 docker-compose logs -f api-mobile
-docker-compose logs -f api-administracion
-docker-compose logs -f worker
-```
 
-### Reiniciar Servicio
-
-```bash
-docker-compose restart api-mobile
-```
-
-### Reset Completo
-
-```bash
-cd docker
-docker-compose down -v  # Elimina volúmenes (datos)
-cd ..
-./scripts/setup.sh
+# Reset completo
+docker-compose down -v && cd .. && ./scripts/setup.sh
 ```
 
 ---

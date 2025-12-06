@@ -29,6 +29,32 @@ Los siguientes archivos fueron archivados por estar desactualizados o ser redund
 
 ---
 
+## Mejoras Implementadas
+
+### Diciembre 2025
+
+#### ✅ Makefile para comandos simplificados
+
+**Implementado:** Se creó `Makefile` en la raíz con comandos:
+- `make up` / `make down` / `make restart`
+- `make logs` / `make logs-api` / `make logs-admin`
+- `make status` / `make health`
+- `make psql` / `make mongo`
+- `make setup` / `make diagnose` / `make clean`
+
+#### ✅ Script de Diagnóstico
+
+**Implementado:** Se creó `scripts/diagnose.sh` que verifica:
+- Estado de Docker
+- Contenedores corriendo y su health
+- Puertos en uso
+- Conectividad de APIs
+- Configuración (.env, OPENAI_API_KEY)
+- Autenticación en ghcr.io
+- Errores recientes en logs
+
+---
+
 ## Mejoras Pendientes
 
 ### Alta Prioridad
@@ -72,26 +98,25 @@ done
 
 **Complejidad:** Alta (requiere cambios en repos de APIs)
 
-#### 4. Script de Diagnóstico
-
-**Problema:** Troubleshooting requiere múltiples comandos manuales.
-
-**Mejora propuesta:** Crear `scripts/diagnose.sh` que reporte:
-- Estado de contenedores
-- Health checks
-- Conectividad entre servicios
-- Espacio en disco
-- Logs recientes de errores
-
-**Complejidad:** Media (1-2 días)
-
-#### 5. Soporte para Apple Silicon (M1/M2/M3)
+#### 4. Soporte para Apple Silicon (M1/M2/M3)
 
 **Problema:** No hay documentación específica para arquitectura ARM.
 
 **Mejora propuesta:** Verificar y documentar compatibilidad.
 
 **Complejidad:** Baja (investigación y documentación)
+
+#### 5. Seeds más Completos
+
+**Problema:** Los seeds actuales son mínimos (solo 2 archivos SQL y 1 JS).
+
+**Mejora propuesta:** Agregar más datos de prueba:
+- Más usuarios con diferentes roles
+- Cursos con materiales
+- Instituciones completas
+- Documentos de ejemplo
+
+**Complejidad:** Media (2-3 horas)
 
 ### Baja Prioridad
 
@@ -114,6 +139,22 @@ done
 **Mejora propuesta:** Agregar sección en guía rápida para WSL2.
 
 **Complejidad:** Baja (documentación)
+
+#### 8. docker-compose-apps.yml tiene Profiles Rotos
+
+**Problema:** Usa `profiles: ["with-admin"]` pero no hay documentación ni funciona bien.
+
+**Mejora propuesta:** Corregir o eliminar profiles no funcionales.
+
+**Complejidad:** Baja (30 min)
+
+#### 9. Script de Backup/Restore
+
+**Problema:** No hay forma fácil de respaldar datos de desarrollo.
+
+**Mejora propuesta:** Crear `scripts/backup.sh` y `scripts/restore.sh`.
+
+**Complejidad:** Media (2 horas)
 
 ---
 
@@ -163,6 +204,8 @@ done
 - Creación de carpeta `documentos/` con estructura limpia
 - Archivado de documentación antigua en `archivado-documentos/`
 - Nuevo README.md principal simplificado
+- **Nuevo:** Makefile con comandos simplificados
+- **Nuevo:** Script de diagnóstico `scripts/diagnose.sh`
 
 ---
 

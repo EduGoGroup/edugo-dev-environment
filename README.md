@@ -59,17 +59,14 @@ curl -X POST http://localhost:8081/v1/auth/login \
 ## Comandos Útiles
 
 ```bash
-# Iniciar
-cd docker && docker-compose up -d
-
-# Detener
-docker-compose stop
-
-# Ver logs
-docker-compose logs -f api-mobile
-
-# Reset completo
-docker-compose down -v && cd .. && ./scripts/setup.sh
+make help        # Ver todos los comandos
+make up          # Iniciar servicios
+make down        # Detener servicios
+make logs        # Ver logs
+make diagnose    # Diagnóstico del ambiente
+make health      # Verificar APIs
+make psql        # Conectar a PostgreSQL
+make mongo       # Conectar a MongoDB
 ```
 
 ---
@@ -78,6 +75,7 @@ docker-compose down -v && cd .. && ./scripts/setup.sh
 
 ```
 edugo-dev-environment/
+├── Makefile             # Comandos simplificados (make help)
 ├── docker/              # Configuración Docker Compose
 ├── scripts/             # Scripts de utilidad
 ├── migrator/            # Herramienta de migraciones
