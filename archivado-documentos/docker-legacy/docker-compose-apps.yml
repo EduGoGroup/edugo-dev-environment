@@ -2,16 +2,37 @@
 # DOCKER COMPOSE - SOLO APLICACIONES
 # ========================================
 # Este archivo levanta únicamente las aplicaciones EduGo:
-# - API Mobile
-# - API Administración
-# - Worker
+# - API Mobile (siempre disponible)
+# - API Administración (requiere profile)
+# - Worker (requiere profile)
 #
 # PREREQUISITO: Los servicios de infraestructura deben estar corriendo
 # Levanta primero: docker-compose -f docker-compose-infrastructure.yml up -d
 #
-# Uso:
+# ========================================
+# PROFILES DISPONIBLES
+# ========================================
+# Los profiles permiten levantar servicios de forma selectiva:
+#
+# Solo API Mobile (default):
 #   docker-compose -f docker-compose-apps.yml up -d
-#   docker-compose -f docker-compose-apps.yml down
+#
+# API Mobile + API Admin:
+#   docker-compose -f docker-compose-apps.yml --profile with-admin up -d
+#
+# API Mobile + Worker:
+#   docker-compose -f docker-compose-apps.yml --profile with-worker up -d
+#
+# Todos los servicios:
+#   docker-compose -f docker-compose-apps.yml --profile full up -d
+#
+# ========================================
+# NOTA SOBRE API ADMIN Y WORKER
+# ========================================
+# Estos servicios tienen profiles porque requieren configuración adicional:
+# - API Admin: Requiere config.yaml en el build
+# - Worker: Requiere OPENAI_API_KEY válido
+# Ver documentación de problemas conocidos en documentos/FAQ.md
 
 name: edugo
 
@@ -127,7 +148,7 @@ services:
     networks:
       - edugo-network
     restart: unless-stopped
-    profiles: ["with-admin"] # Requiere solución de config file
+    profiles: ["with-admin", "full"]
 
   # ========================================
   # WORKER
@@ -178,7 +199,7 @@ services:
     networks:
       - edugo-network
     restart: unless-stopped
-    profiles: ["with-worker"] # Requiere solución de config file
+    profiles: ["with-worker", "full"]
 
 networks:
   edugo-network:

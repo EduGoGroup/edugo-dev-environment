@@ -90,42 +90,51 @@ Incluye nuevas tablas para UI Database y Feature Flags:
 - Nuevo comando `make setup-with-seeds`
 - Documentación actualizada en GUIA-RAPIDA.md y FAQ.md
 
+#### ✅ Documentación de Variables de Entorno
+
+**Implementado:** Nuevo documento `documentos/VARIABLES-ENTORNO.md` con:
+- Mapeo completo de variables por servicio (API Mobile, Admin, Worker)
+- Explicación de prefijos diferentes (DATABASE_*, EDUGO_ADMIN_*, EDUGO_WORKER_*)
+- Construcción de URIs para MongoDB y RabbitMQ
+- Comentarios mejorados en `docker/.env.example`
+
+#### ✅ Seeds Expandidos
+
+**Implementado:** Datos de prueba más completos:
+- PostgreSQL: 5 escuelas, 17 usuarios (2 admins, 5 docentes, 10 estudiantes), 12 materiales, membresías
+- MongoDB: Resúmenes de materiales con key points, evaluaciones con preguntas
+- READMEs actualizados con documentación de estructura
+- Contraseña unificada: `password123` para todos los usuarios de prueba
+
+#### ✅ Profiles de Docker Compose Corregidos
+
+**Implementado:** Documentación y corrección de profiles en `docker-compose-apps.yml`:
+- Profile `with-admin` para API Admin
+- Profile `with-worker` para Worker
+- Profile `full` para levantar todos los servicios
+- Documentación clara en cabecera del archivo
+- FAQ actualizado con ejemplos de uso
+
+#### ✅ Consolidación de Docker Compose Files
+
+**Implementado:** Unificación de archivos docker-compose usando profiles:
+- `docker-compose.yml` ahora es el archivo principal con todos los servicios
+- Profiles: `apps`, `admin`, `worker`, `full`, `with-redis`
+- Archivos redundantes movidos a `archivado-documentos/docker-legacy/`
+- README de docker/ actualizado con nueva estructura
+
+#### ✅ Reorganización de Documentación de docker/
+
+**Implementado:** Limpieza de documentos temporales:
+- `PLAN_PRUEBAS_DOCKER_COMPOSE.md` → archivado
+- `QUICK_START.md` → archivado (redundante con GUIA-RAPIDA)
+- `RESULTADO_VALIDACION.md` → archivado
+- `ACTUALIZAR_BASE_DATOS.md` → archivado
+- README.md de docker/ simplificado y actualizado
+
 ---
 
 ## Mejoras Pendientes
-
-### Media Prioridad
-
-#### 3. Centralizar Variables de Entorno
-
-**Problema:** Algunas variables se repiten entre servicios con nombres diferentes:
-- API Mobile usa `DATABASE_POSTGRES_*`
-- API Admin usa `EDUGO_ADMIN_DATABASE_POSTGRES_*`
-- Worker usa `EDUGO_WORKER_DATABASE_POSTGRES_*`
-
-**Mejora propuesta:** Documentar claramente o unificar en futuras versiones de las APIs.
-
-**Complejidad:** Alta (requiere cambios en repos de APIs)
-
-#### 4. Soporte para Apple Silicon (M1/M2/M3)
-
-**Problema:** No hay documentación específica para arquitectura ARM.
-
-**Mejora propuesta:** Verificar y documentar compatibilidad.
-
-**Complejidad:** Baja (investigación y documentación)
-
-#### 5. Seeds más Completos
-
-**Problema:** Los seeds actuales son mínimos (solo 2 archivos SQL y 1 JS).
-
-**Mejora propuesta:** Agregar más datos de prueba:
-- Más usuarios con diferentes roles
-- Cursos con materiales
-- Instituciones completas
-- Documentos de ejemplo
-
-**Complejidad:** Media (2-3 horas)
 
 ### Baja Prioridad
 
@@ -148,14 +157,6 @@ Incluye nuevas tablas para UI Database y Feature Flags:
 **Mejora propuesta:** Agregar sección en guía rápida para WSL2.
 
 **Complejidad:** Baja (documentación)
-
-#### 8. docker-compose-apps.yml tiene Profiles Rotos
-
-**Problema:** Usa `profiles: ["with-admin"]` pero no hay documentación ni funciona bien.
-
-**Mejora propuesta:** Corregir o eliminar profiles no funcionales.
-
-**Complejidad:** Baja (30 min)
 
 #### 9. Script de Backup/Restore
 
