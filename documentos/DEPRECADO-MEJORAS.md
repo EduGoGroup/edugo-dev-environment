@@ -115,6 +115,23 @@ Incluye nuevas tablas para UI Database y Feature Flags:
 - Documentación clara en cabecera del archivo
 - FAQ actualizado con ejemplos de uso
 
+#### ✅ Consolidación de Docker Compose Files
+
+**Implementado:** Unificación de archivos docker-compose usando profiles:
+- `docker-compose.yml` ahora es el archivo principal con todos los servicios
+- Profiles: `apps`, `admin`, `worker`, `full`, `with-redis`
+- Archivos redundantes movidos a `archivado-documentos/docker-legacy/`
+- README de docker/ actualizado con nueva estructura
+
+#### ✅ Reorganización de Documentación de docker/
+
+**Implementado:** Limpieza de documentos temporales:
+- `PLAN_PRUEBAS_DOCKER_COMPOSE.md` → archivado
+- `QUICK_START.md` → archivado (redundante con GUIA-RAPIDA)
+- `RESULTADO_VALIDACION.md` → archivado
+- `ACTUALIZAR_BASE_DATOS.md` → archivado
+- README.md de docker/ simplificado y actualizado
+
 ---
 
 ## Mejoras Pendientes

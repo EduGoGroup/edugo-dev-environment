@@ -217,23 +217,28 @@ docker-compose up -d postgres mongodb rabbitmq
 
 ### ¿Cómo levanto las APIs opcionales (Admin, Worker)?
 
-Las APIs adicionales usan profiles en Docker Compose:
+Las APIs usan profiles en el docker-compose.yml principal:
 
 ```bash
-# Solo API Mobile (default)
-cd docker && docker-compose -f docker-compose-apps.yml up -d
+cd docker
 
-# API Mobile + API Admin
-docker-compose -f docker-compose-apps.yml --profile with-admin up -d
+# Solo infraestructura (postgres, mongodb, rabbitmq)
+docker-compose up -d
 
-# API Mobile + Worker
-docker-compose -f docker-compose-apps.yml --profile with-worker up -d
+# Infraestructura + API Mobile
+docker-compose --profile apps up -d
 
-# Todos los servicios
-docker-compose -f docker-compose-apps.yml --profile full up -d
+# Infraestructura + API Admin
+docker-compose --profile admin up -d
+
+# Infraestructura + Worker
+docker-compose --profile worker up -d
+
+# Todo (infraestructura + todas las apps + redis)
+docker-compose --profile full up -d
 ```
 
-**Nota:** API Admin y Worker requieren configuración adicional (ver docker-compose-apps.yml).
+**Nota:** API Admin y Worker requieren configuración adicional.
 
 ### ¿Cómo cargo datos de prueba adicionales?
 
