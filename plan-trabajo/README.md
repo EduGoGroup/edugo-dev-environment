@@ -105,7 +105,7 @@ Antes de crear el PR, verificar:
 ### Mejoras Implementadas en FASE-3
 
 - **Variables de entorno:** Nuevo documento VARIABLES-ENTORNO.md con mapeo completo
-- **Seeds expandidos:** 5 escuelas, 12 usuarios, 12 materiales, membresías, assessments en MongoDB
+- **Seeds expandidos:** 5 escuelas, 17 usuarios (2 admins, 5 docentes, 10 estudiantes), 12 materiales, membresías, assessments en MongoDB
 - **Profiles corregidos:** Profile `full` agregado, documentación en docker-compose-apps.yml
 
 ### Versiones de Infraestructura

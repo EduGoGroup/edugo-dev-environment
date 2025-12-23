@@ -59,7 +59,7 @@ INSERT INTO materials (id, school_id, uploaded_by_teacher_id, title, description
  1524000,
  'ready'),
 
-('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb',
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
  '44444444-4444-4444-4444-444444444444',
  '22222222-2222-2222-2222-222222222222',
  'Cálculo Diferencial - Límites y Derivadas',
@@ -125,7 +125,7 @@ INSERT INTO materials (id, school_id, uploaded_by_teacher_id, title, description
  1256000,
  'ready'),
 
-('dddddddd-dddd-dddd-dddd-ddddddddddd',
+('dddddddd-dddd-dddd-dddd-dddddddddddd',
  '44444444-4444-4444-4444-444444444444',
  '22222222-2222-2222-2222-222222222224',
  'Reading Comprehension - Advanced Level',
@@ -152,7 +152,7 @@ INSERT INTO materials (id, school_id, uploaded_by_teacher_id, title, description
  2560000,
  'ready'),
 
-('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee',
+('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
  '66666666-6666-6666-6666-666666666666',
  '22222222-2222-2222-2222-222222222225',
  'Genética y Herencia - Leyes de Mendel',

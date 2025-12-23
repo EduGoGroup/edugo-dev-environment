@@ -101,7 +101,7 @@ Incluye nuevas tablas para UI Database y Feature Flags:
 #### ✅ Seeds Expandidos
 
 **Implementado:** Datos de prueba más completos:
-- PostgreSQL: 5 escuelas, 12 usuarios (admins, docentes, estudiantes), 12 materiales, membresías
+- PostgreSQL: 5 escuelas, 17 usuarios (2 admins, 5 docentes, 10 estudiantes), 12 materiales, membresías
 - MongoDB: Resúmenes de materiales con key points, evaluaciones con preguntas
 - READMEs actualizados con documentación de estructura
 - Contraseña unificada: `password123` para todos los usuarios de prueba
