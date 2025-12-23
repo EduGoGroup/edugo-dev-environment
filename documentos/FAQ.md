@@ -32,6 +32,27 @@ API_MOBILE_PORT=8083  # Cambiar puerto de API Mobile
 API_ADMIN_PORT=8084   # Cambiar puerto de API Admin
 ```
 
+### ¿Cómo cargo datos de prueba?
+
+```bash
+# Opción 1: Durante el setup
+./scripts/setup.sh --seed
+
+# Opción 2: Después del setup
+./scripts/seed-data.sh
+
+# Opción 3: Usando make
+make seed
+```
+
+### ¿Cuánto tarda el setup en verificar que todo está listo?
+
+El script espera automáticamente a que PostgreSQL, MongoDB y RabbitMQ estén saludables. Por defecto espera hasta 120 segundos. Puedes cambiar esto:
+
+```bash
+./scripts/setup.sh --timeout 180  # Esperar hasta 3 minutos
+```
+
 ---
 
 ## Troubleshooting
