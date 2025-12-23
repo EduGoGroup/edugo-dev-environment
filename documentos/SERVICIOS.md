@@ -220,8 +220,10 @@ restart: "no"
 ### Dependencias
 
 Utiliza `edugo-infrastructure`:
-- `github.com/EduGoGroup/edugo-infrastructure/postgres v0.9.0`
-- `github.com/EduGoGroup/edugo-infrastructure/mongodb v0.9.0`
+- `github.com/EduGoGroup/edugo-infrastructure/postgres v0.12.0`
+- `github.com/EduGoGroup/edugo-infrastructure/mongodb v0.11.0`
+
+> **Última actualización:** Diciembre 2025
 
 ---
 

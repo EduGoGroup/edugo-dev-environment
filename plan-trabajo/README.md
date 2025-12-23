@@ -89,10 +89,17 @@ Antes de crear el PR, verificar:
 
 ## Estado Actual
 
-- **Versión actual postgres:** v0.11.1
-- **Versión disponible postgres:** v0.12.0
-- **Versión actual mongodb:** v0.10.1
-- **Versión disponible mongodb:** v0.11.0
+| Fase | Estado |
+|------|--------|
+| FASE-1 | ✅ Completada |
+| FASE-2 | ⏳ Pendiente |
+| FASE-3 | ⏳ Pendiente |
+| FASE-4 | ⏳ Pendiente |
+
+### Versiones de Infraestructura
+
+- **postgres:** v0.12.0 ✅
+- **mongodb:** v0.11.0 ✅
 
 ---
 
