@@ -93,7 +93,7 @@ Antes de crear el PR, verificar:
 |------|--------|
 | FASE-1 | ✅ Completada |
 | FASE-2 | ✅ Completada |
-| FASE-3 | ⏳ Pendiente |
+| FASE-3 | ✅ Completada |
 | FASE-4 | ⏳ Pendiente |
 
 ### Mejoras Implementadas en FASE-2
@@ -101,6 +101,12 @@ Antes de crear el PR, verificar:
 - **Health checks activos:** Reemplazo de `sleep 10` por verificación activa de servicios
 - **Seed data automático:** Flag `--seed` en setup.sh y target `setup-with-seeds` en Makefile
 - **Timeout configurable:** Flag `--timeout` para health checks (default: 60s)
+
+### Mejoras Implementadas en FASE-3
+
+- **Variables de entorno:** Nuevo documento VARIABLES-ENTORNO.md con mapeo completo
+- **Seeds expandidos:** 5 escuelas, 12 usuarios, 12 materiales, membresías, assessments en MongoDB
+- **Profiles corregidos:** Profile `full` agregado, documentación en docker-compose-apps.yml
 
 ### Versiones de Infraestructura
 

@@ -12,105 +12,7 @@ Implementar mejoras que facilitan el uso y la documentación del proyecto.
 
 ---
 
-## 3.1 Soporte para Apple Silicon (M1/M2/M3)
-
-### Problema Actual
-
-No hay documentación específica para arquitectura ARM.
-
-### Solución Propuesta
-
-Verificar y documentar compatibilidad con Apple Silicon.
-
-### Pasos de Implementación
-
-#### Paso 3.1.1: Verificar imágenes Docker
-
-Verificar que las imágenes utilizadas tienen soporte multi-arch:
-
-```bash
-# Verificar arquitecturas disponibles
-docker manifest inspect postgres:16-alpine
-docker manifest inspect mongo:7.0
-docker manifest inspect rabbitmq:3.12-management-alpine
-```
-
-#### Paso 3.1.2: Agregar sección en GUIA-RAPIDA.md
-
-**Archivo:** `documentos/GUIA-RAPIDA.md`
-
-Agregar sección:
-
-```markdown
-## Notas para Apple Silicon (M1/M2/M3)
-
-Las imágenes Docker utilizadas son compatibles con arquitectura ARM64:
-
-| Imagen | Soporte ARM64 |
-|--------|---------------|
-| postgres:16-alpine | ✅ Nativo |
-| mongo:7.0 | ✅ Nativo |
-| rabbitmq:3.12-management-alpine | ✅ Nativo |
-| ghcr.io/edugogroup/* | Verificar con el equipo |
-
-### Configuración de Rosetta (si es necesario)
-
-Si experimentas problemas con alguna imagen:
-
-```bash
-# Habilitar Rosetta en Docker Desktop
-# Settings → Features in Development → Use Rosetta
-```
-
-### Verificar arquitectura
-
-```bash
-docker info | grep Architecture
-# Debería mostrar: aarch64
-```
-```
-
-#### Paso 3.1.3: Agregar verificación en diagnose.sh
-
-**Archivo:** `scripts/diagnose.sh`
-
-```bash
-check_architecture() {
-  echo "=== Arquitectura ==="
-  local arch=$(uname -m)
-  echo "Sistema: $arch"
-  
-  if [ "$arch" = "arm64" ]; then
-    echo "Detectado: Apple Silicon (M1/M2/M3)"
-    echo "Verificando Rosetta..."
-    if docker info 2>/dev/null | grep -q "Rosetta"; then
-      echo "Rosetta: Habilitado"
-    else
-      echo "Rosetta: No habilitado (probablemente no necesario)"
-    fi
-  fi
-}
-```
-
-### Validación
-
-- [ ] Documentación de Apple Silicon agregada
-- [ ] diagnose.sh detecta arquitectura ARM
-- [ ] Imágenes nativas verificadas
-
-### Commit Sugerido
-
-```
-docs: agregar soporte y documentación para Apple Silicon
-
-- Documentar compatibilidad de imágenes con ARM64
-- Agregar verificación de arquitectura en diagnose.sh
-- Incluir notas sobre Rosetta si es necesario
-```
-
----
-
-## 3.2 Documentar Variables de Entorno
+## 3.1 Documentar Variables de Entorno
 
 ### Problema Actual
 
@@ -209,7 +111,7 @@ docs: documentar variables de entorno y prefijos por servicio
 
 ---
 
-## 3.3 Seeds Más Completos
+## 3.2 Seeds Más Completos
 
 ### Problema Actual
 
@@ -301,7 +203,7 @@ feat(seeds): expandir datos de prueba
 
 ---
 
-## 3.4 Corregir Profiles en docker-compose-apps.yml
+## 3.3 Corregir Profiles en docker-compose-apps.yml
 
 ### Problema Actual
 
@@ -358,10 +260,9 @@ fix(docker): corregir/eliminar profiles no funcionales en docker-compose-apps.ym
 
 ## Resumen de Commits de Fase 3
 
-1. `docs: agregar soporte y documentación para Apple Silicon`
-2. `docs: documentar variables de entorno y prefijos por servicio`
-3. `feat(seeds): expandir datos de prueba`
-4. `fix(docker): corregir/eliminar profiles no funcionales`
+1. `docs: documentar variables de entorno y prefijos por servicio`
+2. `feat(seeds): expandir datos de prueba`
+3. `fix(docker): corregir profiles en docker-compose-apps.yml`
 
 ---
 
@@ -383,7 +284,7 @@ git checkout -b fase-3-mejoras-media-prioridad
 
 ### 2. Realizar los cambios
 
-Ejecutar los pasos de implementación descritos arriba, haciendo commits atómicos por cada mejora (3.1, 3.2, 3.3, 3.4).
+Ejecutar los pasos de implementación descritos arriba, haciendo commits atómicos por cada mejora (3.1, 3.2, 3.3).
 
 ### 3. Crear PR hacia dev
 
@@ -400,19 +301,18 @@ Al completar esta fase, actualizar los siguientes documentos:
 
 | Documento | Cambio Requerido |
 |-----------|------------------|
-| `documentos/GUIA-RAPIDA.md` | Agregar sección Apple Silicon y WSL |
-| `documentos/SERVICIOS.md` | Referenciar nuevo doc de variables |
-| `documentos/README.md` | Agregar enlace a VARIABLES-ENTORNO.md |
-| `documentos/DEPRECADO-MEJORAS.md` | Marcar mejoras 3, 4, 5 y 8 como completadas |
+| `documentos/GUIA-RAPIDA.md` | Referenciar nuevo doc de variables |
+| `documentos/FAQ.md` | Agregar sección sobre profiles |
+| `documentos/DEPRECADO-MEJORAS.md` | Marcar mejoras como completadas |
 
 ### Checklist de Cierre
 
-- [ ] Documentación Apple Silicon agregada
-- [ ] VARIABLES-ENTORNO.md creado
-- [ ] Seeds expandidos y funcionando
-- [ ] Profiles de docker-compose corregidos/eliminados
-- [ ] `documentos/GUIA-RAPIDA.md` actualizado
-- [ ] `documentos/DEPRECADO-MEJORAS.md` actualizado
+- [x] VARIABLES-ENTORNO.md creado
+- [x] Seeds expandidos y funcionando
+- [x] Profiles de docker-compose corregidos
+- [x] `documentos/GUIA-RAPIDA.md` actualizado
+- [x] `documentos/FAQ.md` actualizado
+- [x] `documentos/DEPRECADO-MEJORAS.md` actualizado
 - [ ] PR creado hacia `dev`
 - [ ] PR revisado y aprobado
 - [ ] PR mergeado a `dev`

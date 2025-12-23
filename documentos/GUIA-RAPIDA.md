@@ -283,4 +283,15 @@ docker-compose logs api-mobile  # Ver error real
 
 ---
 
+## Documentación Adicional
+
+| Documento | Descripción |
+|-----------|-------------|
+| [VARIABLES-ENTORNO.md](./VARIABLES-ENTORNO.md) | Referencia completa de variables de entorno |
+| [SERVICIOS.md](./SERVICIOS.md) | Detalle de cada servicio y su configuración |
+| [FAQ.md](./FAQ.md) | Preguntas frecuentes y troubleshooting |
+| [ARQUITECTURA.md](./ARQUITECTURA.md) | Diagrama y descripción de la arquitectura |
+
+---
+
 **Ver también:** [FAQ.md](./FAQ.md) para más soluciones.

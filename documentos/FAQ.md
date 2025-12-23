@@ -215,6 +215,26 @@ Abre http://localhost:15672
 docker-compose up -d postgres mongodb rabbitmq
 ```
 
+### ¿Cómo levanto las APIs opcionales (Admin, Worker)?
+
+Las APIs adicionales usan profiles en Docker Compose:
+
+```bash
+# Solo API Mobile (default)
+cd docker && docker-compose -f docker-compose-apps.yml up -d
+
+# API Mobile + API Admin
+docker-compose -f docker-compose-apps.yml --profile with-admin up -d
+
+# API Mobile + Worker
+docker-compose -f docker-compose-apps.yml --profile with-worker up -d
+
+# Todos los servicios
+docker-compose -f docker-compose-apps.yml --profile full up -d
+```
+
+**Nota:** API Admin y Worker requieren configuración adicional (ver docker-compose-apps.yml).
+
 ### ¿Cómo cargo datos de prueba adicionales?
 
 ```bash
