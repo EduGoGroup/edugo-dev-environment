@@ -44,7 +44,32 @@ El script:
 3. Descarga imágenes Docker
 4. Crea archivo `.env`
 5. Levanta todos los servicios
-6. Ejecuta migraciones
+6. **Espera automáticamente** a que PostgreSQL, MongoDB y RabbitMQ estén saludables
+7. Ejecuta migraciones
+
+#### Opciones de Setup
+
+```bash
+# Setup básico
+./scripts/setup.sh
+
+# Setup con datos de prueba
+./scripts/setup.sh --seed
+./scripts/setup.sh -s
+
+# Setup solo bases de datos
+./scripts/setup.sh --profile db-only
+
+# Setup con timeout personalizado para health checks
+./scripts/setup.sh --timeout 180
+```
+
+| Opción | Descripción |
+|--------|-------------|
+| `-s, --seed` | Cargar datos de prueba después de iniciar |
+| `-p, --profile <nombre>` | Usar perfil específico (full, db-only, api-only, etc.) |
+| `-t, --timeout <segundos>` | Timeout para health checks (default: 120) |
+| `-h, --help` | Mostrar ayuda |
 
 ### Paso 3: Verificar
 

@@ -70,41 +70,29 @@ Incluye nuevas tablas para UI Database y Feature Flags:
 
 **Implementado:** Se creó carpeta `plan-trabajo/` con documentación de 4 fases:
 - FASE-1: Actualización de dependencias (completada)
-- FASE-2: Mejoras de alta prioridad
+- FASE-2: Mejoras de alta prioridad (completada)
 - FASE-3: Mejoras de media prioridad
 - FASE-4: Deuda técnica
+
+#### ✅ Health Checks Activos en Setup
+
+**Implementado:** Se reemplazó `sleep 10` por verificaciones activas de health:
+- `wait_for_postgres()` - Verifica conectividad con `pg_isready`
+- `wait_for_mongodb()` - Verifica conectividad con `mongosh ping`
+- `wait_for_rabbitmq()` - Verifica conectividad con `rabbitmq-diagnostics ping`
+- Timeout configurable con flag `--timeout` (default: 120s)
+- Mensajes de progreso claros durante la espera
+
+#### ✅ Seed Data Integrado en Setup
+
+**Implementado:** Flag `--seed` / `-s` para cargar datos de prueba automáticamente:
+- `./scripts/setup.sh --seed` carga datos después de migraciones
+- Nuevo comando `make setup-with-seeds`
+- Documentación actualizada en GUIA-RAPIDA.md y FAQ.md
 
 ---
 
 ## Mejoras Pendientes
-
-### Alta Prioridad
-
-#### 1. Validación de Health Checks en Setup
-
-**Problema:** `setup.sh` espera 10 segundos fijos en lugar de verificar health checks.
-
-**Mejora propuesta:**
-```bash
-# En lugar de:
-sleep 10
-
-# Usar:
-until docker-compose exec postgres pg_isready; do
-  echo "Esperando PostgreSQL..."
-  sleep 2
-done
-```
-
-**Complejidad:** Baja (2-3 horas)
-
-#### 2. Seed Data Automático
-
-**Problema:** `seed-data.sh` existe pero no se ejecuta por defecto en setup.
-
-**Mejora propuesta:** Integrar seed en el migrator o como paso opcional automático.
-
-**Complejidad:** Media (1 día)
 
 ### Media Prioridad
 

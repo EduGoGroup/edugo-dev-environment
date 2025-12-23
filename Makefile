@@ -72,6 +72,9 @@ status: ## Ver estado de los servicios
 setup: ## Setup inicial completo
 	@./scripts/setup.sh
 
+setup-with-seeds: ## Setup completo con datos de prueba
+	@./scripts/setup.sh --seed
+
 validate: ## Validar configuración docker-compose
 	@./scripts/validate.sh
 

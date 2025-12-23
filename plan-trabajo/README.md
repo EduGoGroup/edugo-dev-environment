@@ -92,9 +92,15 @@ Antes de crear el PR, verificar:
 | Fase | Estado |
 |------|--------|
 | FASE-1 | ✅ Completada |
-| FASE-2 | ⏳ Pendiente |
+| FASE-2 | ✅ Completada |
 | FASE-3 | ⏳ Pendiente |
 | FASE-4 | ⏳ Pendiente |
+
+### Mejoras Implementadas en FASE-2
+
+- **Health checks activos:** Reemplazo de `sleep 10` por verificación activa de servicios
+- **Seed data automático:** Flag `--seed` en setup.sh y target `setup-with-seeds` en Makefile
+- **Timeout configurable:** Flag `--timeout` para health checks (default: 60s)
 
 ### Versiones de Infraestructura
 
