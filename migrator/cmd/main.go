@@ -84,9 +84,15 @@ func runPostgresMigrations(force bool) error {
 	}
 
 	// Aplicar todas las migraciones usando el paquete importado
-	fmt.Println("📦 Aplicando migraciones de estructura, constraints y seeds...")
+	fmt.Println("📦 Aplicando migraciones de estructura y constraints...")
 	if err := postgresMigrations.ApplyAll(db); err != nil {
 		return fmt.Errorf("error aplicando migraciones: %w", err)
+	}
+
+	// Aplicar seeds (datos esenciales del sistema: roles, permisos, etc.)
+	fmt.Println("📦 Aplicando datos iniciales (seeds)...")
+	if err := postgresMigrations.ApplySeeds(db); err != nil {
+		return fmt.Errorf("error aplicando seeds: %w", err)
 	}
 
 	// Aplicar datos de prueba/testing
