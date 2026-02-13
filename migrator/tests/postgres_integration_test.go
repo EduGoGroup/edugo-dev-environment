@@ -57,23 +57,27 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 
 	s.db = db
 
-	// Aplicar todas las migraciones usando el paquete de infrastructure
+	// Aplicar migraciones de estructura y constraints (sin mock data)
+	// ApplyAll ya no incluye ApplyMockData, se aplica separadamente
 	err = migrations.ApplyAll(s.db)
 	s.Require().NoError(err, "Failed to apply migrations")
+
+	// Aplicar datos de prueba una sola vez al inicio
+	err = migrations.ApplyMockData(s.db)
+	s.Require().NoError(err, "Failed to apply mock data")
 }
 
 // SetupTest se ejecuta antes de cada test individual
 func (s *PostgresIntegrationSuite) SetupTest() {
-	// Aplicar datos de prueba (mock data) para cada test
-	err := migrations.ApplyMockData(s.db)
-	s.Require().NoError(err, "Failed to apply mock data")
+	// Los datos ya fueron aplicados en SetupSuite
+	// Este método está disponible para lógica de setup específica de cada test
 }
 
 // TearDownTest se ejecuta después de cada test individual
 func (s *PostgresIntegrationSuite) TearDownTest() {
-	// Limpiar datos de prueba entre tests
-	_, err := s.db.Exec("TRUNCATE users, schools, academic_units, memberships, materials, assessment, assessment_attempt, assessment_attempt_answer CASCADE")
-	s.NoError(err, "Failed to truncate tables")
+	// Los datos de prueba se aplican solo una vez y se reutilizan entre tests
+	// Si un test necesita limpiar datos específicos, debe hacerlo explícitamente
+	// No hacemos TRUNCATE aquí para mantener los datos de prueba disponibles
 }
 
 // TearDownSuite se ejecuta una vez después de todos los tests
@@ -105,11 +109,12 @@ func (s *PostgresIntegrationSuite) TestMockDataExists() {
 }
 
 // TestPostgresIntegration ejecuta la suite de tests
-// TEMPORALMENTE DESHABILITADO: Bug en postgres/v0.15.0
-// El archivo structure/000_create_functions.sql usa el tipo permission_scope
-// que se crea después en structure/013_create_permissions.sql
-// TODO: Habilitar cuando se corrija el orden de migraciones en edugo-infrastructure
+// Bug corregido en postgres/v0.16.4:
+// - v0.16.0: Separó tipos en archivo independiente (000_create_types.sql)
+// - v0.16.1: Renombró a 000_base_types.sql para orden alfabético correcto
+// - v0.16.2: Habilitó extensión uuid-ossp
+// - v0.16.3: Actualizó datos de prueba para sistema RBAC
+// - v0.16.4: Corrigió formato de UUIDs
 func TestPostgresIntegration(t *testing.T) {
-	t.Skip("DESHABILITADO: Bug en orden de migraciones de postgres/v0.15.0 - tipo permission_scope se usa antes de crearse")
 	suite.Run(t, new(PostgresIntegrationSuite))
 }
