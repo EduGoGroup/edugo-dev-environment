@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.11.0
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.16.5
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.16.6-0.20260213223310-4f6545ab8b9e
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
