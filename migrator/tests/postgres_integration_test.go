@@ -58,9 +58,13 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 	s.db = db
 
 	// Aplicar migraciones de estructura y constraints (sin mock data)
-	// ApplyAll ya no incluye ApplyMockData, se aplica separadamente
+	// ApplyAll ya no incluye seeds ni mock data, se aplican separadamente
 	err = migrations.ApplyAll(s.db)
 	s.Require().NoError(err, "Failed to apply migrations")
+
+	// Aplicar seeds del sistema (roles/permisos base) requeridos por mock data
+	err = migrations.ApplySeeds(s.db)
+	s.Require().NoError(err, "Failed to apply seeds")
 
 	// Aplicar datos de prueba una sola vez al inicio
 	err = migrations.ApplyMockData(s.db)
@@ -83,10 +87,12 @@ func (s *PostgresIntegrationSuite) TearDownTest() {
 // TearDownSuite se ejecuta una vez después de todos los tests
 func (s *PostgresIntegrationSuite) TearDownSuite() {
 	if s.db != nil {
-		s.db.Close()
+		err := s.db.Close()
+		s.NoError(err, "Failed to close PostgreSQL connection")
 	}
 	if s.container != nil {
-		s.container.Terminate(s.ctx)
+		err := s.container.Terminate(s.ctx)
+		s.NoError(err, "Failed to terminate PostgreSQL container")
 	}
 }
 
