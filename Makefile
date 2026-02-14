@@ -1,13 +1,16 @@
 # EduGo Dev Environment - Makefile
 # Comandos simplificados para gestión del ambiente
 
-.PHONY: help up down stop restart logs status clean setup validate diagnose seed update
+.PHONY: help up down stop restart logs status clean setup validate diagnose seed update \
+	migrator-build migrator-test migrator-lint migrator-check
 
 # Colores
 BLUE := \033[0;34m
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
 NC := \033[0m
+MIGRATOR_DIR := migrator
+MIGRATOR_BIN := bin/migrator
 
 help: ## Mostrar esta ayuda
 	@echo ""
@@ -129,3 +132,30 @@ health: ## Verificar health de las APIs
 	@echo -n "API Admin:   "
 	@curl -s http://localhost:8082/health | head -c 100 || echo "❌ No responde"
 	@echo ""
+
+# ==========================================
+# MIGRATOR
+# ==========================================
+
+migrator-build: ## Compilar proyecto migrator
+	@echo "$(BLUE)🔨 Compilando migrator...$(NC)"
+	@mkdir -p $(MIGRATOR_DIR)/bin
+	@cd $(MIGRATOR_DIR) && go build -o $(MIGRATOR_BIN) ./cmd
+	@echo "$(GREEN)✅ Migrator compilado: $(MIGRATOR_DIR)/$(MIGRATOR_BIN)$(NC)"
+
+migrator-test: ## Ejecutar tests del migrator
+	@echo "$(BLUE)🧪 Ejecutando tests de migrator...$(NC)"
+	@cd $(MIGRATOR_DIR) && go test -v ./tests
+	@echo "$(GREEN)✅ Tests de migrator completados$(NC)"
+
+migrator-lint: ## Ejecutar lint del migrator
+	@echo "$(BLUE)🧹 Ejecutando lint de migrator...$(NC)"
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		cd $(MIGRATOR_DIR) && golangci-lint run ./...; \
+	else \
+		echo "$(YELLOW)⚠️  golangci-lint no está instalado. Ejecutando go vet como fallback...$(NC)"; \
+		cd $(MIGRATOR_DIR) && go vet ./...; \
+	fi
+	@echo "$(GREEN)✅ Lint de migrator completado$(NC)"
+
+migrator-check: migrator-lint migrator-test migrator-build ## Ejecutar lint, tests y compilación del migrator

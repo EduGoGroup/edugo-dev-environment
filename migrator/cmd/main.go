@@ -60,7 +60,11 @@ func runPostgresMigrations(force bool) error {
 	if err != nil {
 		return fmt.Errorf("no se pudo conectar a PostgreSQL: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			log.Printf("⚠️  Error cerrando conexión PostgreSQL: %v", closeErr)
+		}
+	}()
 
 	if err := db.Ping(); err != nil {
 		return fmt.Errorf("no se pudo hacer ping a PostgreSQL: %w", err)
@@ -125,7 +129,11 @@ func runMongoMigrations(force bool) error {
 	if err != nil {
 		return fmt.Errorf("no se pudo conectar a MongoDB: %w", err)
 	}
-	defer client.Disconnect(context.Background())
+	defer func() {
+		if disconnectErr := client.Disconnect(context.Background()); disconnectErr != nil {
+			log.Printf("⚠️  Error desconectando cliente MongoDB: %v", disconnectErr)
+		}
+	}()
 
 	if err := client.Ping(ctx, nil); err != nil {
 		return fmt.Errorf("no se pudo hacer ping a MongoDB: %w", err)
@@ -178,7 +186,9 @@ func setMongoEnv() {
 
 func setEnvIfEmpty(key, defaultValue string) {
 	if os.Getenv(key) == "" {
-		os.Setenv(key, defaultValue)
+		if err := os.Setenv(key, defaultValue); err != nil {
+			log.Printf("⚠️  Error configurando variable de entorno %s: %v", key, err)
+		}
 	}
 }
 
@@ -213,8 +223,14 @@ func hasMongoCollections(ctx context.Context, db *mongo.Database) bool {
 
 // dropPostgresSchema elimina y recrea el schema público en PostgreSQL
 func dropPostgresSchema(db *sql.DB, user string) error {
+	// Eliminar schema ui_config (Dynamic UI) antes del schema público
+	_, err := db.Exec("DROP SCHEMA IF EXISTS ui_config CASCADE")
+	if err != nil {
+		return fmt.Errorf("error eliminando schema ui_config: %w", err)
+	}
+
 	// Eliminar schema público CASCADE (elimina todas las tablas, funciones, etc.)
-	_, err := db.Exec("DROP SCHEMA public CASCADE")
+	_, err = db.Exec("DROP SCHEMA public CASCADE")
 	if err != nil {
 		return fmt.Errorf("error eliminando schema: %w", err)
 	}

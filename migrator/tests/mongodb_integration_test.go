@@ -103,10 +103,12 @@ func (s *MongoDBIntegrationSuite) TearDownTest() {
 // TearDownSuite se ejecuta una vez después de todos los tests
 func (s *MongoDBIntegrationSuite) TearDownSuite() {
 	if s.client != nil {
-		s.client.Disconnect(s.ctx)
+		err := s.client.Disconnect(s.ctx)
+		s.NoError(err, "Failed to disconnect MongoDB client")
 	}
 	if s.container != nil {
-		s.container.Terminate(s.ctx)
+		err := s.container.Terminate(s.ctx)
+		s.NoError(err, "Failed to terminate MongoDB container")
 	}
 }
 
@@ -131,7 +133,10 @@ func (s *MongoDBIntegrationSuite) TestCanQueryCollection() {
 	// Verificar que podemos hacer operaciones en la colección
 	cursor, err := s.db.Collection("material_assessment").Find(s.ctx, map[string]interface{}{})
 	s.NoError(err, "Failed to create cursor on material_assessment")
-	defer cursor.Close(s.ctx)
+	defer func() {
+		closeErr := cursor.Close(s.ctx)
+		s.NoError(closeErr, "Failed to close cursor")
+	}()
 }
 
 // TestMongoDBIntegration ejecuta la suite de tests
