@@ -213,8 +213,14 @@ func hasMongoCollections(ctx context.Context, db *mongo.Database) bool {
 
 // dropPostgresSchema elimina y recrea el schema público en PostgreSQL
 func dropPostgresSchema(db *sql.DB, user string) error {
+	// Eliminar schema ui_config (Dynamic UI) antes del schema público
+	_, err := db.Exec("DROP SCHEMA IF EXISTS ui_config CASCADE")
+	if err != nil {
+		return fmt.Errorf("error eliminando schema ui_config: %w", err)
+	}
+
 	// Eliminar schema público CASCADE (elimina todas las tablas, funciones, etc.)
-	_, err := db.Exec("DROP SCHEMA public CASCADE")
+	_, err = db.Exec("DROP SCHEMA public CASCADE")
 	if err != nil {
 		return fmt.Errorf("error eliminando schema: %w", err)
 	}
