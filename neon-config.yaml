@@ -1,0 +1,103 @@
+# ============================================================
+# CONFIGURACIÓN DE NEON - EDUGO
+# ============================================================
+# Base de datos PostgreSQL en Neon (plan gratuito)
+# Proyecto: MCPEco (compartido para desarrollo)
+# Base de datos: edugo (segunda BD en el mismo proyecto)
+# ============================================================
+
+database:
+  postgres:
+    host: ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech
+    port: 5432
+    user: neondb_owner
+    password: npg_sC2u9pTVwQJI
+    database: edugo
+    sslmode: require
+    max_connections: 25
+
+  # MongoDB en Atlas (nube)
+  mongodb:
+    host: edugo.alxme5j.mongodb.net
+    port: 27017
+    user: medinatello_db_user
+    password: 6NQjJDaOkN4nvldT
+    database: edugo
+    uri: mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/?appName=Edugo
+    uri_with_db: mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo
+
+  # Redis en Upstash (nube)
+  redis:
+    host: living-wildcat-41131.upstash.io
+    port: 6379
+    password: AaCrAAIncDJmMTFjYjJiOGU1M2U0YmM3YWIxMDQyZTA2ZjdlZDgxZXAyNDExMzE
+    tls: true
+    url: redis://default:AaCrAAIncDJmMTFjYjJiOGU1M2U0YmM3YWIxMDQyZTA2ZjdlZDgxZXAyNDExMzE@living-wildcat-41131.upstash.io:6379
+
+# ============================================================
+# VARIABLES DE ENTORNO PARA APPS
+# ============================================================
+# Para usar en docker-compose o variables de entorno locales:
+#
+# PostgreSQL:
+#   POSTGRES_HOST=ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech
+#   POSTGRES_PORT=5432
+#   POSTGRES_USER=neondb_owner
+#   POSTGRES_PASSWORD=npg_sC2u9pTVwQJI
+#   POSTGRES_DB=edugo
+#   POSTGRES_SSLMODE=require
+#
+# String de conexión completa:
+#   postgresql://neondb_owner:npg_sC2u9pTVwQJI@ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech:5432/edugo?sslmode=require
+#
+# MongoDB (Atlas):
+#   MONGO_HOST=edugo.alxme5j.mongodb.net
+#   MONGO_PORT=27017
+#   MONGO_USER=medinatello_db_user
+#   MONGO_PASSWORD=6NQjJDaOkN4nvldT
+#   MONGO_DB_NAME=edugo
+#   MONGODB_URI=mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/?appName=Edugo
+#   MONGODB_URI_WITH_DB=mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo
+#
+# Redis (Upstash):
+#   REDIS_HOST=living-wildcat-41131.upstash.io
+#   REDIS_PORT=6379
+#   REDIS_PASSWORD=AaCrAAIncDJmMTFjYjJiOGU1M2U0YmM3YWIxMDQyZTA2ZjdlZDgxZXAyNDExMzE
+#   REDIS_TLS=true
+#   REDIS_URL=redis://default:AaCrAAIncDJmMTFjYjJiOGU1M2U0YmM3YWIxMDQyZTA2ZjdlZDgxZXAyNDExMzE@living-wildcat-41131.upstash.io:6379
+# ============================================================
+
+# ============================================================
+# NOTAS IMPORTANTES
+# ============================================================
+# POSTGRESQL (Neon):
+# 1. Plan gratuito de Neon
+# 2. Límites:
+#    - 0.5 GB de almacenamiento
+#    - 100 CU-horas de cómputo/mes
+#    - 5 GB de transferencia de datos/mes
+# 3. El proyecto Neon tiene:
+#    - Base de datos 'neondb' (MCPEco)
+#    - Base de datos 'edugo' (EduGo desarrollo)
+#
+# REDIS (Upstash):
+# 1. Plan gratuito de Upstash
+# 2. Límites:
+#    - 256 MB de almacenamiento
+#    - 500,000 comandos/mes
+#    - 200 GB de ancho de banda/mes
+# 3. TLS habilitado por seguridad
+# 4. Base de datos: edugo-redis
+#
+# MONGODB (Atlas):
+# 1. Plan gratuito de MongoDB Atlas (M0)
+# 2. Límites:
+#    - 512 MB de almacenamiento
+#    - Conexiones compartidas
+#    - Backups básicos
+# 3. Cluster: edugo.alxme5j.mongodb.net
+# 4. Base de datos: edugo
+#
+# PRODUCCIÓN:
+# Para producción, considera crear proyectos dedicados
+# ============================================================
