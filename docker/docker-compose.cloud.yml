@@ -1,0 +1,215 @@
+# ========================================
+# DOCKER COMPOSE - EDUGO CLOUD MODE
+# ========================================
+# Este archivo levanta SOLO las APIs conectándose a servicios cloud:
+# - PostgreSQL: Neon
+# - MongoDB: Atlas
+# - Redis: Upstash
+# - RabbitMQ: Local (opcional)
+#
+# USO:
+# ----
+# Levantar todo (APIs + RabbitMQ local):
+#   docker-compose -f docker-compose.cloud.yml up -d
+#
+# Solo APIs (sin RabbitMQ):
+#   docker-compose -f docker-compose.cloud.yml up -d api-mobile api-administracion worker
+#
+# IMPORTANTE:
+# -----------
+# - NO levanta PostgreSQL, MongoDB, Redis (usan servicios cloud)
+# - RabbitMQ es opcional (solo si usas mensajería)
+
+name: edugo-cloud
+
+services:
+  # ========================================
+  # MESSAGE QUEUE RABBITMQ (OPCIONAL)
+  # ========================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: edugo-rabbitmq-cloud
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-edugo}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-edugo123}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672" # AMQP
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672" # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugo-cloud-network
+    restart: unless-stopped
+    profiles: ["with-rabbitmq", "full"]
+
+  # ========================================
+  # API MOBILE
+  # ========================================
+  api-mobile:
+    image: ghcr.io/edugogroup/edugo-api-mobile:${API_MOBILE_VERSION:-latest}
+    container_name: edugo-api-mobile-cloud
+    ports:
+      - "${API_MOBILE_PORT:-8081}:8080"
+    environment:
+      # Configuración de ambiente
+      - APP_ENV=${APP_ENV:-development}
+      - ENV=${ENV:-development}
+      - PORT=8080
+
+      # Variables directamente bindeadas (sin prefijo)
+      - DATABASE_POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
+      - DATABASE_MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/?appName=Edugo}
+      - MESSAGING_RABBITMQ_URL=${RABBITMQ_URL:-amqp://edugo:edugo123@rabbitmq:5672/}
+      - STORAGE_S3_ACCESS_KEY_ID=${S3_ACCESS_KEY:-AKIAIOSFODNN7EXAMPLE}
+      - STORAGE_S3_SECRET_ACCESS_KEY=${S3_SECRET_KEY:-wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY}
+      - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+
+      # Base de datos PostgreSQL (NEON)
+      - DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      - DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
+      - DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
+      - DATABASE_POSTGRES_MAX_CONNECTIONS=25
+
+      # Base de datos MongoDB (ATLAS)
+      - DATABASE_MONGODB_DATABASE=${MONGO_DB_NAME:-edugo}
+      - DATABASE_MONGODB_TIMEOUT=10s
+
+      # Mensajería RabbitMQ (OPCIONAL - Local)
+      - MESSAGING_RABBITMQ_PREFETCH_COUNT=1
+      - MESSAGING_RABBITMQ_QUEUES_MATERIAL_UPLOADED=material.uploaded
+      - MESSAGING_RABBITMQ_QUEUES_ASSESSMENT_ATTEMPT=assessment.attempt
+      - MESSAGING_RABBITMQ_EXCHANGES_MATERIALS=materials
+
+      # Almacenamiento S3
+      - STORAGE_S3_BUCKET_NAME=${S3_BUCKET:-edugo-materials-dev-local}
+      - STORAGE_S3_REGION=${S3_REGION:-us-east-1}
+      - STORAGE_S3_ENDPOINT=${S3_ENDPOINT:-}
+
+      # Recursos opcionales (Bootstrap)
+      - BOOTSTRAP_OPTIONAL_RESOURCES_S3=${BOOTSTRAP_OPTIONAL_RESOURCES_S3:-true}
+      - BOOTSTRAP_OPTIONAL_RESOURCES_RABBITMQ=${BOOTSTRAP_OPTIONAL_RESOURCES_RABBITMQ:-false}
+
+      # Servidor
+      - SERVER_PORT=8080
+      - SERVER_HOST=0.0.0.0
+      - SERVER_READ_TIMEOUT=30s
+      - SERVER_WRITE_TIMEOUT=30s
+
+      # Logging
+      - LOGGING_LEVEL=${LOG_LEVEL:-debug}
+      - LOGGING_FORMAT=${LOG_FORMAT:-json}
+
+    networks:
+      - edugo-cloud-network
+    restart: unless-stopped
+    profiles: ["apps", "full"]
+
+  # ========================================
+  # API ADMINISTRACIÓN
+  # ========================================
+  api-administracion:
+    image: ghcr.io/edugogroup/edugo-api-administracion:${API_ADMIN_VERSION:-latest}
+    container_name: edugo-api-administracion-cloud
+    ports:
+      - "${API_ADMIN_PORT:-8082}:8081"
+    environment:
+      # Configuración de ambiente
+      - APP_ENV=${APP_ENV:-development}
+      - ENV=${ENV:-development}
+
+      # Variables directamente bindeadas (sin prefijo)
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
+      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo}
+      - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+
+      # Variables con prefijo EDUGO_ADMIN_ (Viper las lee con AutomaticEnv)
+      - EDUGO_ADMIN_SERVER_PORT=8081
+      - EDUGO_ADMIN_SERVER_HOST=0.0.0.0
+      - EDUGO_ADMIN_SERVER_READ_TIMEOUT=30s
+      - EDUGO_ADMIN_SERVER_WRITE_TIMEOUT=30s
+
+      # PostgreSQL (NEON)
+      - EDUGO_ADMIN_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_MAX_CONNECTIONS=25
+
+      # MongoDB (ATLAS)
+      - EDUGO_ADMIN_DATABASE_MONGODB_DATABASE=${MONGO_DB_NAME:-edugo}
+      - EDUGO_ADMIN_DATABASE_MONGODB_TIMEOUT=10s
+
+      # Logging
+      - EDUGO_ADMIN_LOGGING_LEVEL=${LOG_LEVEL:-debug}
+      - EDUGO_ADMIN_LOGGING_FORMAT=${LOG_FORMAT:-json}
+
+    networks:
+      - edugo-cloud-network
+    restart: unless-stopped
+    profiles: ["admin", "full"]
+
+  # ========================================
+  # WORKER
+  # ========================================
+  worker:
+    image: ghcr.io/edugogroup/edugo-worker:${WORKER_VERSION:-latest}
+    container_name: edugo-worker-cloud
+    environment:
+      # Configuración de ambiente
+      - APP_ENV=${APP_ENV:-development}
+      - ENV=${ENV:-development}
+
+      # Variables directamente bindeadas (sin prefijo)
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
+      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo}
+      - RABBITMQ_URL=${RABBITMQ_URL:-amqp://edugo:edugo123@rabbitmq:5672/}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+      # PostgreSQL (NEON)
+      - EDUGO_WORKER_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      - EDUGO_WORKER_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - EDUGO_WORKER_DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - EDUGO_WORKER_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
+      - EDUGO_WORKER_DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
+      - EDUGO_WORKER_DATABASE_POSTGRES_MAX_CONNECTIONS=25
+
+      # MongoDB (ATLAS)
+      - EDUGO_WORKER_DATABASE_MONGODB_DATABASE=${MONGO_DB_NAME:-edugo}
+      - EDUGO_WORKER_DATABASE_MONGODB_TIMEOUT=10s
+
+      # RabbitMQ (OPCIONAL - Local)
+      - EDUGO_WORKER_MESSAGING_RABBITMQ_PREFETCH_COUNT=1
+      - EDUGO_WORKER_MESSAGING_RABBITMQ_QUEUES_MATERIAL_UPLOADED=material.uploaded
+      - EDUGO_WORKER_MESSAGING_RABBITMQ_QUEUES_ASSESSMENT_ATTEMPT=assessment.attempt
+      - EDUGO_WORKER_MESSAGING_RABBITMQ_EXCHANGES_MATERIALS=materials
+
+      # NLP
+      - EDUGO_WORKER_NLP_PROVIDER=${NLP_PROVIDER:-openai}
+      - EDUGO_WORKER_NLP_MODEL=${NLP_MODEL:-gpt-4}
+      - EDUGO_WORKER_NLP_MAX_TOKENS=${NLP_MAX_TOKENS:-2000}
+      - EDUGO_WORKER_NLP_TEMPERATURE=${NLP_TEMPERATURE:-0.7}
+
+      # Logging
+      - EDUGO_WORKER_LOGGING_LEVEL=${LOG_LEVEL:-debug}
+      - EDUGO_WORKER_LOGGING_FORMAT=${LOG_FORMAT:-json}
+
+    networks:
+      - edugo-cloud-network
+    restart: unless-stopped
+    profiles: ["worker", "full"]
+
+volumes:
+  rabbitmq-data:
+
+networks:
+  edugo-cloud-network:
+    driver: bridge
+    name: edugo-cloud-network
