@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -19,9 +22,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Sync main to dev
+      - name: Sync dev branch to main
         run: |
-          git fetch origin dev
-          git checkout dev
-          git merge origin/main --no-ff -m "Merge main into dev"
-          git push origin dev
+          git fetch origin main dev
+          git push origin origin/main:refs/heads/dev --force-with-lease=refs/heads/dev
