@@ -18,3 +18,14 @@ Thumbs.db
 # Variables de entorno locales (el .env se mantiene en git)
 .env.local
 .env.*.local
+
+# Credenciales de cloud (Neon, Atlas, Upstash)
+.env.neon
+.env.cloud
+docker/.env.cloud
+neon-config.yaml
+
+# Binarios del migrador
+migrator/bin/
+migrator/migrator
+migrator/tests.test

@@ -8,8 +8,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // MongoDBIntegrationSuite es la suite de tests de integración para MongoDB
@@ -55,7 +56,7 @@ func (s *MongoDBIntegrationSuite) SetupSuite() {
 	mongoURI := "mongodb://testuser:testpass@" + host + ":" + port.Port()
 	clientOptions := options.Client().ApplyURI(mongoURI)
 
-	client, err := mongo.Connect(s.ctx, clientOptions)
+	client, err := mongo.Connect(clientOptions)
 	s.Require().NoError(err, "Failed to connect to MongoDB")
 
 	// Verificar conexión
@@ -93,7 +94,7 @@ func (s *MongoDBIntegrationSuite) TearDownTest() {
 	}
 
 	for _, collName := range collections {
-		_, err := s.db.Collection(collName).DeleteMany(s.ctx, map[string]interface{}{})
+		_, err := s.db.Collection(collName).DeleteMany(s.ctx, bson.D{})
 		if err != nil {
 			s.T().Logf("Warning: Failed to delete documents from %s: %v", collName, err)
 		}
@@ -115,7 +116,7 @@ func (s *MongoDBIntegrationSuite) TearDownSuite() {
 // TestExampleQuery es un ejemplo de test que usa la base de datos
 func (s *MongoDBIntegrationSuite) TestExampleQuery() {
 	// Ejemplo: Verificar que las colecciones fueron creadas
-	collections, err := s.db.ListCollectionNames(s.ctx, map[string]interface{}{})
+	collections, err := s.db.ListCollectionNames(s.ctx, bson.D{})
 	s.NoError(err, "Failed to list collections")
 	s.Greater(len(collections), 0, "Expected at least one collection to exist")
 }
@@ -124,14 +125,14 @@ func (s *MongoDBIntegrationSuite) TestExampleQuery() {
 func (s *MongoDBIntegrationSuite) TestCanQueryCollection() {
 	// Ejemplo: Verificar que podemos consultar la colección (aunque esté vacía)
 	// Esto demuestra que las migraciones crearon la colección correctamente
-	count, err := s.db.Collection("material_assessment").CountDocuments(s.ctx, map[string]interface{}{})
+	count, err := s.db.Collection("material_assessment").CountDocuments(s.ctx, bson.D{})
 	s.NoError(err, "Failed to query material_assessment collection")
 
 	// La colección puede estar vacía, pero debe existir y ser consultable
 	s.GreaterOrEqual(count, int64(0), "Collection should be queryable")
 
 	// Verificar que podemos hacer operaciones en la colección
-	cursor, err := s.db.Collection("material_assessment").Find(s.ctx, map[string]interface{}{})
+	cursor, err := s.db.Collection("material_assessment").Find(s.ctx, bson.D{})
 	s.NoError(err, "Failed to create cursor on material_assessment")
 	defer func() {
 		closeErr := cursor.Close(s.ctx)

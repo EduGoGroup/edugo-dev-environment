@@ -1,205 +1,115 @@
-# 🚀 EduGo - Modo Cloud
+# EduGo - Modo Cloud
 
-## ✅ ¿Qué es el Modo Cloud?
+## Qu茅 es el Modo Cloud
 
-El modo cloud levanta **solo las APIs** conectándose a servicios en la nube:
+El modo cloud levanta **solo las APIs** conect谩ndose a servicios en la nube:
 
-| Servicio | Ubicación | Configuración |
+| Servicio | Ubicaci贸n | Configuraci贸n |
 |----------|-----------|---------------|
-| PostgreSQL | ☁️ **Neon** | Ya configurado |
-| MongoDB | ☁️ **Atlas** | Ya configurado |
-| Redis | ☁️ **Upstash** | Ya configurado |
-| RabbitMQ | 🐳 Local (opcional) | Docker local |
+| PostgreSQL | Neon | Via `.env.cloud` |
+| MongoDB | Atlas | Via `.env.cloud` |
+| Redis | Upstash | Via `.env.cloud` |
+| RabbitMQ | Docker local | Opcional |
 
-## 🎯 Ventajas del Modo Cloud
+## Requisitos
 
-- ✅ **Inicio rápido**: No esperar a que levanten PostgreSQL, MongoDB, Redis
-- ✅ **Recursos ligeros**: Solo levanta las APIs necesarias
-- ✅ **Datos persistentes**: Bases de datos siempre disponibles
-- ✅ **Colaboración**: Todo el equipo comparte las mismas bases de datos
-- ✅ **Desarrollo remoto**: Funciona desde cualquier lugar
+1. Configurar `docker/.env.cloud` con las credenciales de tus servicios cloud:
+   ```bash
+   cp .env.cloud.example .env.cloud
+   # Editar .env.cloud con valores reales
+   ```
 
-## 📋 Uso
+2. Ejecutar migraciones en cloud:
+   ```bash
+   make db-migrate-cloud
+   ```
 
-### Opción 1: Levantar todo (APIs + RabbitMQ)
+## Uso
 
-```bash
-cd docker
-docker-compose -f docker-compose.cloud.yml --profile full up -d
-```
-
-### Opción 2: Solo API Mobile
+### Levantar todo (APIs + RabbitMQ)
 
 ```bash
 cd docker
-docker-compose -f docker-compose.cloud.yml --profile apps up -d
+docker-compose -f docker-compose.cloud.yml --env-file .env.cloud --profile full up -d
 ```
 
-### Opción 3: Solo API Admin
+### Solo API Mobile
 
 ```bash
 cd docker
-docker-compose -f docker-compose.cloud.yml --profile admin up -d
+docker-compose -f docker-compose.cloud.yml --env-file .env.cloud --profile apps up -d
 ```
 
-### Opción 4: Solo Worker
+### Solo API Admin
 
 ```bash
 cd docker
-docker-compose -f docker-compose.cloud.yml --profile worker up -d
+docker-compose -f docker-compose.cloud.yml --env-file .env.cloud --profile admin up -d
 ```
 
-### Opción 5: APIs sin RabbitMQ (más ligero)
+### Solo Worker
 
 ```bash
 cd docker
-docker-compose -f docker-compose.cloud.yml up -d api-mobile api-administracion worker
+docker-compose -f docker-compose.cloud.yml --env-file .env.cloud --profile worker up -d
 ```
 
-## 🔧 Configuración en Zed Editor
+## Comparaci贸n de Modos
 
-### Para Desarrollo Local (sin Docker)
+| Aspecto | Modo Docker | Modo Cloud |
+|---------|-------------|------------|
+| PostgreSQL | Contenedor local | Neon |
+| MongoDB | Contenedor local | Atlas |
+| Redis | Contenedor local | Upstash |
+| RabbitMQ | Contenedor local | Contenedor local (opcional) |
+| Tiempo inicio | ~30-60 segundos | ~5-10 segundos |
+| Persistencia | Se pierde con `down -v` | Siempre persistente |
 
-Cada proyecto ahora tiene una nueva configuración de debug:
-
-**API Mobile:**
-- `Go: Debug main (CLOUD MODE - Neon/Atlas/Upstash)`
-
-**API Administración:**
-- `Go: Debug main (CLOUD MODE - Neon/Atlas/Upstash)`
-
-**Worker:**
-- `Go: Debug main (CLOUD MODE - Neon/Atlas/Upstash)`
-
-### Cómo Usarlas
-
-1. Abre el proyecto en Zed
-2. Ve a la paleta de comandos (Cmd+Shift+P)
-3. Busca "Debug: Select Configuration"
-4. Selecciona la opción **"CLOUD MODE"**
-5. Inicia el debug normalmente
-
-## 📊 Comparación de Modos
-
-| Aspecto | Modo Docker (tradicional) | Modo Cloud (nuevo) |
-|---------|---------------------------|-------------------|
-| **PostgreSQL** | 🐳 Contenedor local | ☁️ Neon |
-| **MongoDB** | 🐳 Contenedor local | ☁️ Atlas |
-| **Redis** | 🐳 Contenedor local | ☁️ Upstash |
-| **RabbitMQ** | 🐳 Contenedor local | 🐳 Contenedor local (opcional) |
-| **Tiempo inicio** | ~30-60 segundos | ~5-10 segundos |
-| **Memoria RAM** | ~2-3 GB | ~500 MB |
-| **Persistencia** | Se pierde con `down -v` | Siempre persistente |
-
-## 🛠️ Comandos Útiles
-
-### Ver logs de las APIs
+## Comandos 脷tiles
 
 ```bash
-# API Mobile
+# Ver logs
 docker logs -f edugo-api-mobile-cloud
-
-# API Admin
 docker logs -f edugo-api-administracion-cloud
-
-# Worker
 docker logs -f edugo-worker-cloud
-```
 
-### Detener todo
-
-```bash
+# Detener todo
 cd docker
 docker-compose -f docker-compose.cloud.yml down
-```
 
-### Detener y eliminar volúmenes (RabbitMQ)
-
-```bash
+# Detener y eliminar vol煤menes (RabbitMQ)
 cd docker
 docker-compose -f docker-compose.cloud.yml down -v
 ```
 
-## 🔄 Cambiar entre Modos
-
-### De Cloud a Docker Tradicional
+## Cambiar entre Modos
 
 ```bash
+# De Cloud a Docker Tradicional
 cd docker
-
-# Detener modo cloud
 docker-compose -f docker-compose.cloud.yml down
-
-# Iniciar modo tradicional
 docker-compose up -d
-```
 
-### De Docker Tradicional a Cloud
-
-```bash
+# De Docker Tradicional a Cloud
 cd docker
-
-# Detener modo tradicional
 docker-compose down
-
-# Iniciar modo cloud
-docker-compose -f docker-compose.cloud.yml --profile full up -d
+docker-compose -f docker-compose.cloud.yml --env-file .env.cloud --profile full up -d
 ```
 
-## ⚠️ Notas Importantes
+## Troubleshooting
 
-1. **RabbitMQ es opcional**: Si tus APIs no usan mensajería, no necesitas levantarlo
-2. **Datos compartidos**: Todos los desarrolladores comparten las mismas bases de datos cloud
-3. **Límites gratuitos**: Revisa los límites en `CLOUD_SETUP.md`
-4. **Variables de entorno**: Se cargan desde `.env` o `.env.neon`
+### Error de conexi贸n a PostgreSQL
+Verifica que `POSTGRES_HOST` y `POSTGRES_SSLMODE=require` est茅n configurados en `.env.cloud`.
 
-## 🆘 Troubleshooting
-
-### Error de conexión a PostgreSQL
-
-Verifica que el host sea correcto:
-```
-POSTGRES_HOST=ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech
-POSTGRES_SSLMODE=require
-```
-
-### Error de conexión a MongoDB
-
-Verifica la URI de MongoDB Atlas:
-```
-MONGODB_URI=mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/?appName=Edugo
-```
+### Error de conexi贸n a MongoDB
+Verifica que `MONGODB_URI` est茅 configurado correctamente en `.env.cloud`.
 
 ### API no se conecta a RabbitMQ
+Si no usas RabbitMQ, configura `BOOTSTRAP_OPTIONAL_RESOURCES_RABBITMQ=false`.
 
-Si no usas RabbitMQ, configura:
-```
-BOOTSTRAP_OPTIONAL_RESOURCES_RABBITMQ=false
-```
+## Documentaci贸n Relacionada
 
-## 📚 Documentación Relacionada
-
-- `CLOUD_SETUP.md` - Guía completa de configuración cloud
-- `docker-compose.yml` - Modo tradicional (con contenedores locales)
-- `docker-compose.cloud.yml` - Modo cloud (este archivo)
-- `.env.neon` - Variables de entorno para cloud
-
-## 💡 Recomendaciones
-
-**Para Desarrolladores Frontend:**
-```bash
-# Solo levanta las APIs que necesites
-docker-compose -f docker-compose.cloud.yml up -d api-mobile api-administracion
-```
-
-**Para Desarrolladores Backend:**
-```bash
-# Usa el modo de debug de Zed con "CLOUD MODE"
-# No necesitas Docker, todo corre localmente conectándose a cloud
-```
-
-**Para Testing Completo:**
-```bash
-# Levanta todo incluyendo RabbitMQ
-docker-compose -f docker-compose.cloud.yml --profile full up -d
-```
+- `CLOUD_SETUP.md` - Gu铆a completa de configuraci贸n cloud
+- `docker-compose.yml` - Modo tradicional (contenedores locales)
+- `docker-compose.cloud.yml` - Modo cloud
+- `.env.cloud.example` - Plantilla de variables de entorno

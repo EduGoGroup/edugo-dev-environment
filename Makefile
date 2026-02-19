@@ -2,7 +2,8 @@
 # Comandos simplificados para gestión del ambiente
 
 .PHONY: help up down stop restart logs status clean setup validate diagnose seed update \
-	migrator-build migrator-test migrator-lint migrator-check
+	migrator-build migrator-test migrator-lint migrator-check \
+	db-migrate db-migrate-cloud db-recreate db-recreate-cloud
 
 # Colores
 BLUE := \033[0;34m
@@ -159,3 +160,45 @@ migrator-lint: ## Ejecutar lint del migrator
 	@echo "$(GREEN)✅ Lint de migrator completado$(NC)"
 
 migrator-check: migrator-lint migrator-test migrator-build ## Ejecutar lint, tests y compilación del migrator
+
+# ==========================================
+# DATABASE MIGRATIONS
+# ==========================================
+
+db-migrate: migrator-build ## Ejecutar migraciones (idempotente, Docker local)
+	@echo "$(BLUE)📦 Ejecutando migraciones (Docker local)...$(NC)"
+	@cd $(MIGRATOR_DIR) && ./$(MIGRATOR_BIN)
+	@echo "$(GREEN)✅ Migraciones completadas$(NC)"
+
+db-migrate-cloud: migrator-build ## Ejecutar migraciones en cloud (idempotente). Requiere .env.cloud
+	@echo "$(BLUE)☁️  Ejecutando migraciones (cloud)...$(NC)"
+	@if [ ! -f docker/.env.cloud ]; then \
+		echo "$(YELLOW)⚠️  Archivo docker/.env.cloud no encontrado. Copia docker/.env.cloud.example y configura tus valores.$(NC)"; \
+		exit 1; \
+	fi
+	@set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && ./$(MIGRATOR_BIN)
+	@echo "$(GREEN)✅ Migraciones cloud completadas$(NC)"
+
+db-recreate: migrator-build ## Recrear BD en Docker local. DESTRUYE DATOS
+	@echo "$(YELLOW)⚠️  Esto eliminará y recreará TODAS las bases de datos locales. ¿Continuar? [y/N]$(NC)"
+	@read -r response; \
+	if [ "$$response" = "y" ] || [ "$$response" = "Y" ]; then \
+		cd $(MIGRATOR_DIR) && FORCE_MIGRATION=true ./$(MIGRATOR_BIN); \
+		echo "$(GREEN)✅ Bases de datos recreadas$(NC)"; \
+	else \
+		echo "Cancelado."; \
+	fi
+
+db-recreate-cloud: migrator-build ## Recrear BD en cloud. Requiere .env.cloud. DESTRUYE DATOS
+	@echo "$(YELLOW)⚠️  Esto eliminará y recreará TODAS las bases de datos en CLOUD. ¿Continuar? [y/N]$(NC)"
+	@read -r response; \
+	if [ "$$response" = "y" ] || [ "$$response" = "Y" ]; then \
+		if [ ! -f docker/.env.cloud ]; then \
+			echo "$(YELLOW)⚠️  Archivo docker/.env.cloud no encontrado. Copia docker/.env.cloud.example y configura tus valores.$(NC)"; \
+			exit 1; \
+		fi; \
+		set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && FORCE_MIGRATION=true ./$(MIGRATOR_BIN); \
+		echo "$(GREEN)✅ Bases de datos cloud recreadas$(NC)"; \
+	else \
+		echo "Cancelado."; \
+	fi

@@ -62,17 +62,18 @@ services:
       - PORT=8080
 
       # Variables directamente bindeadas (sin prefijo)
-      - DATABASE_POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
-      - DATABASE_MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/?appName=Edugo}
+      # IMPORTANTE: Definir en .env.cloud (ver .env.cloud.example)
+      - DATABASE_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_MONGODB_URI=${MONGODB_URI}
       - MESSAGING_RABBITMQ_URL=${RABBITMQ_URL:-amqp://edugo:edugo123@rabbitmq:5672/}
-      - STORAGE_S3_ACCESS_KEY_ID=${S3_ACCESS_KEY:-AKIAIOSFODNN7EXAMPLE}
-      - STORAGE_S3_SECRET_ACCESS_KEY=${S3_SECRET_KEY:-wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY}
-      - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+      - STORAGE_S3_ACCESS_KEY_ID=${S3_ACCESS_KEY}
+      - STORAGE_S3_SECRET_ACCESS_KEY=${S3_SECRET_KEY}
+      - AUTH_JWT_SECRET=${JWT_SECRET}
 
-      # Base de datos PostgreSQL (NEON)
-      - DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      # Base de datos PostgreSQL (Cloud)
+      - DATABASE_POSTGRES_HOST=${POSTGRES_HOST}
       - DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - DATABASE_POSTGRES_USER=${POSTGRES_USER}
       - DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
       - DATABASE_POSTGRES_MAX_CONNECTIONS=25
@@ -125,9 +126,10 @@ services:
       - ENV=${ENV:-development}
 
       # Variables directamente bindeadas (sin prefijo)
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
-      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo}
-      - AUTH_JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-production}
+      # IMPORTANTE: Definir en .env.cloud (ver .env.cloud.example)
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MONGODB_URI=${MONGODB_URI}
+      - AUTH_JWT_SECRET=${JWT_SECRET}
 
       # Variables con prefijo EDUGO_ADMIN_ (Viper las lee con AutomaticEnv)
       - EDUGO_ADMIN_SERVER_PORT=8081
@@ -135,10 +137,10 @@ services:
       - EDUGO_ADMIN_SERVER_READ_TIMEOUT=30s
       - EDUGO_ADMIN_SERVER_WRITE_TIMEOUT=30s
 
-      # PostgreSQL (NEON)
-      - EDUGO_ADMIN_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      # PostgreSQL (Cloud)
+      - EDUGO_ADMIN_DATABASE_POSTGRES_HOST=${POSTGRES_HOST}
       - EDUGO_ADMIN_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - EDUGO_ADMIN_DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - EDUGO_ADMIN_DATABASE_POSTGRES_USER=${POSTGRES_USER}
       - EDUGO_ADMIN_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - EDUGO_ADMIN_DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
       - EDUGO_ADMIN_DATABASE_POSTGRES_MAX_CONNECTIONS=25
@@ -168,15 +170,16 @@ services:
       - ENV=${ENV:-development}
 
       # Variables directamente bindeadas (sin prefijo)
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-npg_sC2u9pTVwQJI}
-      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://medinatello_db_user:6NQjJDaOkN4nvldT@edugo.alxme5j.mongodb.net/edugo?appName=Edugo}
+      # IMPORTANTE: Definir en .env.cloud (ver .env.cloud.example)
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MONGODB_URI=${MONGODB_URI}
       - RABBITMQ_URL=${RABBITMQ_URL:-amqp://edugo:edugo123@rabbitmq:5672/}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
 
-      # PostgreSQL (NEON)
-      - EDUGO_WORKER_DATABASE_POSTGRES_HOST=${POSTGRES_HOST:-ep-green-frost-ado4abbi-pooler.c-2.us-east-1.aws.neon.tech}
+      # PostgreSQL (Cloud)
+      - EDUGO_WORKER_DATABASE_POSTGRES_HOST=${POSTGRES_HOST}
       - EDUGO_WORKER_DATABASE_POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - EDUGO_WORKER_DATABASE_POSTGRES_USER=${POSTGRES_USER:-neondb_owner}
+      - EDUGO_WORKER_DATABASE_POSTGRES_USER=${POSTGRES_USER}
       - EDUGO_WORKER_DATABASE_POSTGRES_DATABASE=${POSTGRES_DB:-edugo}
       - EDUGO_WORKER_DATABASE_POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-require}
       - EDUGO_WORKER_DATABASE_POSTGRES_MAX_CONNECTIONS=25
