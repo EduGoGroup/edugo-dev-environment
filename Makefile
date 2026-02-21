@@ -85,8 +85,8 @@ validate: ## Validar configuración docker-compose
 diagnose: ## Ejecutar diagnóstico del ambiente
 	@./scripts/diagnose.sh
 
-seed: ## Cargar datos de prueba
-	@./scripts/seed-data.sh
+seed: ## Recrear base de datos con migrator (edugo-infrastructure)
+	@cd migrator && FORCE_MIGRATION=true go run cmd/main.go
 
 update: ## Actualizar imágenes Docker
 	@./scripts/update-images.sh
