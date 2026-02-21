@@ -311,16 +311,16 @@ docker-compose --profile $PROFILE ps
 # Cargar datos de prueba si se especificó
 if [ "$SEED_DATA" = true ]; then
     echo ""
-    echo -e "${BLUE}🌱 Cargando datos de prueba...${NC}"
+    echo -e "${BLUE}🌱 Cargando datos via migrator (edugo-infrastructure)...${NC}"
     cd ..
-    if [ -f scripts/seed-data.sh ]; then
-        if bash scripts/seed-data.sh; then
-            echo -e "${GREEN}✅ Datos de prueba cargados correctamente${NC}"
+    if [ -d migrator ]; then
+        if (cd migrator && FORCE_MIGRATION=true go run cmd/main.go); then
+            echo -e "${GREEN}✅ Base de datos recreada con todos los seeds${NC}"
         else
-            echo -e "${YELLOW}⚠️  Hubo problemas cargando algunos datos de prueba${NC}"
+            echo -e "${YELLOW}⚠️  Hubo problemas ejecutando el migrator${NC}"
         fi
     else
-        echo -e "${YELLOW}⚠️  Script de seed no encontrado: scripts/seed-data.sh${NC}"
+        echo -e "${YELLOW}⚠️  Directorio migrator/ no encontrado${NC}"
     fi
     cd docker
 fi
@@ -364,5 +364,5 @@ echo -e "${BLUE}📝 Comandos útiles:${NC}"
 echo "  - Ver logs: docker-compose --profile $PROFILE logs -f"
 echo "  - Detener: docker-compose --profile $PROFILE down"
 echo "  - Reiniciar: docker-compose --profile $PROFILE restart"
-echo "  - Cargar seeds: ../scripts/seed-data.sh"
+echo "  - Recrear DB: cd migrator && FORCE_MIGRATION=true go run cmd/main.go"
 echo ""
