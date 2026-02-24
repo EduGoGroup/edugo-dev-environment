@@ -15,6 +15,7 @@ import (
 
 	mongoMigrations "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
 	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+	postgresSeeds "github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 )
 
 func main() {
@@ -132,15 +133,15 @@ func runPostgresMigrations(force bool, applyMock bool) error {
 	fmt.Printf("✓ Conectado a PostgreSQL (user=%s)\n", user)
 
 	if force {
-		fmt.Println("🔥 Eliminando schema público de PostgreSQL...")
+		fmt.Println("🔥 Eliminando schemas de PostgreSQL...")
 		pgUser := os.Getenv("POSTGRES_USER")
 		if pgUser == "" {
 			pgUser = user
 		}
 		if err := dropPostgresSchema(db, pgUser); err != nil {
-			return fmt.Errorf("error eliminando schema postgres: %w", err)
+			return fmt.Errorf("error eliminando schemas postgres: %w", err)
 		}
-		fmt.Println("✅ Schema eliminado exitosamente")
+		fmt.Println("✅ Schemas eliminados exitosamente")
 	} else {
 		if hasPostgresTables(db) {
 			fmt.Println("✅ PostgreSQL ya tiene tablas - migraciones omitidas (idempotente)")
@@ -148,23 +149,23 @@ func runPostgresMigrations(force bool, applyMock bool) error {
 		}
 	}
 
-	fmt.Println("📦 Aplicando migraciones de estructura y constraints...")
+	fmt.Println("📦 Aplicando migraciones de estructura...")
 	if err := postgresMigrations.ApplyAll(db); err != nil {
 		return fmt.Errorf("error aplicando migraciones: %w", err)
 	}
 
-	fmt.Println("📦 Aplicando datos iniciales (seeds)...")
-	if err := postgresMigrations.ApplySeeds(db); err != nil {
-		return fmt.Errorf("error aplicando seeds: %w", err)
+	fmt.Println("📦 Aplicando datos de producción (seeds)...")
+	if err := postgresSeeds.ApplyProduction(db); err != nil {
+		return fmt.Errorf("error aplicando seeds de producción: %w", err)
 	}
 
 	if applyMock {
-		fmt.Println("📦 Aplicando datos de prueba (testing)...")
-		if err := postgresMigrations.ApplyMockData(db); err != nil {
-			return fmt.Errorf("error aplicando datos de prueba: %w", err)
+		fmt.Println("📦 Aplicando datos de desarrollo...")
+		if err := postgresSeeds.ApplyDevelopment(db); err != nil {
+			return fmt.Errorf("error aplicando datos de desarrollo: %w", err)
 		}
 	} else {
-		fmt.Println("⏭️  Mock data deshabilitado")
+		fmt.Println("⏭️  Datos de desarrollo deshabilitados")
 	}
 
 	fmt.Println("✅ Migraciones de PostgreSQL completadas")
@@ -229,16 +230,14 @@ func hasPostgresTables(db *sql.DB) bool {
 	var exists bool
 	query := `SELECT EXISTS (
 		SELECT FROM information_schema.tables
-		WHERE table_schema = 'public'
+		WHERE table_schema = 'auth'
 		AND table_name = 'users'
 	)`
-
 	err := db.QueryRow(query).Scan(&exists)
 	if err != nil {
 		fmt.Printf("⚠️  Error verificando tablas: %v\n", err)
 		return false
 	}
-
 	return exists
 }
 
@@ -253,30 +252,25 @@ func hasMongoCollections(ctx context.Context, db *mongo.Database) bool {
 }
 
 func dropPostgresSchema(db *sql.DB, user string) error {
-	_, err := db.Exec("DROP SCHEMA IF EXISTS ui_config CASCADE")
-	if err != nil {
-		return fmt.Errorf("error eliminando schema ui_config: %w", err)
+	schemas := []string{"ui_config", "assessment", "content", "academic", "iam", "auth", "public"}
+	for _, schema := range schemas {
+		_, err := db.Exec("DROP SCHEMA IF EXISTS " + schema + " CASCADE")
+		if err != nil {
+			return fmt.Errorf("error eliminando schema %s: %w", schema, err)
+		}
 	}
-
-	_, err = db.Exec("DROP SCHEMA public CASCADE")
-	if err != nil {
-		return fmt.Errorf("error eliminando schema: %w", err)
-	}
-
-	_, err = db.Exec("CREATE SCHEMA public")
+	// Recreate public schema
+	_, err := db.Exec("CREATE SCHEMA public")
 	if err != nil {
 		return fmt.Errorf("error creando schema: %w", err)
 	}
-
 	_, err = db.Exec("GRANT ALL ON SCHEMA public TO " + user)
 	if err != nil {
 		return fmt.Errorf("error otorgando permisos al usuario: %w", err)
 	}
-
 	_, err = db.Exec("GRANT ALL ON SCHEMA public TO public")
 	if err != nil {
 		return fmt.Errorf("error otorgando permisos públicos: %w", err)
 	}
-
 	return nil
 }
