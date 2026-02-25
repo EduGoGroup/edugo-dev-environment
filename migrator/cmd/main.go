@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"time"
 
@@ -58,10 +59,15 @@ func main() {
 // Si no, construye el string con las variables individuales.
 func buildPostgresConnStr() (connStr string, user string) {
 	if uri := os.Getenv("POSTGRES_URI"); uri != "" {
-		// Extraer user para logs (best effort)
+		// Extraer user del URI para GRANT statements
 		user = os.Getenv("POSTGRES_USER")
 		if user == "" {
-			user = "(from URI)"
+			if parsed, err := url.Parse(uri); err == nil && parsed.User != nil {
+				user = parsed.User.Username()
+			}
+		}
+		if user == "" {
+			user = "postgres"
 		}
 		return uri, user
 	}
