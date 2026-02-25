@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -63,11 +64,11 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 	s.Require().NoError(err, "Failed to apply migrations")
 
 	// Aplicar seeds del sistema (roles/permisos base) requeridos por mock data
-	err = migrations.ApplySeeds(s.db)
+	err = seeds.ApplyProduction(s.db)
 	s.Require().NoError(err, "Failed to apply seeds")
 
 	// Aplicar datos de prueba una sola vez al inicio
-	err = migrations.ApplyMockData(s.db)
+	err = seeds.ApplyDevelopment(s.db)
 	s.Require().NoError(err, "Failed to apply mock data")
 }
 
@@ -98,20 +99,20 @@ func (s *PostgresIntegrationSuite) TearDownSuite() {
 
 // TestExampleQuery es un ejemplo de test que usa la base de datos
 func (s *PostgresIntegrationSuite) TestExampleQuery() {
-	// Ejemplo: Verificar que las tablas fueron creadas
+	// Verificar que las tablas fueron creadas en los schemas del dominio
 	var count int
-	err := s.db.QueryRow("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'").Scan(&count)
+	err := s.db.QueryRow("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema IN ('auth', 'iam', 'academic', 'content', 'assessment', 'ui_config')").Scan(&count)
 	s.NoError(err, "Failed to query tables")
-	s.Greater(count, 0, "Expected at least one table to exist")
+	s.Greater(count, 0, "Expected at least one table to exist in domain schemas")
 }
 
 // TestMockDataExists es un ejemplo de test que verifica los datos de prueba
 func (s *PostgresIntegrationSuite) TestMockDataExists() {
-	// Ejemplo: Verificar que hay datos de prueba en la tabla users
+	// Verificar que hay datos de prueba en la tabla auth.users
 	var count int
-	err := s.db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+	err := s.db.QueryRow("SELECT COUNT(*) FROM auth.users").Scan(&count)
 	s.NoError(err, "Failed to query users")
-	s.Greater(count, 0, "Expected mock data in users table")
+	s.Greater(count, 0, "Expected mock data in auth.users table")
 }
 
 // TestPostgresIntegration ejecuta la suite de tests
