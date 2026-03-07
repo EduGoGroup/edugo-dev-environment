@@ -3,8 +3,8 @@ module github.com/EduGoGroup/edugo-dev-environment/migrator
 go 1.25
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.52.0
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.59.1
+	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.53.0
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.60.0
 	github.com/lib/pq v1.11.2
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
