@@ -1,10 +1,10 @@
 module github.com/EduGoGroup/edugo-dev-environment/migrator
 
-go 1.25
+go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.53.0
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.61.0
+	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.54.0
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.62.0
 	github.com/lib/pq v1.11.2
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
@@ -64,7 +64,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250929231259-57b25ae835d4 // indirect
