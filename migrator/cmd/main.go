@@ -46,7 +46,7 @@ func main() {
 
 	if !postgresOnly {
 		fmt.Println("\n--- MongoDB Migrations ---")
-		if err := runMongoMigrations(forceMigration); err != nil {
+		if err := runMongoMigrations(forceMigration, applyMockData); err != nil {
 			log.Fatalf("❌ Error ejecutando migraciones de MongoDB: %v\n", err)
 		}
 	}
@@ -178,7 +178,7 @@ func runPostgresMigrations(force bool, applyMock bool) error {
 	return nil
 }
 
-func runMongoMigrations(force bool) error {
+func runMongoMigrations(force bool, applyMock bool) error {
 	mongoURI, dbName := buildMongoURI()
 
 	client, err := mongo.Connect(options.Client().ApplyURI(mongoURI))
@@ -218,6 +218,20 @@ func runMongoMigrations(force bool) error {
 	fmt.Println("📦 Aplicando migraciones de estructura y constraints...")
 	if err := mongoMigrations.ApplyAll(ctx, db); err != nil {
 		return fmt.Errorf("error aplicando migraciones: %w", err)
+	}
+
+	fmt.Println("📦 Aplicando seeds de MongoDB...")
+	if err := mongoMigrations.ApplySeeds(ctx, db); err != nil {
+		return fmt.Errorf("error aplicando seeds de MongoDB: %w", err)
+	}
+
+	if applyMock {
+		fmt.Println("📦 Aplicando datos de desarrollo de MongoDB...")
+		if err := mongoMigrations.ApplyMockData(ctx, db); err != nil {
+			return fmt.Errorf("error aplicando datos de desarrollo de MongoDB: %w", err)
+		}
+	} else {
+		fmt.Println("⏭️  Datos de desarrollo de MongoDB deshabilitados")
 	}
 
 	fmt.Println("✅ Migraciones de MongoDB completadas")
