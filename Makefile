@@ -13,7 +13,7 @@ YELLOW := \033[1;33m
 NC := \033[0m
 MIGRATOR_DIR := migrator
 MIGRATOR_BIN := bin/migrator
-GOWORK_PATH := $(shell cd .. && pwd)/go.work
+GOWORK_PATH := $(shell if [ -f "$(CURDIR)/go.work" ]; then echo "$(CURDIR)/go.work"; elif [ -f "$(CURDIR)/../go.work" ]; then cd .. && echo "$$(pwd)/go.work"; else echo "auto"; fi)
 
 help: ## Mostrar esta ayuda
 	@echo ""

@@ -102,15 +102,17 @@ docker-down: ## Detener y eliminar contenedores locales
 	@docker compose -f docker-compose.local.yml down -v
 	@printf "$(GREEN)OK Contenedores eliminados$(NC)\n"
 
-docker-migrate: docker-up build ## Levantar DBs y aplicar migraciones (flujo completo local)
+docker-migrate: build ## Levantar DBs y aplicar migraciones (flujo completo local)
+	@printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"
+	@docker compose -f docker-compose.local.yml up -d --wait
 	@printf "$(BLUE)Aplicando migraciones en BD local...$(NC)\n"
-	@sleep 3
 	@POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY)
 	@printf "$(GREEN)OK Migraciones aplicadas$(NC)\n"
 
-docker-recreate: docker-up build ## Recrear BDs desde cero con datos reales (BORRA DATOS)
+docker-recreate: build ## Recrear BDs desde cero con datos reales (BORRA DATOS)
+	@printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"
+	@docker compose -f docker-compose.local.yml up -d --wait
 	@printf "$(YELLOW)Recreando bases de datos...$(NC)\n"
-	@sleep 3
 	@POSTGRES_PORT=5433 MONGO_PORT=27018 FORCE_MIGRATION=true ./$(BIN_DIR)/$(BINARY)
 	@printf "$(GREEN)OK Bases de datos recreadas$(NC)\n"
 

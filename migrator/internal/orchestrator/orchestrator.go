@@ -40,9 +40,12 @@ func (o *Orchestrator) Run() error {
 	fmt.Println()
 
 	if o.cfg.StatusOnly {
+		if o.cfg.MongoOnly {
+			return fmt.Errorf("STATUS_ONLY para MongoDB no esta soportado: no hay implementacion de estado para Mongo")
+		}
 		if !o.cfg.MongoOnly {
 			if err := o.pg.Status(); err != nil {
-				fmt.Printf("⚠️  Error leyendo estado PostgreSQL: %v\n", err)
+				return fmt.Errorf("error leyendo estado PostgreSQL: %w", err)
 			}
 		}
 		return nil

@@ -12,8 +12,8 @@ Servicio que aplica migraciones de esquema y datos iniciales para PostgreSQL y M
 ## Dependencias
 
 ```
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.64.0
-github.com/EduGoGroup/edugo-infrastructure/mongodb  v0.54.0
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.65.0
+github.com/EduGoGroup/edugo-infrastructure/mongodb  v0.55.0
 ```
 
 ## Variables de entorno
@@ -56,11 +56,11 @@ github.com/EduGoGroup/edugo-infrastructure/mongodb  v0.54.0
 El migrator esta integrado en el `docker-compose.yml` principal del entorno de desarrollo:
 
 ```bash
-# Levantar entorno completo (incluye migrator)
-docker compose --profile full up
+# Levantar solo infraestructura (postgres, mongodb, rabbitmq + migrator)
+docker compose up
 
-# Solo bases de datos sin migrator
-docker compose --profile db-only up
+# Levantar entorno completo (infraestructura + todas las apps)
+docker compose --profile full up
 
 # Ver logs del migrator
 docker compose logs migrator
@@ -69,7 +69,7 @@ docker compose logs migrator
 El migrator corre una sola vez y termina. Si las bases de datos ya tienen datos, las migraciones se omiten (comportamiento idempotente). Para forzar una recreacion completa:
 
 ```bash
-FORCE_MIGRATION=true docker compose --profile full up
+FORCE_MIGRATION=true docker compose up
 ```
 
 ## Tests de integracion

@@ -32,8 +32,7 @@ func (r *Runner) Status() error {
 
 	result, err := postgresMigrations.Status(db)
 	if err != nil {
-		fmt.Printf("⚠️  No se pudo leer version de BD: %v\n", err)
-		return nil
+		return fmt.Errorf("no se pudo leer version de BD: %w", err)
 	}
 
 	fmt.Println("\n📊 Version actual en BD:")
