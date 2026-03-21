@@ -27,7 +27,7 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 
 	// Crear contenedor PostgreSQL para tests
 	req := testcontainers.ContainerRequest{
-		Image:        "postgres:16-alpine",
+		Image:        "postgres:15-alpine",
 		ExposedPorts: []string{"5432/tcp"},
 		Env: map[string]string{
 			"POSTGRES_USER":     "testuser",

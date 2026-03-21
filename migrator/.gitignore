@@ -14,15 +14,17 @@ migrator
 # Output del profiler
 *.out
 
-# Archivos de dependencias
-go.sum
-
 # IDEs
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+
+# Variables de entorno (nunca subir al repo)
+.env.local
+.env.*.local
+.env.cloud
 
 # OS
 .DS_Store
