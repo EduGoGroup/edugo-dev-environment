@@ -1,0 +1,53 @@
+# docker-compose.local.yml
+# Entorno local para testing de migraciones del migrator
+# Uso: docker compose -f docker-compose.local.yml up -d
+# Luego: make run  o  FORCE_MIGRATION=true make run
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: edugo-migrator-postgres
+    environment:
+      POSTGRES_USER: edugo
+      POSTGRES_PASSWORD: edugo123
+      POSTGRES_DB: edugo
+    ports:
+      - "5433:5432"
+    volumes:
+      - migrator_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edugo -d edugo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - migrator-net
+
+  mongodb:
+    image: mongo:7
+    container_name: edugo-migrator-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: edugo
+      MONGO_INITDB_ROOT_PASSWORD: edugo123
+      MONGO_INITDB_DATABASE: edugo
+    ports:
+      - "27018:27017"
+    volumes:
+      - migrator_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "edugo", "--password", "edugo123", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - migrator-net
+
+volumes:
+  migrator_postgres_data:
+    driver: local
+  migrator_mongo_data:
+    driver: local
+
+networks:
+  migrator-net:
+    driver: bridge

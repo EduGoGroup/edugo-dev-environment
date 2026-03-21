@@ -3,7 +3,8 @@
 
 .PHONY: help up down stop restart logs status clean setup validate diagnose seed update \
 	migrator-build migrator-test migrator-lint migrator-check \
-	db-migrate db-migrate-cloud db-recreate db-recreate-cloud
+	db-migrate db-migrate-cloud db-recreate db-recreate-cloud \
+	neon-recreate neon-status neon-pg-only
 
 # Colores
 BLUE := \033[0;34m
@@ -12,6 +13,7 @@ YELLOW := \033[1;33m
 NC := \033[0m
 MIGRATOR_DIR := migrator
 MIGRATOR_BIN := bin/migrator
+GOWORK_PATH := $(shell if [ -f "$(CURDIR)/go.work" ]; then echo "$(CURDIR)/go.work"; elif [ -f "$(CURDIR)/../go.work" ]; then cd .. && echo "$$(pwd)/go.work"; else echo "auto"; fi)
 
 help: ## Mostrar esta ayuda
 	@echo ""
@@ -141,7 +143,7 @@ health: ## Verificar health de las APIs
 migrator-build: ## Compilar proyecto migrator
 	@echo "$(BLUE)🔨 Compilando migrator...$(NC)"
 	@mkdir -p $(MIGRATOR_DIR)/bin
-	@cd $(MIGRATOR_DIR) && go build -o $(MIGRATOR_BIN) ./cmd
+	@cd $(MIGRATOR_DIR) && GOWORK=$(GOWORK_PATH) go build -o $(MIGRATOR_BIN) ./cmd
 	@echo "$(GREEN)✅ Migrator compilado: $(MIGRATOR_DIR)/$(MIGRATOR_BIN)$(NC)"
 
 migrator-test: ## Ejecutar tests del migrator
@@ -202,3 +204,44 @@ db-recreate-cloud: migrator-build ## Recrear BD en cloud. Requiere .env.cloud. D
 	else \
 		echo "Cancelado."; \
 	fi
+
+# ==========================================
+# NEON (Atajos para BD cloud - Jhoan)
+# ==========================================
+
+neon-recreate: migrator-build ## Recrear Neon (PostgreSQL cloud). Borra y recrea todo con version tracking
+	@if [ ! -f docker/.env.cloud ]; then \
+		echo "$(YELLOW)⚠️  docker/.env.cloud no encontrado$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(YELLOW)⚠️  RECREANDO Neon PostgreSQL. Esto borra TODO y recrea desde cero.$(NC)"
+	@echo "$(BLUE)Mostrando version actual antes de recrear...$(NC)"
+	@set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && \
+		STATUS_ONLY=true POSTGRES_ONLY=true ./$(MIGRATOR_BIN) 2>/dev/null || true
+	@echo ""
+	@echo "$(YELLOW)¿Continuar con la recreación? [y/N]$(NC)"
+	@read -r response; \
+	if [ "$$response" = "y" ] || [ "$$response" = "Y" ]; then \
+		set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && \
+			FORCE_MIGRATION=true POSTGRES_ONLY=true ./$(MIGRATOR_BIN); \
+		echo ""; \
+		echo "$(GREEN)✅ Neon recreada exitosamente$(NC)"; \
+	else \
+		echo "Cancelado."; \
+	fi
+
+neon-status: migrator-build ## Ver version actual de Neon sin modificar nada
+	@if [ ! -f docker/.env.cloud ]; then \
+		echo "$(YELLOW)⚠️  docker/.env.cloud no encontrado$(NC)"; \
+		exit 1; \
+	fi
+	@set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && \
+		STATUS_ONLY=true POSTGRES_ONLY=true ./$(MIGRATOR_BIN)
+
+neon-pg-only: migrator-build ## Migrar solo PostgreSQL en Neon (idempotente)
+	@if [ ! -f docker/.env.cloud ]; then \
+		echo "$(YELLOW)⚠️  docker/.env.cloud no encontrado$(NC)"; \
+		exit 1; \
+	fi
+	@set -a && . docker/.env.cloud && set +a && cd $(MIGRATOR_DIR) && \
+		POSTGRES_ONLY=true ./$(MIGRATOR_BIN)
