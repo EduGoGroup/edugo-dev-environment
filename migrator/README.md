@@ -1,124 +1,106 @@
-# Migrator - EduGo Infrastructure v0.9.0
+# Migrator - EduGo
 
-Este módulo contiene ejemplos de integración con la última versión de `edugo-infrastructure` (v0.9.0) utilizando tests de integración con testcontainers.
+Servicio que aplica migraciones de esquema y datos iniciales para PostgreSQL y MongoDB al iniciar el entorno de desarrollo.
 
-## 📦 Dependencias
+## Estado actual
 
-El proyecto utiliza las siguientes dependencias de `edugo-infrastructure`:
+| Base de datos | Estado |
+|---|---|
+| PostgreSQL | Funcional al 100% — migraciones, seeds y versionamiento |
+| MongoDB | Conecta correctamente, aplica migraciones y seeds |
 
-```go
-require (
-    github.com/EduGoGroup/edugo-infrastructure/postgres v0.9.0
-    github.com/EduGoGroup/edugo-infrastructure/mongodb v0.9.0
-)
+## Dependencias
+
+```
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.64.0
+github.com/EduGoGroup/edugo-infrastructure/mongodb  v0.54.0
 ```
 
-## 🧪 Tests de Integración
+## Variables de entorno
 
 ### PostgreSQL
 
-El archivo `tests/postgres_integration_test.go` demuestra cómo:
-
-1. **SetupSuite**: Configurar un contenedor PostgreSQL con testcontainers
-2. **Aplicar migraciones**: Usar `migrations.ApplyAll(db)` del paquete infrastructure
-3. **SetupTest**: Aplicar datos de prueba con `migrations.ApplyMockData(db)`
-4. **TearDownTest**: Limpiar datos entre tests
-5. **TearDownSuite**: Cerrar conexiones y detener contenedores
-
-**Ejemplo de uso:**
-
-```go
-import "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
-
-func (s *Suite) SetupSuite() {
-    // Conectar a PostgreSQL (testcontainer o local)
-    db := conectarPostgres()
-    
-    // Aplicar migraciones
-    migrations.ApplyAll(db)
-}
-
-func (s *Suite) SetupTest() {
-    // Datos de prueba
-    migrations.ApplyMockData(db)
-}
-```
+| Variable | Default | Descripcion |
+|---|---|---|
+| `POSTGRES_URI` | — | URI completa (alternativa a las variables individuales) |
+| `POSTGRES_HOST` | `localhost` | Host |
+| `POSTGRES_PORT` | `5432` | Puerto |
+| `POSTGRES_DB` | `edugo` | Base de datos |
+| `POSTGRES_USER` | `edugo` | Usuario |
+| `POSTGRES_PASSWORD` | `edugo123` | Contrasena |
+| `POSTGRES_SSLMODE` | `disable` | Modo SSL |
 
 ### MongoDB
 
-El archivo `tests/mongodb_integration_test.go` demuestra cómo:
+| Variable | Default | Descripcion |
+|---|---|---|
+| `MONGO_URI` | — | URI completa (alternativa a las variables individuales) |
+| `MONGO_HOST` | `localhost` | Host |
+| `MONGO_PORT` | `27017` | Puerto |
+| `MONGO_USER` | `edugo` | Usuario |
+| `MONGO_PASSWORD` | `edugo123` | Contrasena |
+| `MONGO_DB_NAME` | `edugo` | Base de datos |
 
-1. **SetupSuite**: Configurar un contenedor MongoDB con testcontainers
-2. **Aplicar migraciones**: Usar `migrations.ApplyAll(ctx, db)` del paquete infrastructure
-3. **SetupTest**: Aplicar datos de prueba con `migrations.ApplyMockData(ctx, db)`
-4. **TearDownTest**: Limpiar colecciones entre tests
-5. **TearDownSuite**: Desconectar y detener contenedores
+### Flags de control
 
-**Ejemplo de uso:**
+| Variable | Default | Descripcion |
+|---|---|---|
+| `FORCE_MIGRATION` | `false` | Elimina y recrea todas las bases de datos |
+| `APPLY_MOCK_DATA` | `true` | Aplica datos de desarrollo |
+| `POSTGRES_ONLY` | `false` | Ejecuta solo migraciones de PostgreSQL |
+| `MONGO_ONLY` | `false` | Ejecuta solo migraciones de MongoDB |
+| `STATUS_ONLY` | `false` | Muestra estado actual sin aplicar cambios |
 
-```go
-import "github.com/EduGoGroup/edugo-infrastructure/mongodb/migrations"
+## Uso con docker-compose
 
-func (s *Suite) SetupSuite() {
-    // Conectar a MongoDB
-    db := conectarMongo()
-    
-    // Aplicar migraciones
-    migrations.ApplyAll(ctx, db)
-}
-
-func (s *Suite) SetupTest() {
-    // Datos de prueba
-    migrations.ApplyMockData(ctx, db)
-}
-```
-
-## 🚀 Ejecutar Tests
+El migrator esta integrado en el `docker-compose.yml` principal del entorno de desarrollo:
 
 ```bash
-# Compilar tests sin ejecutarlos
-go test -c ./tests
+# Levantar entorno completo (incluye migrator)
+docker compose --profile full up
 
-# Ejecutar tests de PostgreSQL
-go test -v ./tests -run TestPostgresIntegration
+# Solo bases de datos sin migrator
+docker compose --profile db-only up
 
-# Ejecutar tests de MongoDB
-go test -v ./tests -run TestMongoDBIntegration
-
-# Ejecutar todos los tests
-go test -v ./tests
+# Ver logs del migrator
+docker compose logs migrator
 ```
 
-## 📝 Notas
+El migrator corre una sola vez y termina. Si las bases de datos ya tienen datos, las migraciones se omiten (comportamiento idempotente). Para forzar una recreacion completa:
 
-- Los tests utilizan **testcontainers-go** para crear contenedores temporales
-- Docker debe estar corriendo para ejecutar los tests
-- Los contenedores se eliminan automáticamente después de los tests
-- Cada test se ejecuta con datos frescos gracias a `SetupTest` y `TearDownTest`
+```bash
+FORCE_MIGRATION=true docker compose --profile full up
+```
 
-## 🔗 Referencias
+## Tests de integracion
 
-- [edugo-infrastructure](https://github.com/EduGoGroup/edugo-infrastructure)
-- [postgres/USAGE_EXAMPLES.md](https://github.com/EduGoGroup/edugo-infrastructure/tree/main/postgres)
-- [mongodb/USAGE_EXAMPLES.md](https://github.com/EduGoGroup/edugo-infrastructure/tree/main/mongodb)
-- [testcontainers-go](https://golang.testcontainers.org/)
+Los tests usan testcontainers para crear contenedores temporales de PostgreSQL y MongoDB. Docker debe estar corriendo.
 
-## ✅ Verificación
+```bash
+# Ejecutar todos los tests
+go test -v ./tests
 
-Para verificar que todo está configurado correctamente:
+# Solo PostgreSQL
+go test -v ./tests -run TestPostgresIntegration
+
+# Solo MongoDB
+go test -v ./tests -run TestMongoDBIntegration
+```
+
+## Compilar y ejecutar local
 
 ```bash
 # Descargar dependencias
 go mod download
 
-# Limpiar y actualizar dependencias
-go mod tidy
+# Compilar
+go build -o bin/migrator ./cmd
 
-# Compilar proyecto
-go build ./...
-
-# Compilar tests
-go test -c ./tests
+# Ejecutar (requiere PostgreSQL y MongoDB corriendo)
+./bin/migrator
 ```
 
-Todos los comandos deben ejecutarse sin errores.
+## Referencias
+
+- [docs/DOCKER_INTEGRATION_GUIDE.md](docs/DOCKER_INTEGRATION_GUIDE.md) — guia detallada de integracion con docker-compose
+- [docs/MONGODB_LIMITATIONS.md](docs/MONGODB_LIMITATIONS.md) — limitaciones conocidas de MongoDB y soluciones propuestas
