@@ -1,7 +1,7 @@
 # EduGo Migrator
 # Makefile independiente — ejecutar desde migrator/
 
-.PHONY: help build clean fmt vet lint tidy test test-postgres test-mongo run status docker-up docker-down docker-migrate docker-recreate check
+.PHONY: help build clean fmt vet lint tidy test test-postgres test-mongo run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status check
 
 # Configuracion
 BINARY  := migrator
@@ -115,6 +115,22 @@ docker-recreate: build ## Recrear BDs desde cero con datos reales (BORRA DATOS)
 	@printf "$(YELLOW)Recreando bases de datos...$(NC)\n"
 	@POSTGRES_PORT=5433 MONGO_PORT=27018 FORCE_MIGRATION=true ./$(BIN_DIR)/$(BINARY)
 	@printf "$(GREEN)OK Bases de datos recreadas$(NC)\n"
+
+# ── Cloud (Neon + Atlas) ─────────────────────────────────────────────
+
+cloud-migrate: build ## Aplicar migraciones en Neon + Atlas (usa .env.cloud)
+	@printf "$(BLUE)Aplicando migraciones en cloud (Neon + Atlas)...$(NC)\n"
+	@set -a && . ./.env.cloud && set +a && ./$(BIN_DIR)/$(BINARY)
+	@printf "$(GREEN)OK Migraciones aplicadas$(NC)\n"
+
+cloud-recreate: build ## Recrear BDs desde cero en Neon + Atlas (BORRA DATOS)
+	@printf "$(YELLOW)Recreando bases de datos en cloud...$(NC)\n"
+	@set -a && . ./.env.cloud && set +a && FORCE_MIGRATION=true ./$(BIN_DIR)/$(BINARY)
+	@printf "$(GREEN)OK Bases de datos recreadas$(NC)\n"
+
+cloud-status: build ## Ver estado de la BD cloud sin aplicar cambios
+	@printf "$(BLUE)Estado de BD cloud...$(NC)\n"
+	@set -a && . ./.env.cloud && set +a && STATUS_ONLY=true ./$(BIN_DIR)/$(BINARY)
 
 # ── Pipeline CI ──────────────────────────────────────────────────────
 
