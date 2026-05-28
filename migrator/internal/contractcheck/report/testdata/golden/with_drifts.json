@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "stats": {
+    "kmp_screen_keys": 2,
+    "kmp_permissions": 1,
+    "kmp_roles": 1,
+    "kmp_contracts": 1,
+    "seed_resources": 1,
+    "seed_permissions": 2,
+    "seed_roles": 2,
+    "seed_role_permissions": 0,
+    "seed_resource_screens": 1,
+    "seed_screen_instances": 0
+  },
+  "summary": {
+    "errors": 4,
+    "warnings": 2,
+    "infos": 1,
+    "by_category": {
+      "permission_phantom": 1,
+      "permission_zombie": 1,
+      "role_phantom": 1,
+      "role_unused": 1,
+      "screen_key_dead": 1,
+      "screen_key_phantom": 1,
+      "service_prefix_mismatch": 1
+    },
+    "by_severity": {
+      "error": 4,
+      "info": 1,
+      "warning": 2
+    }
+  },
+  "drifts": [
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "ghost-form",
+      "detail": "FE declara screenKey 'ghost-form' que el seed no contiene.",
+      "evidence": [
+        {
+          "file_path": "kmp/Foo.kt",
+          "line": 42,
+          "snippet": "override val screenKey = \"ghost-form\""
+        }
+      ]
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "screen_key_dead",
+      "severity": "warning",
+      "identifier": "legacy-list",
+      "detail": "Seed declara 'legacy-list' pero KMP no atiende esa pantalla."
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "error",
+      "identifier": "ghost:read",
+      "detail": "Permiso inferido por FE no existe en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "kmp/Foo.kt",
+          "line": 42,
+          "snippet": "override val screenKey = \"ghost-form\""
+        }
+      ]
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "info",
+      "identifier": "audit:purge",
+      "detail": "Permiso seedado sin role_permission ni referencia en slot_data."
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "principal",
+      "detail": "FE menciona el rol 'principal' que no existe en iam.roles."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "auditor",
+      "detail": "Rol 'auditor' seedado sin uso en KMP."
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "announcements",
+      "detail": "apiPrefix=academic: declarado pero el ruteo canónico es platform:.",
+      "evidence": [
+        {
+          "file_path": "kmp/Foo.kt",
+          "line": 42,
+          "snippet": "override val screenKey = \"ghost-form\""
+        }
+      ]
+    }
+  ]
+}

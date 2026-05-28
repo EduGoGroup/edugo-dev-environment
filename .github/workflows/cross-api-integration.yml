@@ -1,0 +1,58 @@
+name: Cross-API Integration Tests
+
+# Corre los tests integration cross-API (3 AppServer reales: identity,
+# academic, platform contra un Postgres testcontainer) que viven en
+# edugo-dev-environment/test/integration/. Estos tests blindan flujos
+# end-to-end que requieren los 3 backends en el mismo binario — por
+# ejemplo el flujo super_admin global (SchoolSelector → switchContext
+# → UnitSelector → Dashboard).
+
+on:
+  pull_request:
+    branches: [dev, main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "edugo-dev-environment/test/**"
+      - "edugo-api-identity/**"
+      - "edugo-api-academic/**"
+      - "edugo-api-platform/**"
+      - "edugo-infrastructure/postgres/**"
+  push:
+    branches: [dev, main]
+
+env:
+  GO_VERSION: "1.25"
+
+jobs:
+  cross-api-integration:
+    name: Cross-API Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      # Testcontainers requires Docker socket. ubuntu-latest runners ya
+      # expone /var/run/docker.sock por default.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Configure private repos
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+        env:
+          GOPRIVATE: github.com/EduGoGroup/*
+
+      - name: Run cross-API integration tests
+        env:
+          ENABLE_INTEGRATION_TESTS: "true"
+        working-directory: edugo-dev-environment/test
+        run: |
+          go test -tags=integration,notest_swagger -count=1 -timeout=600s -v \
+              ./integration/superadmin_flow/...

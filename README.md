@@ -1,0 +1,42 @@
+# edugo-dev-environment
+
+Repositorio del ambiente de desarrollo de EduGo. Hoy contiene una sola pieza activa: `migrator/`.
+
+## Estructura
+
+```
+edugo-dev-environment/
+├── migrator/      # Migraciones de PostgreSQL (Neon) y MongoDB (Atlas) + seeds E2E
+└── archived/      # Material del ecosistema previo (no en uso) — ver archived/README.md
+```
+
+## Empezar
+
+Toda la actividad sucede dentro de `migrator/`:
+
+```bash
+cd migrator
+make help
+```
+
+Comandos clave (ejecutar desde `migrator/`):
+
+| Comando | Descripción |
+|---|---|
+| `make build` | Compilar el binario |
+| `make docker-migrate` | Levantar Postgres+Mongo locales y aplicar migraciones |
+| `make cloud-migrate` | Aplicar migraciones en Neon + Atlas (requiere `migrator/.env.cloud`) |
+| `make cloud-status` | Ver estado de la BD cloud |
+| `make cloud-recreate` | Recrear BDs cloud desde cero (BORRA DATOS) |
+| `make cloud-seed-scenario SCENARIO=legacy_e2e` | Aplicar fixtures E2E (scenario canónico) |
+| `make cloud-seed-layer LAYER=legacy` | Aplicar capas del sistema hasta la indicada |
+| `make check` | Pipeline completo: fmt + vet + lint + test + build |
+
+Documentación detallada en [`migrator/README.md`](./migrator/README.md).
+
+## Estado del ecosistema
+
+- **APIs nuevas**: en desarrollo, todavía sin despliegue.
+- **APIs viejas** (api-mobile, api-administracion, worker): el stack `docker-compose` que las levantaba está en [`archived/docker/`](./archived/docker/) y no representa el estado actual.
+
+Cuando las APIs nuevas tengan despliegue se reintroducirá un flujo de orquestación; por ahora `migrator/` es la única superficie activa.

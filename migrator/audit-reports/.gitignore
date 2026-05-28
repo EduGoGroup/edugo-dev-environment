@@ -1,0 +1,6 @@
+# Reportes ad-hoc en este directorio (no en subdirectorios). Las
+# variantes en baseline/ deben commitearse como punto de comparación.
+/seed-audit-*.json
+/seed-audit-*.md
+/contract-check-*.json
+/contract-check-*.md

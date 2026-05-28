@@ -1,0 +1,34 @@
+{
+  "resources": [
+    {"key": "schools", "name": "Escuelas"},
+    {"key": "users", "name": "Usuarios"}
+  ],
+  "permissions": [
+    {"code": "schools:read", "name": "Ver Escuelas"},
+    {"code": "schools:create", "name": "Crear Escuelas"},
+    {"code": "users:read", "name": "Ver Usuarios"},
+    {"code": "users:create", "name": "Crear Usuarios"},
+    {"code": "users:delete_all", "name": "Eliminar Usuarios (heredado)"},
+    {"code": "audit:export_v1", "name": "Exportar Auditoría (legacy)"},
+    {"code": "deprecated:cleanup", "name": "Limpieza Pendiente"}
+  ],
+  "roles": [
+    {"code": "school_admin", "name": "Administrador Escolar", "scope": "school"},
+    {"code": "student", "name": "Estudiante", "scope": "unit"}
+  ],
+  "role_permissions": [
+    {"role_code": "school_admin", "permission_code": "schools:read"},
+    {"role_code": "school_admin", "permission_code": "schools:create"},
+    {"role_code": "school_admin", "permission_code": "users:read"},
+    {"role_code": "school_admin", "permission_code": "users:create"},
+    {"role_code": "student", "permission_code": "users:read"}
+  ],
+  "resource_screens": [
+    {"resource_key": "schools", "screen_key": "schools-list", "screen_type": "list", "is_default": true},
+    {"resource_key": "users",   "screen_key": "users-list",   "screen_type": "list", "is_default": true}
+  ],
+  "screen_instances": [
+    {"screen_key": "schools-list", "slot_data": {}},
+    {"screen_key": "users-list",   "slot_data": {}}
+  ]
+}

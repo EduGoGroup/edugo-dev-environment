@@ -1,0 +1,49 @@
+# Reporte de Auditoría del Seed
+
+- **Fuente**: `{{ .SeedSource }}`
+- **Generado**: {{ .GeneratedAtRFC }}
+- **Schema**: {{ .SchemaVersion }}
+
+## Estadísticas
+
+| Colección | Conteo |
+|---|---:|
+| Resources | {{ .Stats.Resources }} |
+| Permissions | {{ .Stats.Permissions }} |
+| Roles | {{ .Stats.Roles }} |
+| RolePermissions | {{ .Stats.RolePermissions }} |
+| ResourceScreens | {{ .Stats.ResourceScreens }} |
+| ScreenInstances | {{ .Stats.ScreenInstances }} |
+| ConceptTypes | {{ .Stats.ConceptTypes }} |
+| ConceptDefinitions | {{ .Stats.ConceptDefinitions }} |
+
+## Resumen
+
+- **Errores**: {{ .Summary.Errors }}
+- **Advertencias**: {{ .Summary.Warnings }}
+- **Informativos**: {{ .Summary.Infos }}
+{{ if .ByCodeRows }}
+### Conteo por código
+
+| Código | Total |
+|---|---:|
+{{- range .ByCodeRows }}
+| `{{ .Code }}` | {{ .Count }} |
+{{- end }}
+{{ else }}
+_Sin violaciones registradas._
+{{ end }}
+## Violaciones
+{{ if not .HasViolations }}
+_No se detectaron violaciones._
+{{ else }}
+{{- range .Groups }}
+### {{ .Heading }} ({{ .Count }})
+
+| Código | Entidad | EntityID | Mensaje | Referencias | Path |
+|---|---|---|---|---|---|
+{{- range .Items }}
+| `{{ .Code }}` | {{ .Entity }} | {{ .EntityID }} | {{ .Message }} | {{ .References }} | {{ .Path }} |
+{{- end }}
+{{ end }}
+{{- end }}

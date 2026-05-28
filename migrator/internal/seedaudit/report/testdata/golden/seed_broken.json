@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "seed_source": "production",
+  "stats": {
+    "resources": 4,
+    "permissions": 6,
+    "roles": 2,    "resource_screens": 3,
+    "screen_instances": 3,
+    "concept_types": 1,
+    "concept_definitions": 2
+  },
+  "summary": {
+    "errors": 3,
+    "warnings": 1,
+    "infos": 1,
+    "by_code": {
+      "DIAG_NOTE": 1,
+      "PERM_RESOURCE_MISSING": 2,
+      "RESOURCE_ORPHAN": 1,
+      "SLOT_REF_MISSING": 1
+    }
+  },
+  "violations": [
+    {
+      "severity": "error",
+      "code": "PERM_RESOURCE_MISSING",
+      "message": "Permission referencia un Resource inexistente",
+      "entity": "Permission",
+      "entity_id": "perm:alpha.read",
+      "references": {
+        "permission_name": "alpha.read",
+        "resource_id": "00000000-0000-0000-0000-0000000000aa"
+      }
+    },
+    {
+      "severity": "error",
+      "code": "PERM_RESOURCE_MISSING",
+      "message": "Permission referencia un Resource inexistente",
+      "entity": "Permission",
+      "entity_id": "perm:beta.write",
+      "references": {
+        "permission_name": "beta.write"
+      }
+    },
+    {
+      "severity": "error",
+      "code": "SLOT_REF_MISSING",
+      "message": "slot_data referencia un permission inexistente",
+      "entity": "ScreenInstance",
+      "entity_id": "screen:dashboard",
+      "references": {
+        "permission_name": "missing.permission"
+      },
+      "path": "$.actions[2].permission"
+    },
+    {
+      "severity": "warning",
+      "code": "RESOURCE_ORPHAN",
+      "message": "Resource sin permissions ni resource_screens",
+      "entity": "Resource",
+      "entity_id": "resource:zeta",
+      "references": {
+        "resource_key": "zeta"
+      }
+    },
+    {
+      "severity": "info",
+      "code": "DIAG_NOTE",
+      "message": "Nota informativa de ejemplo",
+      "entity": "Diagnostic",
+      "entity_id": "diag:1"
+    }
+  ]
+}

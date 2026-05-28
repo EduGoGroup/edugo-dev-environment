@@ -1,0 +1,80 @@
+# Contract Check Report
+
+- **Generado:** {{ .GeneratedAt }}
+- **Schema:** {{ .SchemaVersion }}
+
+## Resumen ejecutivo
+
+| Severidad | Conteo |
+|-----------|--------|
+| Errores   | {{ .Summary.Errors }} |
+| Warnings  | {{ .Summary.Warnings }} |
+| Infos     | {{ .Summary.Infos }} |
+
+### Conteo por categoría
+
+{{- if .CategoryRows }}
+
+| Categoría | Drifts |
+|-----------|--------|
+{{- range .CategoryRows }}
+| {{ .Name }} | {{ .Count }} |
+{{- end }}
+{{- else }}
+
+_No se detectaron drifts._
+{{- end }}
+
+### Estadísticas del input
+
+| Origen | Métrica | Valor |
+|--------|---------|-------|
+| KMP    | screenKeys | {{ .Stats.KMPScreenKeys }} |
+| KMP    | permisos | {{ .Stats.KMPPermissions }} |
+| KMP    | roles | {{ .Stats.KMPRoles }} |
+| KMP    | contratos | {{ .Stats.KMPContracts }} |
+| Seed   | resources | {{ .Stats.SeedResources }} |
+| Seed   | permissions | {{ .Stats.SeedPermissions }} |
+| Seed   | roles | {{ .Stats.SeedRoles }} |
+| Seed   | role_permissions | {{ .Stats.SeedRolePermissions }} |
+| Seed   | resource_screens | {{ .Stats.SeedResourceScreens }} |
+| Seed   | screen_instances | {{ .Stats.SeedScreenInstances }} |
+
+## Drifts por categoría
+{{ range .Categories }}
+### {{ .Name }}
+
+_{{ .Notes }}_
+
+| Severidad | Dirección | Identificador | Detalle | Evidencia |
+|-----------|-----------|---------------|---------|-----------|
+{{- range .Drifts }}
+| {{ .Severity }} | {{ .Direction }} | {{ .Identifier }} | {{ .Detail }} | {{ .Evidence }} |
+{{- end }}
+{{ end }}
+{{- if .Diff }}
+
+## Regresiones
+
+{{ if .Diff.Regressions }}
+| Severidad | Categoría | Identificador | Detalle |
+|-----------|-----------|---------------|---------|
+{{- range .Diff.Regressions }}
+| {{ .Severity }} | {{ .Category }} | {{ .Identifier }} | {{ .Detail }} |
+{{- end }}
+{{ else }}
+_Sin regresiones respecto al baseline._
+{{ end }}
+
+## Fixes
+
+{{ if .Diff.Fixes }}
+| Severidad | Categoría | Identificador | Detalle |
+|-----------|-----------|---------------|---------|
+{{- range .Diff.Fixes }}
+| {{ .Severity }} | {{ .Category }} | {{ .Identifier }} | {{ .Detail }} |
+{{- end }}
+{{ else }}
+_Sin fixes respecto al baseline._
+{{ end }}
+{{- end }}

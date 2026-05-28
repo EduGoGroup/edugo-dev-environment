@@ -1,0 +1,34 @@
+# Repositorio de infraestructura clonado por migrator
+migrator/.infrastructure/
+
+# Claude local settings (per-developer)
+.claude/settings.local.json
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Variables de entorno locales (el .env se mantiene en git)
+.env.local
+.env.*.local
+
+# Credenciales de cloud (Neon, Atlas, Upstash)
+.env.neon
+.env.cloud
+docker/.env.cloud
+neon-config.yaml
+
+# Binarios del migrador
+migrator/bin/
+migrator/migrator
+migrator/tests.test

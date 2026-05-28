@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "stats": {
+    "kmp_screen_keys": 1,
+    "kmp_permissions": 0,
+    "kmp_roles": 0,
+    "kmp_contracts": 0,
+    "seed_resources": 1,
+    "seed_permissions": 1,
+    "seed_roles": 1,
+    "seed_role_permissions": 0,
+    "seed_resource_screens": 1,
+    "seed_screen_instances": 0
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 0,
+    "by_category": {},
+    "by_severity": {}
+  },
+  "drifts": null
+}

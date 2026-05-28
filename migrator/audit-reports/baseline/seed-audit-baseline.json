@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-05-08T22:05:58.919515Z",
+  "seed_source": "production",
+  "stats": {
+    "resources": 33,
+    "permissions": 104,
+    "roles": 12,
+    "role_permissions": 428,
+    "resource_screens": 63,
+    "screen_instances": 75,
+    "concept_types": 5,
+    "concept_definitions": 50
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 6,
+    "infos": 0,
+    "by_code": {
+      "RESOURCE_ORPHAN": 3,
+      "RS_NO_DEFAULT": 3
+    }
+  },
+  "violations": [
+    {
+      "severity": "warning",
+      "code": "RESOURCE_ORPHAN",
+      "message": "El recurso \"admin\" no tiene permisos ni resource_screens asociados.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000002",
+      "references": {
+        "resource_key": "admin"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "RESOURCE_ORPHAN",
+      "message": "El recurso \"academic\" no tiene permisos ni resource_screens asociados.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000003",
+      "references": {
+        "resource_key": "academic"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "RESOURCE_ORPHAN",
+      "message": "El recurso \"content\" no tiene permisos ni resource_screens asociados.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000004",
+      "references": {
+        "resource_key": "content"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "RS_NO_DEFAULT",
+      "message": "El recurso \"admin\" es visible en menú pero no tiene ningún ResourceScreen marcado como default.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000002",
+      "references": {
+        "resource_key": "admin"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "RS_NO_DEFAULT",
+      "message": "El recurso \"academic\" es visible en menú pero no tiene ningún ResourceScreen marcado como default.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000003",
+      "references": {
+        "resource_key": "academic"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "RS_NO_DEFAULT",
+      "message": "El recurso \"content\" es visible en menú pero no tiene ningún ResourceScreen marcado como default.",
+      "entity": "Resource",
+      "entity_id": "20000000-0000-0000-0000-000000000004",
+      "references": {
+        "resource_key": "content"
+      }
+    }
+  ]
+}

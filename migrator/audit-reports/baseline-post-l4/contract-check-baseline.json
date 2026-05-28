@@ -1,0 +1,1210 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-05-12T00:05:17.059239Z",
+  "stats": {
+    "kmp_screen_keys": 70,
+    "kmp_permissions": 21,
+    "kmp_roles": 8,
+    "kmp_contracts": 70,
+    "seed_resources": 33,
+    "seed_permissions": 104,
+    "seed_roles": 12,
+    "seed_role_permissions": 413,
+    "seed_resource_screens": 127,
+    "seed_screen_instances": 84
+  },
+  "summary": {
+    "errors": 18,
+    "warnings": 63,
+    "infos": 3,
+    "by_category": {
+      "permission_phantom": 22,
+      "permission_zombie": 31,
+      "role_phantom": 5,
+      "role_unused": 9,
+      "screen_key_dead": 4,
+      "screen_key_phantom": 5,
+      "service_prefix_mismatch": 8
+    },
+    "by_severity": {
+      "error": 18,
+      "info": 3,
+      "warning": 63
+    }
+  },
+  "drifts": [
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "attendance:delete",
+      "detail": "FE infiere permiso \"attendance:delete\" (resource=\"attendance\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceBatchContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceListContract.kt",
+          "line": 17,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceSummaryContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "attendance:update",
+      "detail": "FE infiere permiso \"attendance:update\" (resource=\"attendance\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceBatchContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceListContract.kt",
+          "line": 17,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceSummaryContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "audit:create",
+      "detail": "FE infiere permiso \"audit:create\" (resource=\"audit\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AuditListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "audit:delete",
+      "detail": "FE infiere permiso \"audit:delete\" (resource=\"audit\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AuditListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "audit:update",
+      "detail": "FE infiere permiso \"audit:update\" (resource=\"audit\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AuditListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "grades:delete",
+      "detail": "FE infiere permiso \"grades:delete\" (resource=\"grades\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GradesFormContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GradesListContract.kt",
+          "line": 17,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "guardian_relations:create",
+      "detail": "FE infiere permiso \"guardian_relations:create\" (resource=\"guardian_relations\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsListContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRequestsListContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"learning:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "guardian_relations:delete",
+      "detail": "FE infiere permiso \"guardian_relations:delete\" (resource=\"guardian_relations\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsListContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRequestsListContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"learning:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "guardian_relations:update",
+      "detail": "FE infiere permiso \"guardian_relations:update\" (resource=\"guardian_relations\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsListContract.kt",
+          "line": 11,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRequestsListContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"learning:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "progress:create",
+      "detail": "FE infiere permiso \"progress:create\" (resource=\"progress\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardGuardianContract.kt",
+          "line": 4,
+          "snippet": "resource = \"progress\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "progress:delete",
+      "detail": "FE infiere permiso \"progress:delete\" (resource=\"progress\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardGuardianContract.kt",
+          "line": 4,
+          "snippet": "resource = \"progress\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "reports:create",
+      "detail": "FE infiere permiso \"reports:create\" (resource=\"reports\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ReportCardContract.kt",
+          "line": 8,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "reports:delete",
+      "detail": "FE infiere permiso \"reports:delete\" (resource=\"reports\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ReportCardContract.kt",
+          "line": 8,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "reports:update",
+      "detail": "FE infiere permiso \"reports:update\" (resource=\"reports\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ReportCardContract.kt",
+          "line": 8,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "screens:create",
+      "detail": "FE infiere permiso \"screens:create\" (resource=\"screens\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenTemplatesListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreensFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "screens:delete",
+      "detail": "FE infiere permiso \"screens:delete\" (resource=\"screens\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenTemplatesListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreensFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "screens:update",
+      "detail": "FE infiere permiso \"screens:update\" (resource=\"screens\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenTemplatesListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreensFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "stats:create",
+      "detail": "FE infiere permiso \"stats:create\" (resource=\"stats\" action=\"create\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSchooladminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardStudentContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSuperadminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardTeacherContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ProgressDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/StatsDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "stats:delete",
+      "detail": "FE infiere permiso \"stats:delete\" (resource=\"stats\" action=\"delete\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSchooladminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardStudentContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSuperadminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardTeacherContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ProgressDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/StatsDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "stats:read",
+      "detail": "FE infiere permiso \"stats:read\" (resource=\"stats\" action=\"read\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSchooladminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardStudentContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSuperadminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardTeacherContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ProgressDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/StatsDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "stats:update",
+      "detail": "FE infiere permiso \"stats:update\" (resource=\"stats\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSchooladminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardStudentContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSuperadminContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardTeacherContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ProgressDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/StatsDashboardContract.kt",
+          "line": 4,
+          "snippet": "resource = \"stats\","
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "permission_phantom",
+      "severity": "warning",
+      "identifier": "system_settings:update",
+      "detail": "FE infiere permiso \"system_settings:update\" (resource=\"system_settings\" action=\"update\"): el resource existe en el seed pero la acción no está declarada en iam.permissions.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/SystemSettingsContract.kt",
+          "line": 28,
+          "snippet": "override val requiredPermission: String? = \"system_settings:update\""
+        }
+      ]
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "assessments:attempt",
+      "detail": "Permiso \"assessments:attempt\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "assessments:view_results",
+      "detail": "Permiso \"assessments:view_results\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "assessments_student:read",
+      "detail": "Permiso \"assessments_student:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "audit:export",
+      "detail": "Permiso \"audit:export\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "context:browse_schools",
+      "detail": "Permiso \"context:browse_schools\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "context:browse_units",
+      "detail": "Permiso \"context:browse_units\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "dashboard:view",
+      "detail": "Permiso \"dashboard:view\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "grades:finalize",
+      "detail": "Permiso \"grades:finalize\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:create",
+      "detail": "Permiso \"materials:create\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:delete",
+      "detail": "Permiso \"materials:delete\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:download",
+      "detail": "Permiso \"materials:download\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:publish",
+      "detail": "Permiso \"materials:publish\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:read",
+      "detail": "Permiso \"materials:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "materials:update",
+      "detail": "Permiso \"materials:update\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "menu:full_read",
+      "detail": "Permiso \"menu:full_read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "menu:read",
+      "detail": "Permiso \"menu:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "notifications:read",
+      "detail": "Permiso \"notifications:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "periods:activate",
+      "detail": "Permiso \"periods:activate\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "progress:read:own",
+      "detail": "Permiso \"progress:read:own\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "schools:manage",
+      "detail": "Permiso \"schools:manage\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "screen_instances:read",
+      "detail": "Permiso \"screen_instances:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "screen_templates:create",
+      "detail": "Permiso \"screen_templates:create\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "screen_templates:delete",
+      "detail": "Permiso \"screen_templates:delete\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "screen_templates:read",
+      "detail": "Permiso \"screen_templates:read\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "screen_templates:update",
+      "detail": "Permiso \"screen_templates:update\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "stats:global",
+      "detail": "Permiso \"stats:global\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "stats:school",
+      "detail": "Permiso \"stats:school\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "stats:unit",
+      "detail": "Permiso \"stats:unit\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "system_settings:settings",
+      "detail": "Permiso \"system_settings:settings\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "users:read:own",
+      "detail": "Permiso \"users:read:own\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "permission_zombie",
+      "severity": "warning",
+      "identifier": "users:update:own",
+      "detail": "Permiso \"users:update:own\" está asignado a algún role_permission pero ningún composable KMP ni slot_data lo consume. Revisión humana: posible uso interno backend."
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "home",
+      "detail": "El FE referencia role.code \"home\" (literal o sufijo dashboard-) pero el seed no lo declara en iam.roles.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/LoginContract.kt",
+          "line": 41,
+          "snippet": "is LoginResult.Success -> EventResult.NavigateTo(\"dashboard-home\")"
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/MainScreen.kt",
+          "line": 118,
+          "snippet": "\"dashboard-home\", \"dashboard-teacher\", \"dashboard-student\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/navigation/RouteRegistry.kt",
+          "line": 14,
+          "snippet": "register(\"dashboard-home\") { Route.Dashboard }"
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/navigation/Routes.kt",
+          "line": 77,
+          "snippet": "\"dashboard-home\", \"dashboard-teacher\", \"dashboard-student\" -> Dashboard"
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "name",
+      "detail": "El FE referencia role.code \"name\" (literal o sufijo dashboard-) pero el seed no lo declara en iam.roles.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/MembershipsListContract.kt",
+          "line": 53,
+          "snippet": "entry.jsonObject[\"name\"]?.jsonPrimitive?.contentOrNull"
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/UnitDirectoryContract.kt",
+          "line": 47,
+          "snippet": "entry.jsonObject[\"name\"]?.jsonPrimitive?.contentOrNull"
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "schooladmin",
+      "detail": "El FE referencia role.code \"schooladmin\" (literal o sufijo dashboard-) pero el seed no lo declara en iam.roles.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSchooladminContract.kt",
+          "line": 7,
+          "snippet": "override val screenKey = \"dashboard-schooladmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/dashboard/HybridDashboardContainer.kt",
+          "line": 124,
+          "snippet": "\"dashboard-schooladmin\" -> SchooladminDashboardContent("
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 35,
+          "snippet": "context?.hasRole(\"school_admin\") == true -> \"dashboard-schooladmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 36,
+          "snippet": "context?.hasRole(\"school_director\") == true -> \"dashboard-schooladmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 37,
+          "snippet": "context?.hasRole(\"school_coordinator\") == true -> \"dashboard-schooladmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 38,
+          "snippet": "context?.hasRole(\"school_assistant\") == true -> \"dashboard-schooladmin\""
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "subjects",
+      "detail": "El FE referencia role.code \"subjects\" (literal o sufijo dashboard-) pero el seed no lo declara en iam.roles.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/MembershipsListContract.kt",
+          "line": 49,
+          "snippet": "val subjects = item[\"subjects\"]"
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/UnitDirectoryContract.kt",
+          "line": 43,
+          "snippet": "val subjects = item[\"subjects\"]"
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "role_phantom",
+      "severity": "error",
+      "identifier": "superadmin",
+      "detail": "El FE referencia role.code \"superadmin\" (literal o sufijo dashboard-) pero el seed no lo declara en iam.roles.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/DashboardSuperadminContract.kt",
+          "line": 7,
+          "snippet": "override val screenKey = \"dashboard-superadmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/dashboard/HybridDashboardContainer.kt",
+          "line": 117,
+          "snippet": "\"dashboard-superadmin\", \"stats-dashboard\" -> SuperadminDashboardContent("
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 33,
+          "snippet": "context?.hasRole(\"super_admin\") == true -> \"dashboard-superadmin\""
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/screens/DynamicDashboardScreen.kt",
+          "line": 34,
+          "snippet": "context?.hasRole(\"platform_admin\") == true -> \"dashboard-superadmin\""
+        }
+      ]
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "error",
+      "identifier": "platform_admin",
+      "detail": "El seed declara role.code \"platform_admin\" pero ningún composable KMP lo atiende. scope=system: un rol de sistema sin UI explícita es bloqueante."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "error",
+      "identifier": "super_admin",
+      "detail": "El seed declara role.code \"super_admin\" pero ningún composable KMP lo atiende. scope=system: un rol de sistema sin UI explícita es bloqueante."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "assistant_teacher",
+      "detail": "El seed declara role.code \"assistant_teacher\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "observer",
+      "detail": "El seed declara role.code \"observer\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "readonly_auditor",
+      "detail": "El seed declara role.code \"readonly_auditor\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "school_admin",
+      "detail": "El seed declara role.code \"school_admin\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "school_assistant",
+      "detail": "El seed declara role.code \"school_assistant\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "school_coordinator",
+      "detail": "El seed declara role.code \"school_coordinator\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "role_unused",
+      "severity": "warning",
+      "identifier": "school_director",
+      "detail": "El seed declara role.code \"school_director\" pero ningún composable KMP lo atiende."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "screen_key_dead",
+      "severity": "error",
+      "identifier": "materials-list",
+      "detail": "El seed declara resource_screens.screen_key \"materials-list\" pero ningún composable KMP lo implementa. screen_type=\"list\" is_default=true — pantalla crítica inalcanzable."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "screen_key_dead",
+      "severity": "warning",
+      "identifier": "child-progress",
+      "detail": "El seed declara resource_screens.screen_key \"child-progress\" pero ningún composable KMP lo implementa."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "screen_key_dead",
+      "severity": "warning",
+      "identifier": "children-list",
+      "detail": "El seed declara resource_screens.screen_key \"children-list\" pero ningún composable KMP lo implementa."
+    },
+    {
+      "direction": "BE_ONLY",
+      "category": "screen_key_dead",
+      "severity": "warning",
+      "identifier": "material-detail",
+      "detail": "El seed declara resource_screens.screen_key \"material-detail\" pero ningún composable KMP lo implementa."
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "app-login",
+      "detail": "El frontend declara screenKey \"app-login\" pero el seed de producción no tiene ningún resource_screens.screen_key con ese valor.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/LoginContract.kt",
+          "line": 15,
+          "snippet": "override val screenKey = \"app-login\""
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "app-settings",
+      "detail": "El frontend declara screenKey \"app-settings\" pero el seed de producción no tiene ningún resource_screens.screen_key con ese valor.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/SettingsContract.kt",
+          "line": 13,
+          "snippet": "override val screenKey = \"app-settings\""
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "attendance-form",
+      "detail": "El frontend declara screenKey \"attendance-form\" pero el seed de producción no tiene ningún resource_screens.screen_key con ese valor.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AttendanceFormContract.kt",
+          "line": 4,
+          "snippet": "override val screenKey = \"attendance-form\""
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "guardian-relations-list",
+      "detail": "El frontend declara screenKey \"guardian-relations-list\" pero el seed de producción no tiene ningún resource_screens.screen_key con ese valor.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsListContract.kt",
+          "line": 15,
+          "snippet": "override val screenKey = \"guardian-relations-list\""
+        }
+      ]
+    },
+    {
+      "direction": "FE_ONLY",
+      "category": "screen_key_phantom",
+      "severity": "error",
+      "identifier": "guardian_relations-form",
+      "detail": "El frontend declara screenKey \"guardian_relations-form\" pero el seed de producción no tiene ningún resource_screens.screen_key con ese valor.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRelationsFormAliasContract.kt",
+          "line": 4,
+          "snippet": "override val screenKey = \"guardian_relations-form\""
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "audit",
+      "detail": "resource \"audit\" declarado con apiPrefix=[identity:] en KMP; la tabla canónica espera \"iam:\".",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/AuditListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "guardian_relations",
+      "detail": "resource \"guardian_relations\" declarado con apiPrefix=[learning:] en KMP; la tabla canónica espera \"academic:\".",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/GuardianRequestsListContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"learning:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "roles",
+      "detail": "resource \"roles\" declarado con apiPrefix=[identity:] en KMP; la tabla canónica espera \"iam:\".",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/RolesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"identity:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/RolesListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "screens",
+      "detail": "resource \"screens\" declarado con apiPrefix=[platform:] en KMP; la tabla canónica espera \"iam:\".",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenInstancesListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreenTemplatesListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ScreensFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"platform:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "error",
+      "identifier": "users",
+      "detail": "resource \"users\" declarado con apiPrefix=[identity:] en KMP; la tabla canónica espera \"iam:\".",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/UserRolesContract.kt",
+          "line": 12,
+          "snippet": "apiPrefix = \"identity:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/UsersFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"identity:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/UsersListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "info",
+      "identifier": "concept_types",
+      "detail": "resource \"concept_types\" no está clasificado en serviceRoutingTable (apiPrefix observado=[academic:]). Revisión humana: ampliar la tabla canónica.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ConceptTypesFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"academic:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ConceptTypesListContract.kt",
+          "line": 13,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "info",
+      "identifier": "permissions_mgmt",
+      "detail": "resource \"permissions_mgmt\" no está clasificado en serviceRoutingTable (apiPrefix observado=[identity:]). Revisión humana: ampliar la tabla canónica.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/PermissionsFormContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"identity:\","
+        },
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/PermissionsListContract.kt",
+          "line": 9,
+          "snippet": "apiPrefix = \"identity:\","
+        }
+      ]
+    },
+    {
+      "direction": "MISMATCH",
+      "category": "service_prefix_mismatch",
+      "severity": "info",
+      "identifier": "reports",
+      "detail": "resource \"reports\" no está clasificado en serviceRoutingTable (apiPrefix observado=[academic:]). Revisión humana: ampliar la tabla canónica.",
+      "evidence": [
+        {
+          "file_path": "EduUI/edugo-ui-kmp/kmp-screens/src/commonMain/kotlin/com/edugo/kmp/screens/dynamic/contracts/ReportCardContract.kt",
+          "line": 8,
+          "snippet": "apiPrefix = \"academic:\","
+        }
+      ]
+    }
+  ]
+}

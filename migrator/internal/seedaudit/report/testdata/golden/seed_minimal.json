@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "seed_source": "production",
+  "stats": {
+    "resources": 0,
+    "permissions": 0,
+    "roles": 0,    "resource_screens": 0,
+    "screen_instances": 0,
+    "concept_types": 0,
+    "concept_definitions": 0
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 0,
+    "by_code": {}
+  },
+  "violations": []
+}

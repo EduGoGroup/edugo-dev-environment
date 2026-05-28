@@ -1,0 +1,57 @@
+{
+  "resources": [
+    {"key": "schools", "name": "Schools"},
+    {"key": "periods", "name": "Academic Periods"}
+  ],
+  "permissions": [
+    {"code": "schools:read"},
+    {"code": "schools:create"},
+    {"code": "schools:update"},
+    {"code": "schools:delete"},
+    {"code": "periods:read"},
+    {"code": "periods:update"},
+    {"code": "menu:read"}
+  ],
+  "roles": [
+    {"code": "superadmin", "scope": "system"},
+    {"code": "schooladmin", "scope": "tenant"},
+    {"code": "teacher", "scope": "school"},
+    {"code": "student", "scope": "school"},
+    {"code": "guardian", "scope": "school"}
+  ],
+  "role_permissions": [
+    {"role_code": "schooladmin", "permission_code": "schools:read"},
+    {"role_code": "schooladmin", "permission_code": "schools:update"},
+    {"role_code": "teacher", "permission_code": "schools:read"}
+  ],
+  "resource_screens": [
+    {"resource_key": "schools", "screen_key": "schools-form", "screen_type": "form", "is_default": false},
+    {"resource_key": "schools", "screen_key": "schools-list", "screen_type": "list", "is_default": false},
+    {"resource_key": "periods", "screen_key": "periods-form", "screen_type": "form", "is_default": false},
+    {"resource_key": "menu", "screen_key": "dashboard-teacher", "screen_type": "dashboard", "is_default": true},
+    {"resource_key": "menu", "screen_key": "dashboard-student", "screen_type": "dashboard", "is_default": true}
+  ],
+  "screen_instances": [
+    {
+      "screen_key": "schools-form",
+      "slot_key": "header",
+      "slot_data": {
+        "title": "Edit school",
+        "actions": [
+          {"label": "Save", "requiredPermission": "schools:update"},
+          {"label": "Delete", "requiredPermission": "schools:delete"}
+        ]
+      }
+    },
+    {
+      "screen_key": "dashboard-teacher",
+      "slot_key": "menu",
+      "slot_data": {
+        "items": [
+          {"label": "Schools", "permission": "schools:read"},
+          {"label": "Menu", "permissions": ["menu:read", "schools:read"]}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# Repositorio de infraestructura clonado
+.infrastructure/
+
+# Binarios compilados
+migrator
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output del profiler
+*.out
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Variables de entorno (nunca subir al repo)
+.env.local
+.env.*.local
+.env.cloud
+
+# OS
+.DS_Store
+Thumbs.db
