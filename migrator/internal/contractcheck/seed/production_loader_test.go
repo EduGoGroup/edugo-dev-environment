@@ -20,7 +20,7 @@ func TestProductionLoader_Load_Smoke(t *testing.T) {
 		"resources":        33,
 		"permissions":      104,
 		"roles":            12,
-		"resource_screens": 63,
+		"resource_screens": 62,
 		"screen_instances": 47,
 	}
 	got := map[string]int{
@@ -33,16 +33,6 @@ func TestProductionLoader_Load_Smoke(t *testing.T) {
 	for k, min := range wantMin {
 		if got[k] < min {
 			t.Errorf("snap.%s = %d, expected at least %d", k, got[k], min)
-		}
-	}
-
-	if len(snap.RolePermissions) == 0 {
-		t.Error("RolePermissions should not be empty after adapter resolution")
-	}
-	for _, rp := range snap.RolePermissions {
-		if rp.RoleCode == "" || rp.PermissionCode == "" {
-			t.Errorf("RolePermission with empty code: %+v", rp)
-			break
 		}
 	}
 }

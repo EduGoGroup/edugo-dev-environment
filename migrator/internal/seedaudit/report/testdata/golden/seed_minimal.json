@@ -5,7 +5,8 @@
   "stats": {
     "resources": 0,
     "permissions": 0,
-    "roles": 0,    "resource_screens": 0,
+    "roles": 0,
+    "resource_screens": 0,
     "screen_instances": 0,
     "concept_types": 0,
     "concept_definitions": 0

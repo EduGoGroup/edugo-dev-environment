@@ -11,7 +11,6 @@
 | Resources | 0 |
 | Permissions | 0 |
 | Roles | 0 |
-| RolePermissions | 0 |
 | ResourceScreens | 0 |
 | ScreenInstances | 0 |
 | ConceptTypes | 0 |

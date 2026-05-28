@@ -28,13 +28,14 @@ require (
 	github.com/EduGoGroup/edugo-shared/middleware/gin v0.103.0 // indirect
 	github.com/EduGoGroup/edugo-shared/repository v0.100.0 // indirect
 	github.com/EduGoGroup/edugo-shared/screenconfig v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/tracer v0.0.0-20260405202341-3e202a98ed47 // indirect
+	github.com/EduGoGroup/edugo-shared/tracer v0.1.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
@@ -82,6 +83,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
@@ -127,14 +129,18 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
+	go.opentelemetry.io/contrib/bridges/otelslog v0.18.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.60.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.65.0 // indirect
 	go.opentelemetry.io/otel v1.43.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.19.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.35.0 // indirect
+	go.opentelemetry.io/otel/log v0.19.0 // indirect
 	go.opentelemetry.io/otel/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.43.0 // indirect
+	go.opentelemetry.io/otel/sdk/log v0.19.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
@@ -159,6 +165,37 @@ require (
 // Replaces locales: estos paquetes no se publican como módulos remotos —
 // solo viven en el workspace local (go.work).
 replace (
+	github.com/EduGoGroup/edugo-infrastructure/mongodb => ../../edugo-infrastructure/mongodb
+	github.com/EduGoGroup/edugo-infrastructure/postgres => ../../edugo-infrastructure/postgres
+	github.com/EduGoGroup/edugo-shared/audit => ../../edugo-shared/audit
+	github.com/EduGoGroup/edugo-shared/audit/postgres => ../../edugo-shared/audit/postgres
+	github.com/EduGoGroup/edugo-shared/auth => ../../edugo-shared/auth
+	github.com/EduGoGroup/edugo-shared/bootstrap => ../../edugo-shared/bootstrap
+	github.com/EduGoGroup/edugo-shared/bootstrap/mongodb => ../../edugo-shared/bootstrap/mongodb
+	github.com/EduGoGroup/edugo-shared/bootstrap/postgres => ../../edugo-shared/bootstrap/postgres
+	github.com/EduGoGroup/edugo-shared/bootstrap/rabbitmq => ../../edugo-shared/bootstrap/rabbitmq
+	github.com/EduGoGroup/edugo-shared/bootstrap/s3 => ../../edugo-shared/bootstrap/s3
+	github.com/EduGoGroup/edugo-shared/cache/redis => ../../edugo-shared/cache/redis
+	github.com/EduGoGroup/edugo-shared/common => ../../edugo-shared/common
+	github.com/EduGoGroup/edugo-shared/config => ../../edugo-shared/config
+	github.com/EduGoGroup/edugo-shared/export => ../../edugo-shared/export
+	github.com/EduGoGroup/edugo-shared/health => ../../edugo-shared/health
+	github.com/EduGoGroup/edugo-shared/lifecycle => ../../edugo-shared/lifecycle
+	github.com/EduGoGroup/edugo-shared/lifecycle/shutdown => ../../edugo-shared/lifecycle/shutdown
+	github.com/EduGoGroup/edugo-shared/logger => ../../edugo-shared/logger
+	github.com/EduGoGroup/edugo-shared/messaging/events => ../../edugo-shared/messaging/events
+	github.com/EduGoGroup/edugo-shared/messaging/rabbit => ../../edugo-shared/messaging/rabbit
+	github.com/EduGoGroup/edugo-shared/metrics => ../../edugo-shared/metrics
+	github.com/EduGoGroup/edugo-shared/middleware/gin => ../../edugo-shared/middleware/gin
+	github.com/EduGoGroup/edugo-shared/repository => ../../edugo-shared/repository
+	github.com/EduGoGroup/edugo-shared/resilience/circuitbreaker => ../../edugo-shared/resilience/circuitbreaker
+	github.com/EduGoGroup/edugo-shared/resilience/ratelimiter => ../../edugo-shared/resilience/ratelimiter
+	github.com/EduGoGroup/edugo-shared/resilience/retry => ../../edugo-shared/resilience/retry
+	github.com/EduGoGroup/edugo-shared/screenconfig => ../../edugo-shared/screenconfig
+	github.com/EduGoGroup/edugo-shared/storage => ../../edugo-shared/storage
+	github.com/EduGoGroup/edugo-shared/storage/s3 => ../../edugo-shared/storage/s3
+	github.com/EduGoGroup/edugo-shared/testing => ../../edugo-shared/testing
+	github.com/EduGoGroup/edugo-shared/tracer => ../../edugo-shared/tracer
 	github.com/edugo/edugo-api-academic => ../../edugo-api-academic
 	github.com/edugo/edugo-api-identity => ../../edugo-api-identity
 	github.com/edugo/edugo-api-platform => ../../edugo-api-platform

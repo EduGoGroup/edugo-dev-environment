@@ -11,7 +11,6 @@
 | Resources | 4 |
 | Permissions | 6 |
 | Roles | 2 |
-| RolePermissions | 5 |
 | ResourceScreens | 3 |
 | ScreenInstances | 3 |
 | ConceptTypes | 1 |

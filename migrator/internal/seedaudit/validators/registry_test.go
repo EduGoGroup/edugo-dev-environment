@@ -49,7 +49,7 @@ func TestRunAll_RecoversPanics(t *testing.T) {
 func TestRunAll_PreservesOrder(t *testing.T) {
 	// All registered validators run on the minimal snapshot without
 	// emitting violations; just make sure RunAll wires them all up.
-	if len(registered) != 7 {
-		t.Fatalf("expected 7 registered validators, got %d", len(registered))
+	if len(registered) != 6 {
+		t.Fatalf("expected 6 registered validators, got %d", len(registered))
 	}
 }
