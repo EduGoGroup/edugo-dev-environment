@@ -3,10 +3,10 @@ module github.com/EduGoGroup/edugo-dev-environment/test
 go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.77.2
-	github.com/EduGoGroup/edugo-shared/audit v0.100.0
-	github.com/EduGoGroup/edugo-shared/auth v0.100.0
-	github.com/EduGoGroup/edugo-shared/logger v0.100.0
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.1.0
+	github.com/EduGoGroup/edugo-shared/audit v0.1.0
+	github.com/EduGoGroup/edugo-shared/auth v0.1.0
+	github.com/EduGoGroup/edugo-shared/logger v0.1.0
 	github.com/edugo/edugo-api-academic v0.0.0
 	github.com/edugo/edugo-api-identity v0.0.0
 	github.com/edugo/edugo-api-platform v0.0.0
@@ -20,14 +20,14 @@ require (
 require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
-	github.com/EduGoGroup/edugo-shared/cache/redis v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/common v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/config v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/export v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/metrics v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/middleware/gin v0.103.0 // indirect
-	github.com/EduGoGroup/edugo-shared/repository v0.100.0 // indirect
-	github.com/EduGoGroup/edugo-shared/screenconfig v0.100.0 // indirect
+	github.com/EduGoGroup/edugo-shared/cache/redis v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/common v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/config v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/export v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/metrics v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/middleware/gin v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/repository v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/screenconfig v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/tracer v0.1.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -162,40 +162,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// Replaces locales: estos paquetes no se publican como módulos remotos —
-// solo viven en el workspace local (go.work).
+// edugo-api-* usan path de módulo github.com/edugo/* (no publicado): solo
+// resuelven local vía el workspace + estos replace. NO son releases reales.
 replace (
-	github.com/EduGoGroup/edugo-infrastructure/mongodb => ../../edugo-infrastructure/mongodb
-	github.com/EduGoGroup/edugo-infrastructure/postgres => ../../edugo-infrastructure/postgres
-	github.com/EduGoGroup/edugo-shared/audit => ../../edugo-shared/audit
-	github.com/EduGoGroup/edugo-shared/audit/postgres => ../../edugo-shared/audit/postgres
-	github.com/EduGoGroup/edugo-shared/auth => ../../edugo-shared/auth
-	github.com/EduGoGroup/edugo-shared/bootstrap => ../../edugo-shared/bootstrap
-	github.com/EduGoGroup/edugo-shared/bootstrap/mongodb => ../../edugo-shared/bootstrap/mongodb
-	github.com/EduGoGroup/edugo-shared/bootstrap/postgres => ../../edugo-shared/bootstrap/postgres
-	github.com/EduGoGroup/edugo-shared/bootstrap/rabbitmq => ../../edugo-shared/bootstrap/rabbitmq
-	github.com/EduGoGroup/edugo-shared/bootstrap/s3 => ../../edugo-shared/bootstrap/s3
-	github.com/EduGoGroup/edugo-shared/cache/redis => ../../edugo-shared/cache/redis
-	github.com/EduGoGroup/edugo-shared/common => ../../edugo-shared/common
-	github.com/EduGoGroup/edugo-shared/config => ../../edugo-shared/config
-	github.com/EduGoGroup/edugo-shared/export => ../../edugo-shared/export
-	github.com/EduGoGroup/edugo-shared/health => ../../edugo-shared/health
-	github.com/EduGoGroup/edugo-shared/lifecycle => ../../edugo-shared/lifecycle
-	github.com/EduGoGroup/edugo-shared/lifecycle/shutdown => ../../edugo-shared/lifecycle/shutdown
-	github.com/EduGoGroup/edugo-shared/logger => ../../edugo-shared/logger
-	github.com/EduGoGroup/edugo-shared/messaging/events => ../../edugo-shared/messaging/events
-	github.com/EduGoGroup/edugo-shared/messaging/rabbit => ../../edugo-shared/messaging/rabbit
-	github.com/EduGoGroup/edugo-shared/metrics => ../../edugo-shared/metrics
-	github.com/EduGoGroup/edugo-shared/middleware/gin => ../../edugo-shared/middleware/gin
-	github.com/EduGoGroup/edugo-shared/repository => ../../edugo-shared/repository
-	github.com/EduGoGroup/edugo-shared/resilience/circuitbreaker => ../../edugo-shared/resilience/circuitbreaker
-	github.com/EduGoGroup/edugo-shared/resilience/ratelimiter => ../../edugo-shared/resilience/ratelimiter
-	github.com/EduGoGroup/edugo-shared/resilience/retry => ../../edugo-shared/resilience/retry
-	github.com/EduGoGroup/edugo-shared/screenconfig => ../../edugo-shared/screenconfig
-	github.com/EduGoGroup/edugo-shared/storage => ../../edugo-shared/storage
-	github.com/EduGoGroup/edugo-shared/storage/s3 => ../../edugo-shared/storage/s3
-	github.com/EduGoGroup/edugo-shared/testing => ../../edugo-shared/testing
-	github.com/EduGoGroup/edugo-shared/tracer => ../../edugo-shared/tracer
 	github.com/edugo/edugo-api-academic => ../../edugo-api-academic
 	github.com/edugo/edugo-api-identity => ../../edugo-api-identity
 	github.com/edugo/edugo-api-platform => ../../edugo-api-platform
