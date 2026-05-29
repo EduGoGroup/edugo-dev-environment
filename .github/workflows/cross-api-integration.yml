@@ -48,7 +48,7 @@ jobs:
       - name: Run cross-API integration tests
         env:
           ENABLE_INTEGRATION_TESTS: "true"
-        working-directory: edugo-dev-environment/test
+        working-directory: test
         run: |
           go test -tags=integration,notest_swagger -count=1 -timeout=600s -v \
               ./integration/superadmin_flow/...
