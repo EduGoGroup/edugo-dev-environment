@@ -8,6 +8,8 @@ github.com/EduGoGroup/edugo-infrastructure/mongodb v0.1.0 h1:hf4C7YPJ+gw+zwIQlZF
 github.com/EduGoGroup/edugo-infrastructure/mongodb v0.1.0/go.mod h1:i2Z9ha97Xbm6sSigl8Rlyj7fqnDggBUcbwUT9tUXy5I=
 github.com/EduGoGroup/edugo-infrastructure/postgres v0.3.0 h1:xxBQa+IxgC723PHL0bbeIRQjq3vv2UPvLIG+JWCvxPM=
 github.com/EduGoGroup/edugo-infrastructure/postgres v0.3.0/go.mod h1:NiuhgH8Ec0e5Hu5ias5ji8a/MbTaIcQ8VKALBkSsvNQ=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.4.0 h1:1GDDwsI7VTkT3e5EnVl9MGliuG4izYDEWMqhFfV6r6Y=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.4.0/go.mod h1:NiuhgH8Ec0e5Hu5ias5ji8a/MbTaIcQ8VKALBkSsvNQ=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
