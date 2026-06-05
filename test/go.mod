@@ -3,7 +3,7 @@ module github.com/EduGoGroup/edugo-dev-environment/test
 go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.4.0
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.0
 	github.com/EduGoGroup/edugo-shared/audit v0.1.0
 	github.com/EduGoGroup/edugo-shared/auth v0.1.1
 	github.com/EduGoGroup/edugo-shared/logger v0.1.0
@@ -25,7 +25,7 @@ require (
 	github.com/EduGoGroup/edugo-shared/config v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/export v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/metrics v0.1.0 // indirect
-	github.com/EduGoGroup/edugo-shared/middleware/gin v0.1.1 // indirect
+	github.com/EduGoGroup/edugo-shared/middleware/gin v0.2.0 // indirect
 	github.com/EduGoGroup/edugo-shared/repository v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/screenconfig v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/tracer v0.1.0 // indirect
