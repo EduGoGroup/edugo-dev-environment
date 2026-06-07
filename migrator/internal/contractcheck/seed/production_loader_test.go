@@ -7,8 +7,10 @@ import (
 
 // TestProductionLoader_Load_Smoke ensures the adapter projects the
 // production seed without losing rows. The expected counts mirror the
-// values reported by Phase A's baseline (2026-05-08); refresh them if
-// the seed is intentionally changed.
+// baseline refreshed 2026-06-07 for the N4 seed (3.50.0): the evaluation
+// subsystem was rebuilt and legacy assessment resources/permissions were
+// pruned, so resource_screens dropped 62→58 and permissions 104→98.
+// refresh these again if the seed is intentionally changed.
 func TestProductionLoader_Load_Smoke(t *testing.T) {
 	loader := NewProductionLoader("")
 	snap, err := loader.Load(context.Background())
@@ -18,9 +20,9 @@ func TestProductionLoader_Load_Smoke(t *testing.T) {
 
 	wantMin := map[string]int{
 		"resources":        33,
-		"permissions":      104,
+		"permissions":      98,
 		"roles":            12,
-		"resource_screens": 62,
+		"resource_screens": 58,
 		"screen_instances": 47,
 	}
 	got := map[string]int{
