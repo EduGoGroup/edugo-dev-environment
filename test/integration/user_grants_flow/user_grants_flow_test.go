@@ -51,7 +51,6 @@ const (
 type userGrantDTO struct {
 	ID                string  `json:"id"`
 	UserID            string  `json:"user_id"`
-	ScopePattern      string  `json:"scope_pattern"`
 	PermissionPattern string  `json:"permission_pattern"`
 	Effect            string  `json:"effect"`
 	ExpiresAt         *string `json:"expires_at,omitempty"`
@@ -195,7 +194,7 @@ func TestUserGrants_API_RejectWildcardStar(t *testing.T) {
 		"POST '*' grant: expected 400, got %d body=%s", status, string(body))
 }
 
-// TestUserGrants_API_Duplicate — un (user_id, scope_pattern, permission_pattern, effect)
+// TestUserGrants_API_Duplicate — un (user_id, permission_pattern, effect)
 // duplicado retorna 409. Se hace cleanup best-effort al final.
 func TestUserGrants_API_Duplicate(t *testing.T) {
 	env := roleflow.Get()
