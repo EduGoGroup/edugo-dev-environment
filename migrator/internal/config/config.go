@@ -18,14 +18,19 @@ type MongoConfig struct {
 	DBName string
 }
 
+// DefaultPlaygroundV2 es el fixture de datos que se siembra cuando el migrador
+// corre sin flags de seed (p.ej. `make docker-recreate`). MP-09 F1: el default
+// pasó de `demo` a `playground_v2/base`.
+const DefaultPlaygroundV2 = "base"
+
 // Config contiene toda la configuración del migrator leída desde variables de entorno.
 type Config struct {
 	// Flags de control de ejecución
 	ForceMigration bool
-	SeedDemo       bool   // Aplicar seed de demo (datos de prueba)
+	SeedDemo       bool   // Aplicar seed de demo (solo vía flag explícito --seed-demo)
 	SeedUpToLayer  string // Aplicar system seed hasta esta capa (vacío = todas)
 	Playground     string // Si se setea, aplica el playground tras L0 (omite demo)
-	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo)
+	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Default = base.
 	PostgresOnly   bool
 	MongoOnly      bool
 	StatusOnly     bool
@@ -37,12 +42,13 @@ type Config struct {
 
 // Load carga la configuración completa desde variables de entorno.
 // Es el único lugar donde se leen variables de entorno en el migrator.
-// Nota: SeedUpToLayer y la precedencia de CLI sobre ENV para SeedDemo
-// se resuelven en cmd/main.go después de parsear flags.
+// Nota: SeedUpToLayer, los playgrounds y el flag --seed-demo se resuelven en
+// cmd/main.go después de parsear flags. Sin flags, el default es sembrar el
+// fixture playground_v2/base (MP-09 F1).
 func Load() Config {
 	return Config{
 		ForceMigration: os.Getenv("FORCE_MIGRATION") == "true",
-		SeedDemo:       os.Getenv("APPLY_MOCK_DATA") != "false", // legacy ENV, default: true
+		PlaygroundV2:   DefaultPlaygroundV2,
 		PostgresOnly:   os.Getenv("POSTGRES_ONLY") == "true",
 		MongoOnly:      os.Getenv("MONGO_ONLY") == "true",
 		StatusOnly:     os.Getenv("STATUS_ONLY") == "true",

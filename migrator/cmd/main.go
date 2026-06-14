@@ -16,7 +16,7 @@ import (
 func main() {
 	fs := flag.NewFlagSet("migrator", flag.ExitOnError)
 	seedUpToLayer := fs.String("seed-up-to-layer", "", "layer del seed system hasta la cual aplicar (vacío = todas)")
-	seedDemo := fs.Bool("seed-demo", true, "aplicar seed de demo (default true, sobrescribe APPLY_MOCK_DATA si explícito)")
+	seedDemo := fs.Bool("seed-demo", false, "aplicar el seed de demo legacy en vez del default (playground_v2/base). Implica force migration y omite base.")
 	playgroundFlag := fs.String(
 		"playground",
 		"",
@@ -41,37 +41,44 @@ func main() {
 		log.Fatalf("flag parse: %v", err)
 	}
 
-	seedDemoExplicit := false
-	fs.Visit(func(f *flag.Flag) {
-		if f.Name == "seed-demo" {
-			seedDemoExplicit = true
-		}
-	})
-
 	cfg := config.Load()
 	cfg.SeedUpToLayer = *seedUpToLayer
-	if seedDemoExplicit {
-		cfg.SeedDemo = *seedDemo
-	}
 
-	// Modo playground: recrear desde cero y aplicar el/los playground(s)
-	// pedido(s). NO forzamos un layer particular del sistema — el playground
-	// puede convivir con cualquier capa, su funcionamiento depende solo de
-	// L0 (siempre se siembra) y de sus propios grants para restringir el menú.
-	// Si el caller necesita acotar el sistema, lo hace explícitamente con
+	// Default (sin flags de seed): se siembra playground_v2/base, ya fijado por
+	// config.Load(). Los flags explícitos de abajo lo sobrescriben. La selección
+	// de fixture implica force migration (recreación desde cero), ya que los
+	// playgrounds v2 asumen una BD limpia.
+	//
+	// Modo playground: NO forzamos un layer particular del sistema — el
+	// playground puede convivir con cualquier capa, su funcionamiento depende
+	// solo de L0 (siempre se siembra) y de sus propios grants para restringir el
+	// menú. Si el caller necesita acotar el sistema, lo hace explícitamente con
 	// -seed-up-to-layer.
 	if *playgroundFlag != "" && *playgroundV2Flag != "" {
 		log.Fatalf("flags -playground y -playground-v2 son mutuamente excluyentes")
 	}
-	if *playgroundFlag != "" {
-		cfg.Playground = *playgroundFlag
+	switch {
+	case *seedDemo:
+		// Seed de demo legacy explícito: reemplaza el default base.
+		cfg.SeedDemo = true
+		cfg.PlaygroundV2 = ""
 		cfg.ForceMigration = true
-		cfg.SeedDemo = false
-	}
-	if *playgroundV2Flag != "" {
+	case *playgroundFlag != "":
+		cfg.Playground = *playgroundFlag
+		cfg.PlaygroundV2 = ""
+		cfg.ForceMigration = true
+	case *playgroundV2Flag != "":
 		cfg.PlaygroundV2 = *playgroundV2Flag
 		cfg.ForceMigration = true
-		cfg.SeedDemo = false
+	case *seedUpToLayer != "":
+		// Modo "seed hasta una capa": operación de scope del system seed, sin
+		// fixture de datos encima. No inyecta base ni fuerza recreación; respeta
+		// FORCE_MIGRATION del entorno si el caller lo pide.
+		cfg.PlaygroundV2 = ""
+	default:
+		// Default base: heredado de config.Load(). Implica force migration
+		// porque los playgrounds v2 asumen una BD limpia.
+		cfg.ForceMigration = true
 	}
 
 	orch := orchestrator.New(cfg)
