@@ -1,7 +1,7 @@
 //go:build integration
 
 // Package school_admin_flow valida que el rol L4 school_admin del seed
-// demo `admin.sanignacio@edugo.test` puede autenticarse y recibe los
+// base `admin.sanignacio@edugo.test` puede autenticarse y recibe los
 // patterns canónicos en `ActiveContext.Grants.Allow`.
 //
 // Pass 2 (single-path Grants): ya no existe path "legacy"; el test

@@ -108,20 +108,21 @@ func TestMain(m *testing.M) {
 	}()
 	testDB = gdb
 
-	// 2. migrations.Migrate(Force=true, SeedDemo=true) — DDL + L0..L4 +
-	//    demo (necesario para tener academic_units listables).
+	// 2. migrations.Migrate(Force=true, PlaygroundV2="base") — DDL + L0..L4 +
+	//    base (necesario para tener academic_units listables). `base`
+	//    reemplaza al difunto seed `demo` (MP-09 F2) y siembra 2 escuelas
+	//    con su árbol de unidades.
 	if _, err := infraMigrations.Migrate(sqlDB, infraMigrations.MigrateOptions{
-		Force:    true,
-		SeedDemo: true,
-		DBUser:   testDBUser,
+		Force:        true,
+		PlaygroundV2: "base",
+		DBUser:       testDBUser,
 	}); err != nil {
 		log.Fatalf("superadmin_flow: migrate: %v", err)
 	}
 
-	// 2.1 demo.ApplyDemo trunca auth.users y academic.schools (entre
-	// otras tablas) destruyendo las filas L0 sembradas por system.
-	// Re-aplicamos system para restaurarlas — es idempotente vía
-	// OnConflict DoNothing por id.
+	// 2.1 base.Apply sembra con upsert idempotente y NO trunca tablas, así
+	// que las filas L0 de system sobreviven. Re-aplicamos system de todas
+	// formas — es idempotente vía OnConflict DoNothing por id.
 	if err := system.ApplySystem(sqlDB, ""); err != nil {
 		log.Fatalf("superadmin_flow: re-apply system: %v", err)
 	}
@@ -219,7 +220,7 @@ func startIdentityServer(db *gorm.DB) *httptest.Server {
 	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	c := identityBuilder.NewContainer(db, log, cfg, blacklist)
-	return httptest.NewServer(c.SetupRouter(cfg, log))
+	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
 func startAcademicServer(db *gorm.DB) *httptest.Server {
@@ -249,7 +250,7 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
 	c := academicBuilder.NewContainer(db, log, cfg, blacklist, auditLog)
-	return httptest.NewServer(c.SetupRouter(cfg, log))
+	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
 func startPlatformServer(db *gorm.DB) *httptest.Server {
@@ -279,7 +280,7 @@ func startPlatformServer(db *gorm.DB) *httptest.Server {
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
 	c := platformBuilder.NewContainer(db, log, cfg, blacklist, auditLog, nil)
-	return httptest.NewServer(c.SetupRouter(cfg, log))
+	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
 // noOpLogger silencia los logs de los AppServer en tests.

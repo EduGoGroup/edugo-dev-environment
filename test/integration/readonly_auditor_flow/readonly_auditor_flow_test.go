@@ -1,7 +1,7 @@
 //go:build integration
 
 // Package readonly_auditor_flow valida que el rol alias L4
-// `readonly_auditor` del seed demo `readonly@edugo.test` hereda los
+// `readonly_auditor` del seed base `readonly@edugo.test` hereda los
 // patterns de teacher pero filtrados a sólo acciones de lectura. Los
 // patterns con verbos mutativos (create/update/delete/publish/grade/
 // finalize/assign/review/manage/request/activate/attempt) NO deben

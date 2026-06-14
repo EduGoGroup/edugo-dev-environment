@@ -27,10 +27,9 @@ const DefaultPlaygroundV2 = "base"
 type Config struct {
 	// Flags de control de ejecución
 	ForceMigration bool
-	SeedDemo       bool   // Aplicar seed de demo (solo vía flag explícito --seed-demo)
 	SeedUpToLayer  string // Aplicar system seed hasta esta capa (vacío = todas)
-	Playground     string // Si se setea, aplica el playground tras L0 (omite demo)
-	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem (omite demo). Default = base.
+	Playground     string // Si se setea, aplica el playground tras L0
+	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem. Default = base.
 	PostgresOnly   bool
 	MongoOnly      bool
 	StatusOnly     bool
@@ -42,9 +41,9 @@ type Config struct {
 
 // Load carga la configuración completa desde variables de entorno.
 // Es el único lugar donde se leen variables de entorno en el migrator.
-// Nota: SeedUpToLayer, los playgrounds y el flag --seed-demo se resuelven en
-// cmd/main.go después de parsear flags. Sin flags, el default es sembrar el
-// fixture playground_v2/base (MP-09 F1).
+// Nota: SeedUpToLayer y los playgrounds se resuelven en cmd/main.go después de
+// parsear flags. Sin flags, el default es sembrar el fixture playground_v2/base
+// (MP-09 F1).
 func Load() Config {
 	return Config{
 		ForceMigration: os.Getenv("FORCE_MIGRATION") == "true",

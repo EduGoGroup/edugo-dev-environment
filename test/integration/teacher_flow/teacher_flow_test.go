@@ -1,6 +1,6 @@
 //go:build integration
 
-// Package teacher_flow valida que el rol L4 teacher del seed demo
+// Package teacher_flow valida que el rol L4 teacher del seed base
 // `prof.martinez@edugo.test` puede autenticarse y recibe los patterns
 // canónicos del rol en `ActiveContext.Grants.Allow`.
 package teacher_flow_test
@@ -51,7 +51,6 @@ func TestTeacherFlow_Grants(t *testing.T) {
 		"academic.attendance.read",
 		"academic.attendance.create",
 		"academic.attendance.update",
-		"academic.schedules.read",
 		"academic.announcements.read",
 		"academic.announcements.create",
 		"academic.periods.read",

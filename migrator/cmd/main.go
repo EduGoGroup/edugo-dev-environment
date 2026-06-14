@@ -16,7 +16,6 @@ import (
 func main() {
 	fs := flag.NewFlagSet("migrator", flag.ExitOnError)
 	seedUpToLayer := fs.String("seed-up-to-layer", "", "layer del seed system hasta la cual aplicar (vacío = todas)")
-	seedDemo := fs.Bool("seed-demo", false, "aplicar el seed de demo legacy en vez del default (playground_v2/base). Implica force migration y omite base.")
 	playgroundFlag := fs.String(
 		"playground",
 		"",
@@ -32,7 +31,7 @@ func main() {
 		"",
 		fmt.Sprintf(
 			"nombre del playground v2 a aplicar tras el sistema, \"all\" para aplicar todos, o uno de los registrados (%s). "+
-				"Mutuamente excluyente con -playground. Implica force migration y skip demo. "+
+				"Mutuamente excluyente con -playground. Implica force migration. "+
 				"Por defecto el sistema se siembra completo; los playgrounds v2 asumen L4 completo.",
 			strings.Join(playground_v2.Available(), "|"),
 		),
@@ -58,11 +57,6 @@ func main() {
 		log.Fatalf("flags -playground y -playground-v2 son mutuamente excluyentes")
 	}
 	switch {
-	case *seedDemo:
-		// Seed de demo legacy explícito: reemplaza el default base.
-		cfg.SeedDemo = true
-		cfg.PlaygroundV2 = ""
-		cfg.ForceMigration = true
 	case *playgroundFlag != "":
 		cfg.Playground = *playgroundFlag
 		cfg.PlaygroundV2 = ""

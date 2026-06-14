@@ -1,6 +1,6 @@
 //go:build integration
 
-// Package student_flow valida que el rol L4 student del seed demo
+// Package student_flow valida que el rol L4 student del seed base
 // `est.carlos@edugo.test` puede autenticarse y recibe los patterns
 // canónicos del rol en `ActiveContext.Grants.Allow`.
 package student_flow_test
@@ -31,6 +31,10 @@ func TestStudentFlow_Grants(t *testing.T) {
 	assert.Equal(t, roleName, resp.ActiveContext.RoleName)
 
 	// Patterns extraídos del seed L4 `rolePermissionGrants()` para student.
+	// Notas del alumno: el rol ya NO recibe `academic.grades.read` (CRUD
+	// docente — fuga de privacidad, podado en N3 F4.1); su lectura de notas
+	// propias es el feature self `academic.my_grades.read:own`. Los recursos
+	// `academic.schedules`/`academic.calendar` se eliminaron del producto.
 	roleflow.AssertGrantsContains(t, resp.ActiveContext.Grants,
 		"content.assessments.attempt",
 		"content.assessments.read",
@@ -39,11 +43,10 @@ func TestStudentFlow_Grants(t *testing.T) {
 		"content.materials.read",
 		"content.materials.download",
 		"reports.progress.read:own",
-		"academic.grades.read",
+		"academic.my_grades.read:own",
+		"academic.my_memberships.read:own",
 		"academic.attendance.read",
-		"academic.schedules.read",
 		"academic.announcements.read",
-		"academic.calendar.read",
 		"dashboard.view",
 		"screens.read",
 		"menu.read",
@@ -51,8 +54,11 @@ func TestStudentFlow_Grants(t *testing.T) {
 		"admin.system_settings.read",
 	)
 
-	assert.Empty(t, resp.ActiveContext.Grants.Deny,
-		"student: grants.deny must be empty")
+	// El seed base aplica un deny puntual a est.carlos sobre
+	// `academic.grades.read` (override prohibitivo de lectura de notas, el
+	// mismo dato que valida user_grants_flow). No es deny vacío.
+	assert.Contains(t, resp.ActiveContext.Grants.Deny, "academic.grades.read",
+		"student est.carlos: base siembra deny puntual sobre academic.grades.read")
 
 	status, _ := roleflow.GetJSON(t, env.Server,
 		"/api/v1/auth/contexts", resp.AccessToken)

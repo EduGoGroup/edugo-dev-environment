@@ -57,12 +57,11 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 
 	s.db = db
 
-	// Aplicar migraciones completas con system seeds + demo seeds vía Migrate(Force=true).
-	// SeedDemo=true para que se apliquen los datos de prueba.
+	// Aplicar migraciones completas con system seeds + datos de prueba (fixture base) vía Migrate(Force=true).
 	_, err = migrations.Migrate(s.db, migrations.MigrateOptions{
-		Force:    true,
-		SeedDemo: true,
-		DBUser:   "testuser",
+		Force:        true,
+		PlaygroundV2: "base",
+		DBUser:       "testuser",
 	})
 	s.Require().NoError(err, "Failed to apply migrations")
 }
