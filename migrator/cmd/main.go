@@ -9,29 +9,18 @@ import (
 
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/config"
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/orchestrator"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
 )
 
 func main() {
 	fs := flag.NewFlagSet("migrator", flag.ExitOnError)
 	seedUpToLayer := fs.String("seed-up-to-layer", "", "layer del seed system hasta la cual aplicar (vacío = todas)")
-	playgroundFlag := fs.String(
-		"playground",
-		"",
-		fmt.Sprintf(
-			"nombre del playground a aplicar tras el sistema, \"all\" para aplicar todos, o uno de los registrados (%s). "+
-				"Implica force migration y skip demo. "+
-				"Por defecto el sistema se siembra completo (todas las capas); si querés acotar el sistema usá -seed-up-to-layer.",
-			strings.Join(playground.Available(), "|"),
-		),
-	)
 	playgroundV2Flag := fs.String(
 		"playground-v2",
 		"",
 		fmt.Sprintf(
 			"nombre del playground v2 a aplicar tras el sistema, \"all\" para aplicar todos, o uno de los registrados (%s). "+
-				"Mutuamente excluyente con -playground. Implica force migration. "+
+				"Implica force migration. "+
 				"Por defecto el sistema se siembra completo; los playgrounds v2 asumen L4 completo.",
 			strings.Join(playground_v2.Available(), "|"),
 		),
@@ -53,14 +42,7 @@ func main() {
 	// solo de L0 (siempre se siembra) y de sus propios grants para restringir el
 	// menú. Si el caller necesita acotar el sistema, lo hace explícitamente con
 	// -seed-up-to-layer.
-	if *playgroundFlag != "" && *playgroundV2Flag != "" {
-		log.Fatalf("flags -playground y -playground-v2 son mutuamente excluyentes")
-	}
 	switch {
-	case *playgroundFlag != "":
-		cfg.Playground = *playgroundFlag
-		cfg.PlaygroundV2 = ""
-		cfg.ForceMigration = true
 	case *playgroundV2Flag != "":
 		cfg.PlaygroundV2 = *playgroundV2Flag
 		cfg.ForceMigration = true

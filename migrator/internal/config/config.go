@@ -28,7 +28,6 @@ type Config struct {
 	// Flags de control de ejecución
 	ForceMigration bool
 	SeedUpToLayer  string // Aplicar system seed hasta esta capa (vacío = todas)
-	Playground     string // Si se setea, aplica el playground tras L0
 	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem. Default = base.
 	PostgresOnly   bool
 	MongoOnly      bool

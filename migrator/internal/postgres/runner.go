@@ -50,7 +50,7 @@ func (r *Runner) Status() error {
 }
 
 // Run ejecuta las migraciones de PostgreSQL.
-func (r *Runner) Run(force bool, seedUpToLayer string, playground string, playgroundV2 string) error {
+func (r *Runner) Run(force bool, seedUpToLayer string, playgroundV2 string) error {
 	db, err := r.connect()
 	if err != nil {
 		return err
@@ -62,7 +62,6 @@ func (r *Runner) Run(force bool, seedUpToLayer string, playground string, playgr
 	result, err := postgresMigrations.Migrate(db, postgresMigrations.MigrateOptions{
 		Force:         force,
 		SeedUpToLayer: seedUpToLayer,
-		Playground:    playground,
 		PlaygroundV2:  playgroundV2,
 		DBUser:        r.cfg.User,
 	})

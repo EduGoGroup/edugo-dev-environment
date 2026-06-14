@@ -50,7 +50,7 @@ func (o *Orchestrator) Run() error {
 
 	if !o.cfg.MongoOnly {
 		fmt.Println("\n--- PostgreSQL ---")
-		if err := o.pg.Run(o.cfg.ForceMigration, o.cfg.SeedUpToLayer, o.cfg.Playground, o.cfg.PlaygroundV2); err != nil {
+		if err := o.pg.Run(o.cfg.ForceMigration, o.cfg.SeedUpToLayer, o.cfg.PlaygroundV2); err != nil {
 			return fmt.Errorf("error en PostgreSQL: %w", err)
 		}
 	}
