@@ -9,11 +9,11 @@
 // `academic.grades.*`; ve a su acudido solo vía `academic.my_wards_*.read:own`
 // (sin `academic.calendar.*`). Las assertions de abajo ya reflejan ese modelo.
 //
-// SIGUE EN SKIP hasta 024·F2: el guardián NO lleva membership (DEC-R-B) y la
-// resolución de `ActiveContext` en el login deriva las escuelas de
-// `academic.memberships` → un guardián sin membership no resuelve contexto.
-// Esa lógica (contexto del representante) es F2 (identity). Al cerrar F2,
-// quitar el t.Skip de TestGuardianFlow_Grants: el test debe pasar tal cual.
+// 024·F2·S1 (2026-06-14): identity ya resuelve el contexto del representante
+// SIN membership — el login deriva su escuela de `academic.guardian_relations`
+// y auto-resuelve el caso inequívoco (1 sujeto / 1 escuela) emitiendo el
+// contexto del guardián con `subject_student_id` + `actor_mode=ward`. Por eso
+// este test ya NO va en skip: debe pasar tal cual.
 package guardian_flow_test
 
 import (
@@ -35,10 +35,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestGuardianFlow_Grants(t *testing.T) {
-	t.Skip("024·F2: el guardián no lleva membership (DEC-R-B) y la resolución de " +
-		"ActiveContext deriva de academic.memberships; el login del representante se " +
-		"resuelve en F2 (identity). F1 ya dejó seed+permisos+contrato listos.")
-
 	env := roleflow.Get()
 
 	resp := roleflow.Login(t, env.Server, userEmail, roleflow.DemoPassword)
@@ -77,6 +73,16 @@ func TestGuardianFlow_Grants(t *testing.T) {
 	// vía academic.my_wards_*.read:own.
 	assert.False(t, roleflow.GrantsAllow(resp.ActiveContext.Grants, "academic.grades.read"),
 		"guardian no debe tener academic.grades.* (privacidad plan 024 F1)")
+
+	// 024·F2·S1: el login del representante (sin membership, DEC-R-B) auto-resuelve
+	// el caso inequívoco (mendoza → 1 acudido/1 escuela) IMPERSONANDO al acudido:
+	// el contexto activo es del guardián pero marca al hijo que se está viendo.
+	assert.Equal(t, roleflow.ActorModeWard, resp.ActiveContext.ActorMode,
+		"guardian: active_context.actor_mode debe ser 'ward' (impersonación del acudido, ADR 0026)")
+	assert.NotEmpty(t, resp.ActiveContext.SubjectStudentID,
+		"guardian: active_context.subject_student_id (el acudido) no debe estar vacío")
+	assert.NotEmpty(t, resp.ActiveContext.SubjectStudentName,
+		"guardian: active_context.subject_student_name no debe estar vacío")
 
 	assert.Empty(t, resp.ActiveContext.Grants.Deny,
 		"guardian: grants.deny must be empty")

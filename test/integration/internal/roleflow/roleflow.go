@@ -223,6 +223,10 @@ func startIdentityServer(db *gorm.DB) *httptest.Server {
 
 // Grants es el sub-set tipado de `active_context.grants` del payload
 // `POST /auth/login`. Match 1:1 con `dto.GrantsDTO` y con `auth.Grants`.
+// ActorModeWard marca un contexto activo en el que el usuario autenticado
+// (representante) está viendo a un acudido (ADR 0026 DEC-R-A.1). "self" se omite.
+const ActorModeWard = "ward"
+
 type Grants struct {
 	Allow []string `json:"allow"`
 	Deny  []string `json:"deny"`
@@ -238,11 +242,14 @@ type LoginResponse struct {
 		Name string `json:"name"`
 	} `json:"schools"`
 	ActiveContext *struct {
-		RoleID     string `json:"role_id"`
-		RoleName   string `json:"role_name"`
-		SchoolID   string `json:"school_id"`
-		SchoolName string `json:"school_name"`
-		Grants     Grants `json:"grants"`
+		RoleID             string `json:"role_id"`
+		RoleName           string `json:"role_name"`
+		SchoolID           string `json:"school_id"`
+		SchoolName         string `json:"school_name"`
+		SubjectStudentID   string `json:"subject_student_id"`
+		SubjectStudentName string `json:"subject_student_name"`
+		ActorMode          string `json:"actor_mode"`
+		Grants             Grants `json:"grants"`
 	} `json:"active_context"`
 }
 
@@ -328,11 +335,14 @@ func switchContext(t *testing.T, server *httptest.Server, login LoginResponse, s
 		login.RefreshToken = sc.RefreshToken
 	}
 	login.ActiveContext = &struct {
-		RoleID     string `json:"role_id"`
-		RoleName   string `json:"role_name"`
-		SchoolID   string `json:"school_id"`
-		SchoolName string `json:"school_name"`
-		Grants     Grants `json:"grants"`
+		RoleID             string `json:"role_id"`
+		RoleName           string `json:"role_name"`
+		SchoolID           string `json:"school_id"`
+		SchoolName         string `json:"school_name"`
+		SubjectStudentID   string `json:"subject_student_id"`
+		SubjectStudentName string `json:"subject_student_name"`
+		ActorMode          string `json:"actor_mode"`
+		Grants             Grants `json:"grants"`
 	}{
 		RoleID:     sc.Context.RoleID,
 		RoleName:   sc.Context.RoleName,
