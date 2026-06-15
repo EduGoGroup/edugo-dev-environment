@@ -232,6 +232,23 @@ type Grants struct {
 	Deny  []string `json:"deny"`
 }
 
+// School es una escuela del usuario (top-level `schools[]` del login) o una
+// escuela donde el vínculo guardián↔acudido está activo (`wards[].schools[]`).
+type School struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Ward es un acudido del usuario (representante) y las escuelas donde el
+// vínculo está activo (ADR 0026). El frontend lo usa para el selector de
+// sujeto (self/ward) en switch-context; los tests lo usan para fijar el
+// `subject`/`school_id` del switch.
+type Ward struct {
+	StudentID   string   `json:"student_id"`
+	StudentName string   `json:"student_name"`
+	Schools     []School `json:"schools"`
+}
+
 // LoginResponse es un sub-set tipado del payload `POST /auth/login`
 // que cubre los campos usados por los tests per-rol.
 type LoginResponse struct {
@@ -241,6 +258,9 @@ type LoginResponse struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"schools"`
+	// Wards son los acudidos del usuario cuando actúa como representante
+	// (ADR 0026). Lista vacía para usuarios sin hijos.
+	Wards         []Ward `json:"wards"`
 	ActiveContext *struct {
 		RoleID             string `json:"role_id"`
 		RoleName           string `json:"role_name"`
@@ -298,6 +318,80 @@ func Login(t *testing.T, server *httptest.Server, email, password string) LoginR
 	}
 	require.NotNil(t, out.ActiveContext, "login: active_context nil tras switch-context")
 	return out
+}
+
+// LoginRaw ejecuta POST /api/v1/auth/login y devuelve la LoginResponse TAL CUAL
+// la emite el server, SIN el bloque de auto-resolución de contexto que aplica
+// `Login` (no hace switch-context). Es el login que necesitan los tests del
+// representante: un usuario solo-guardián (own/Schools vacío + ≥2 sujetos) llega
+// con `active_context = nil`, y `Login` reventaría en `require.NotEmpty(Schools)`.
+// LoginRaw expone el token + schools + wards + active_context (puede ser nil)
+// para que el test decida el `subject`/`school_id` del switch.
+func LoginRaw(t *testing.T, server *httptest.Server, email, password string) LoginResponse {
+	t.Helper()
+	// MP-08 DEC-C: el login exige `system` (gate por app). Igual que Login.
+	body, err := json.Marshal(map[string]string{
+		"email":    email,
+		"password": password,
+		"system":   "kmp",
+	})
+	require.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost,
+		server.URL+"/api/v1/auth/login",
+		bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	raw, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equalf(t, http.StatusOK, resp.StatusCode,
+		"login %s: expected 200, got %d body=%s", email, resp.StatusCode, string(raw))
+
+	var out LoginResponse
+	require.NoError(t, json.Unmarshal(raw, &out), "login: parse body=%s", string(raw))
+	require.NotEmpty(t, out.AccessToken, "login: access_token empty")
+	return out
+}
+
+// SwitchSubject ejecuta POST /api/v1/auth/switch-context con el body
+// `{subject, school_id?, academic_unit_id?}` (ADR 0026): `subject` selecciona
+// el sujeto a activar (`"self"` o `"ward:<student_id>"`), y `school_id`/
+// `academic_unit_id` se OMITEN si vienen vacíos (un ward 1-escuela auto-resuelve;
+// 2-escuelas exige school_id). Devuelve (status, body) crudos para que el test
+// pueda assertar 200 / 403 / 409 y parsear el contrato de cada caso.
+func SwitchSubject(t *testing.T, server *httptest.Server, bearer, subject, schoolID, unitID string) (int, []byte) {
+	t.Helper()
+	payload := map[string]string{}
+	if subject != "" {
+		payload["subject"] = subject
+	}
+	if schoolID != "" {
+		payload["school_id"] = schoolID
+	}
+	if unitID != "" {
+		payload["academic_unit_id"] = unitID
+	}
+	body, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost,
+		server.URL+"/api/v1/auth/switch-context",
+		bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+bearer)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	return resp.StatusCode, raw
 }
 
 // switchContext ejecuta POST /api/v1/auth/switch-context hacia schoolID y
