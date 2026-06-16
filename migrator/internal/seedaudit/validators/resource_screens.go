@@ -39,10 +39,10 @@ func ValidateResourceScreens(s *loader.SeedSnapshot) []report.Violation {
 				Entity:   "ResourceScreen",
 				EntityID: rs.ID.String(),
 				References: map[string]string{
-					"resource_id":         rs.ResourceID.String(),
-					"resource_key":        rs.ResourceKey,
-					"missing_screen_key":  rs.ScreenKey,
-					"screen_type":         rs.ScreenType,
+					"resource_id":        rs.ResourceID.String(),
+					"resource_key":       rs.ResourceKey,
+					"missing_screen_key": rs.ScreenKey,
+					"screen_type":        rs.ScreenType,
 				},
 			})
 		}
@@ -59,10 +59,10 @@ func ValidateResourceScreens(s *loader.SeedSnapshot) []report.Violation {
 					Entity:   "ResourceScreen",
 					EntityID: rs.ID.String(),
 					References: map[string]string{
-						"resource_id":               rs.ResourceID.String(),
-						"screen_type":               rs.ScreenType,
-						"existing_resource_screen":  prev,
-						"current_resource_screen":   rs.ID.String(),
+						"resource_id":              rs.ResourceID.String(),
+						"screen_type":              rs.ScreenType,
+						"existing_resource_screen": prev,
+						"current_resource_screen":  rs.ID.String(),
 					},
 				})
 				continue

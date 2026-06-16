@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -53,7 +54,8 @@ func TestBinaryExitCodes(t *testing.T) {
 			err := cmd.Run()
 			gotExit := 0
 			if err != nil {
-				if exitErr, ok := err.(*exec.ExitError); ok {
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) {
 					gotExit = exitErr.ExitCode()
 				} else {
 					t.Fatalf("unexpected error type: %v", err)

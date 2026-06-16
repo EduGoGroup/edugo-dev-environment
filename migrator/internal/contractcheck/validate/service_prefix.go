@@ -44,21 +44,21 @@ var serviceRoutingTable = map[string]string{
 	"courses":     "learning:",
 
 	// iam / identity
-	"users":             "iam:",
-	"roles":             "iam:",
-	"permissions":       "iam:",
-	"user_roles":        "iam:",
-	"audit":             "iam:",
-	"screens":           "iam:",
-	"screen_instances":  "iam:",
-	"screen_templates":  "iam:",
-	"system_settings":   "iam:",
+	"users":            "iam:",
+	"roles":            "iam:",
+	"permissions":      "iam:",
+	"user_roles":       "iam:",
+	"audit":            "iam:",
+	"screens":          "iam:",
+	"screen_instances": "iam:",
+	"screen_templates": "iam:",
+	"system_settings":  "iam:",
 
 	// platform
-	"announcements":  "platform:",
-	"notifications":  "platform:",
-	"menu":           "platform:",
-	"screen_config":  "platform:",
+	"announcements": "platform:",
+	"notifications": "platform:",
+	"menu":          "platform:",
+	"screen_config": "platform:",
 }
 
 // detectServicePrefixMismatch implementa B-REQ-7. Itera sobre cada

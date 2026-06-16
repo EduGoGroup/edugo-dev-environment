@@ -1,0 +1,37 @@
+# .golangci.yml
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - errorlint
+    - errname
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Println
+        - fmt.Printf
+        - (*database/sql.DB).Close
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 10

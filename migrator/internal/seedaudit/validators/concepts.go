@@ -36,7 +36,7 @@ func ValidateConcepts(s *loader.SeedSnapshot) []report.Violation {
 				Entity:   "ConceptDefinition",
 				EntityID: cd.ID.String(),
 				References: map[string]string{
-					"term_key":               cd.TermKey,
+					"term_key":                cd.TermKey,
 					"missing_concept_type_id": cd.ConceptTypeID.String(),
 				},
 			})
@@ -51,8 +51,8 @@ func ValidateConcepts(s *loader.SeedSnapshot) []report.Violation {
 				Entity:   "ConceptDefinition",
 				EntityID: cd.ID.String(),
 				References: map[string]string{
-					"term_key":          cd.TermKey,
-					"concept_type_id":   cd.ConceptTypeID.String(),
+					"term_key":            cd.TermKey,
+					"concept_type_id":     cd.ConceptTypeID.String(),
 					"existing_definition": prev,
 				},
 			})

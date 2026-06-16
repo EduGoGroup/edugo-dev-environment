@@ -1,7 +1,7 @@
 # EduGo Dev Environment - Makefile raíz
 # Toda la lógica vive en migrator/. Este Makefile es solo un atajo.
 
-.PHONY: help migrator
+.PHONY: help migrator ci-local ci-docker
 
 MIGRATOR_DIR := migrator
 
@@ -25,3 +25,9 @@ migrator: ## Delegar al Makefile de migrator. Uso: make migrator T=<target>
 		exit 1; \
 	fi
 	@$(MAKE) -C $(MIGRATOR_DIR) $(T)
+
+ci-local: ## CI local (delega a migrator)
+	@$(MAKE) -C $(MIGRATOR_DIR) ci-local
+
+ci-docker: ## CI en Docker (delega a migrator)
+	@$(MAKE) -C $(MIGRATOR_DIR) ci-docker
