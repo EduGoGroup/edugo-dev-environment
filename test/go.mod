@@ -3,13 +3,14 @@ module github.com/EduGoGroup/edugo-dev-environment/test
 go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.3
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.10
 	github.com/EduGoGroup/edugo-shared/audit v0.1.0
-	github.com/EduGoGroup/edugo-shared/auth v0.1.1
-	github.com/EduGoGroup/edugo-shared/logger v0.1.0
+	github.com/EduGoGroup/edugo-shared/auth v0.900.2
+	github.com/EduGoGroup/edugo-shared/logger v0.900.0
 	github.com/edugo/edugo-api-academic v0.0.0
 	github.com/edugo/edugo-api-identity v0.0.0
 	github.com/edugo/edugo-api-platform v0.0.0
+	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
@@ -21,13 +22,13 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/EduGoGroup/edugo-shared/cache/redis v0.1.0 // indirect
-	github.com/EduGoGroup/edugo-shared/common v0.900.1 // indirect
+	github.com/EduGoGroup/edugo-shared/common v0.900.4 // indirect
 	github.com/EduGoGroup/edugo-shared/config v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/export v0.1.0 // indirect
 	github.com/EduGoGroup/edugo-shared/metrics v0.1.0 // indirect
-	github.com/EduGoGroup/edugo-shared/middleware/gin v0.2.0 // indirect
+	github.com/EduGoGroup/edugo-shared/middleware/gin v0.900.1 // indirect
 	github.com/EduGoGroup/edugo-shared/repository v0.1.0 // indirect
-	github.com/EduGoGroup/edugo-shared/screenconfig v0.1.0 // indirect
+	github.com/EduGoGroup/edugo-shared/screenconfig v0.900.0 // indirect
 	github.com/EduGoGroup/edugo-shared/tracer v0.1.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -75,7 +76,6 @@ require (
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect

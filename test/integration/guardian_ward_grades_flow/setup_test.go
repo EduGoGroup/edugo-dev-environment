@@ -1,29 +1,21 @@
 //go:build integration
 
-// Package superadmin_flow exercita el flujo end-to-end del super_admin
-// "global" (rol L0 super_admin, school_id=NULL, sin membership) atravesando
-// los tres AppServer reales del backend: identity, academic, platform.
+// Package guardian_ward_grades_flow valida el endpoint nuevo de academic
+// GET /me/wards/grades (plan 024 · F3 · S1): el lector ":own" de NOTAS del
+// acudido para el representante/guardián en contexto ward.
 //
-// El test reproduce los 4 bugs detectados en sesión 2026-05-12 y los
-// blinda con asserts cross-API:
+// Por qué un Setup propio (y no roleflow.Setup): el endpoint vive en ACADEMIC,
+// pero el token ward del guardián lo emite IDENTITY (login auto-resuelve a su
+// acudido). roleflow.Setup solo levanta identity; superadmin_flow demuestra el
+// patrón multi-API. Este paquete espeja superadmin_flow: UN testcontainer
+// postgres compartido + identity y academic in-process sobre la MISMA gorm.DB y
+// el MISMO AUTH_JWT_SECRET, sembrado con migrations + playground_v2 `base`
+// (mismo seed que roleflow → trae mendoza↔sofia activo + la nota de Sofia).
 //
-//  1. Seed L4: super_admin recibe context:browse_schools + context:browse_units.
-//  2. academic.routes_school/routes_unit listan con RequireAnyPermission(read|browse).
-//  3. KMP SchoolModels usa el campo `schools` (no `data`) — el shape del DTO
-//     del backend lo respalda.
-//  4. switch_context.go no exige membership cuando el rol matched es global,
-//     e inyecta school_id/name/academic_unit_id/name en el contexto retornado.
-//
-// Arquitectura (A2 + B3 + C1 + D):
-//
-//   - A2 cross-API único: 3 httptest.Server en el mismo proceso compartiendo
-//     JWT_SECRET vía constante.
-//   - B3 fixture e2e nueva: global_user_no_membership + scenario
-//     super_admin_global_flow.
-//   - C1 testcontainers por suite: 1 postgres:16-alpine efímero levantado en
-//     TestMain.
-//   - D CI: build tag `integration` + env ENABLE_INTEGRATION_TESTS=true.
-package superadmin_flow_test
+// El Setup expone también el *sql.DB del container para que T2 (revalidación
+// por-request) pueda revocar el vínculo guardian_relations directamente en la BD
+// y re-pegar el endpoint con el mismo token.
+package guardian_ward_grades_flow_test
 
 import (
 	"context"
@@ -46,26 +38,22 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 
 	infraMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/framework"
-	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/e2e/scenarios"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
 
 	academicBuilder "github.com/edugo/edugo-api-academic/cmd/builder"
 	academicConfig "github.com/edugo/edugo-api-academic/cmd/config"
 	identityBuilder "github.com/edugo/edugo-api-identity/cmd/builder"
 	identityConfig "github.com/edugo/edugo-api-identity/cmd/config"
-	platformBuilder "github.com/edugo/edugo-api-platform/cmd/builder"
-	platformConfig "github.com/edugo/edugo-api-platform/cmd/config"
 )
 
-// JWT compartido por las 3 APIs. El test obliga a que un token emitido por
-// identity sea aceptado por academic y platform — si los secretos divergen,
-// la cadena rompe en el primer GET con Authorization.
+// JWT compartido por identity y academic: un token ward emitido por identity
+// debe ser aceptado por academic. Si los secretos divergen, el primer GET con
+// Authorization rompe en 401.
 const (
-	sharedJWTSecret = "superadmin-flow-cross-api-secret-32chars"
-	sharedJWTIssuer = "edugo-test-superadmin-flow"
+	sharedJWTSecret = "guardian-ward-grades-flow-secret-32chars"
+	sharedJWTIssuer = "edugo-test-guardian-ward-grades-flow"
 
-	testDBName     = "test_superadmin_flow"
+	testDBName     = "test_guardian_ward_grades_flow"
 	testDBUser     = "test"
 	testDBPassword = "test"
 	testDBImage    = "postgres:16-alpine"
@@ -74,24 +62,18 @@ const (
 	refreshTokenDuration = 7 * 24 * time.Hour
 )
 
-// Variables globales compartidas por todos los subtests.
+// Variables globales compartidas por todos los subtests del paquete.
 var (
-	testDB *gorm.DB
+	testDB    *gorm.DB
+	testSQLDB *sql.DB // acceso directo al pool para el UPDATE de revocación (T2).
 
 	identityServer *httptest.Server
 	academicServer *httptest.Server
-	platformServer *httptest.Server
-
-	// Constantes exportadas por el scenario super_admin_global_flow,
-	// resueltas en TestMain. Los tests las usan para evitar hardcode de
-	// emails/passwords/UUIDs.
-	globalUserEmail    string
-	globalUserPassword string
 )
 
 func TestMain(m *testing.M) {
 	if os.Getenv("ENABLE_INTEGRATION_TESTS") != "true" {
-		fmt.Fprintln(os.Stderr, "superadmin_flow: ENABLE_INTEGRATION_TESTS!=true — skipping")
+		fmt.Fprintln(os.Stderr, "guardian_ward_grades_flow: ENABLE_INTEGRATION_TESTS!=true — skipping")
 		os.Exit(0)
 	}
 
@@ -100,61 +82,40 @@ func TestMain(m *testing.M) {
 	// 1. Postgres efímero.
 	container, gdb, sqlDB, err := startPostgres(ctx)
 	if err != nil {
-		log.Fatalf("superadmin_flow: postgres: %v", err)
+		log.Fatalf("guardian_ward_grades_flow: postgres: %v", err)
 	}
 	defer func() {
 		_ = sqlDB.Close()
 		_ = container.Terminate(ctx)
 	}()
 	testDB = gdb
+	testSQLDB = sqlDB
 
-	// 2. migrations.Migrate(Force=true, PlaygroundV2="base") — DDL + L0..L4 +
-	//    base (necesario para tener academic_units listables). `base`
-	//    reemplaza al difunto seed `demo` (MP-09 F2) y siembra 2 escuelas
-	//    con su árbol de unidades.
+	// 2. migrations.Migrate(Force=true, PlaygroundV2="base") — DDL L0..L4 + el
+	//    mundo `base`: 2 escuelas, usuarios @edugo.test, el vínculo
+	//    academic.guardian_relations mendoza(…0011)↔sofia(…0009) ACTIVO y la nota
+	//    de Sofia (Matematicas 5A, membership bb…03). Mismo seed que roleflow.
 	if _, err := infraMigrations.Migrate(sqlDB, infraMigrations.MigrateOptions{
 		Force:        true,
 		PlaygroundV2: "base",
 		DBUser:       testDBUser,
 	}); err != nil {
-		log.Fatalf("superadmin_flow: migrate: %v", err)
+		log.Fatalf("guardian_ward_grades_flow: migrate: %v", err)
 	}
 
-	// 2.1 base.Apply sembra con upsert idempotente y NO trunca tablas, así
-	// que las filas L0 de system sobreviven. Re-aplicamos system de todas
-	// formas — es idempotente vía OnConflict DoNothing por id.
+	// 2.1 base.Apply usa upsert idempotente y NO trunca tablas, así que las filas
+	//     L0 de system sobreviven. Re-aplicar system (idempotente vía OnConflict
+	//     DoNothing por id) blinda el catálogo, igual que roleflow/superadmin_flow.
 	if err := system.ApplySystem(sqlDB, ""); err != nil {
-		log.Fatalf("superadmin_flow: re-apply system: %v", err)
+		log.Fatalf("guardian_ward_grades_flow: re-apply system: %v", err)
 	}
 
-	// 3. Aplicar scenario super_admin_global_flow (crea el global user
-	//    sin membership + escuela baseline).
-	reg := framework.NewRegistry()
-	if err := scenarios.RegisterAll(reg); err != nil {
-		log.Fatalf("superadmin_flow: register scenarios: %v", err)
-	}
-	composer := framework.NewComposer(reg, framework.NewNopLogger())
-	applyCtx, err := composer.Apply(testDB, "super_admin_global_flow")
-	if err != nil {
-		log.Fatalf("superadmin_flow: apply scenario: %v", err)
-	}
-	globalUserEmail = applyCtx.Constants["E2EFixtureGlobalUserEmail"]
-	globalUserPassword = applyCtx.Constants["E2EFixtureGlobalUserPassword"]
-	if globalUserEmail == "" || globalUserPassword == "" {
-		log.Fatalf("superadmin_flow: missing exported constants email=%q password=%q",
-			globalUserEmail, globalUserPassword)
-	}
-
-	// 4. Levantar los 3 AppServer en httptest.Server distintos,
-	//    compartiendo gorm.DB y JWT secret.
+	// 3. Levantar identity + academic sobre la MISMA gorm.DB y el MISMO JWT.
 	identityServer = startIdentityServer(testDB)
 	defer identityServer.Close()
 
 	academicServer = startAcademicServer(testDB)
 	defer academicServer.Close()
-
-	platformServer = startPlatformServer(testDB)
-	defer platformServer.Close()
 
 	os.Exit(m.Run())
 }
@@ -253,40 +214,10 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
-func startPlatformServer(db *gorm.DB) *httptest.Server {
-	cfg := &platformConfig.Config{
-		Environment: "development",
-		Server: platformConfig.ServerConfig{
-			Port: 0,
-			Host: "127.0.0.1",
-		},
-		Auth: platformConfig.AuthConfig{
-			JWT: platformConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
-				Issuer:               sharedJWTIssuer,
-				AccessTokenDuration:  accessTokenDuration,
-				RefreshTokenDuration: refreshTokenDuration,
-			},
-		},
-		Logging: platformConfig.LoggingConfig{Level: "error", Format: "json"},
-		CORS: platformConfig.CORSConfig{
-			AllowedOrigins: "*",
-			AllowedMethods: "GET,POST,PUT,DELETE,OPTIONS",
-			AllowedHeaders: "Origin,Content-Type,Accept,Authorization",
-		},
-	}
-
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
-	log := newNoOpLogger()
-	auditLog := audit.NewNoopAuditLogger()
-	c := platformBuilder.NewContainer(db, log, cfg, blacklist, auditLog, nil)
-	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
-}
-
 // noOpLogger silencia los logs de los AppServer en tests.
 type noOpLogger struct{}
 
-func newNoOpLogger() logger.Logger                  { return &noOpLogger{} }
+func newNoOpLogger() logger.Logger                 { return &noOpLogger{} }
 func (l *noOpLogger) Debug(_ string, _ ...any)     {}
 func (l *noOpLogger) Info(_ string, _ ...any)      {}
 func (l *noOpLogger) Warn(_ string, _ ...any)      {}

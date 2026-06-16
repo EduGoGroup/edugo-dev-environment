@@ -34,9 +34,6 @@ func (o *Orchestrator) Run() error {
 	if o.cfg.ForceMigration {
 		fmt.Println("⚠️  MODO FORZADO ACTIVADO")
 	}
-	if !o.cfg.SeedDemo {
-		fmt.Println("ℹ️  Demo seed deshabilitado")
-	}
 	fmt.Println()
 
 	if o.cfg.StatusOnly {
@@ -53,14 +50,14 @@ func (o *Orchestrator) Run() error {
 
 	if !o.cfg.MongoOnly {
 		fmt.Println("\n--- PostgreSQL ---")
-		if err := o.pg.Run(o.cfg.ForceMigration, o.cfg.SeedDemo, o.cfg.SeedUpToLayer, o.cfg.Playground, o.cfg.PlaygroundV2); err != nil {
+		if err := o.pg.Run(o.cfg.ForceMigration, o.cfg.SeedUpToLayer, o.cfg.PlaygroundV2); err != nil {
 			return fmt.Errorf("error en PostgreSQL: %w", err)
 		}
 	}
 
 	if !o.cfg.PostgresOnly {
 		fmt.Println("\n--- MongoDB ---")
-		if err := o.mongo.Run(o.cfg.ForceMigration, o.cfg.SeedDemo); err != nil {
+		if err := o.mongo.Run(o.cfg.ForceMigration, false); err != nil {
 			return fmt.Errorf("error en MongoDB: %w", err)
 		}
 	}

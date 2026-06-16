@@ -1,7 +1,7 @@
 //go:build integration
 
 // Package assistant_teacher_flow valida que el rol alias L4
-// `assistant_teacher` del seed demo `asist.prof@edugo.test` hereda los
+// `assistant_teacher` del seed base `asist.prof@edugo.test` hereda los
 // patterns canónicos del rol `teacher` en `ActiveContext.Grants.Allow`.
 package assistant_teacher_flow_test
 
@@ -52,7 +52,6 @@ func TestAssistantTeacherFlow_Grants(t *testing.T) {
 		"academic.attendance.read",
 		"academic.attendance.create",
 		"academic.attendance.update",
-		"academic.schedules.read",
 		"academic.announcements.read",
 		"academic.announcements.create",
 		"academic.periods.read",

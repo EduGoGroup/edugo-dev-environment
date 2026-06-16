@@ -6,8 +6,11 @@
 // Patrón (Pass 2 — single-path Grants):
 //
 //  1. Levanta UN postgres efímero por process (TestMain).
-//  2. Aplica migrations + demo seed (los 21 usuarios canónicos quedan
-//     persistidos con sus user_roles ya mirroreados a iam.role_grants).
+//  2. Aplica migrations + playground_v2 `base` (los usuarios canónicos
+//     @edugo.test quedan persistidos con sus user_roles ya mirroreados a
+//     iam.role_grants). `base` reemplaza al difunto seed `demo` (MP-09 F2):
+//     conserva los mismos UUIDs/emails de los roles con flow-test, podando
+//     los datos muertos (3ª escuela, edge users, guardians → 024·F1).
 //  3. Levanta UN solo identity server contra esa BD; ya no existe
 //     "path legacy": el server siempre devuelve `Grants{Allow, Deny}`.
 //
@@ -65,14 +68,14 @@ const (
 	refreshTokenDuration = 7 * 24 * time.Hour
 
 	// DemoPassword es el password plano de todos los usuarios sembrados
-	// en `seeds/demo/development.go` (defaultPasswordHash hashea exactamente
+	// en `seeds/playground_v2/base` (defaultPasswordHash hashea exactamente
 	// este string vía bcrypt). Documentado en seeds/README.md.
 	DemoPassword = "12345678"
 )
 
 // Env mantiene el handle al identity server más el container postgres.
 // Es global por process porque levantar testcontainers por suite tendría
-// costo prohibitivo; el seed demo es read-only para los tests.
+// costo prohibitivo; el seed base es read-only para los tests.
 type Env struct {
 	container *tcpostgres.PostgresContainer
 	sqlDB     *sql.DB
@@ -118,21 +121,21 @@ func bootstrap(ctx context.Context) (*Env, error) {
 	}
 	env := &Env{container: container, sqlDB: sqlDB, DB: gdb}
 
-	// migrations.Migrate(Force=true, SeedDemo=true) — incluye L0..L4 +
-	// los 21 usuarios canónicos del seed `demo/development.go` con sus
-	// user_roles asignados, mirroreados 1:1 a iam.role_grants.
+	// migrations.Migrate(Force=true, PlaygroundV2="base") — incluye L0..L4 +
+	// los usuarios canónicos @edugo.test del seed `playground_v2/base` con
+	// sus user_roles asignados, mirroreados 1:1 a iam.role_grants.
 	if _, err := infraMigrations.Migrate(sqlDB, infraMigrations.MigrateOptions{
-		Force:    true,
-		SeedDemo: true,
-		DBUser:   testDBUser,
+		Force:        true,
+		PlaygroundV2: "base",
+		DBUser:       testDBUser,
 	}); err != nil {
 		env.teardown(ctx)
 		return nil, fmt.Errorf("migrate: %w", err)
 	}
 
-	// ApplyDemo trunca tablas y luego sembra, posiblemente destruyendo
-	// las filas L0 que sembraba `system`. Re-aplicar system es idempotente
-	// vía OnConflict DoNothing y restaura el catálogo.
+	// base.Apply sembra sobre el catálogo de system con upsert idempotente y
+	// NO trunca tablas, así que las filas L0 sobreviven. Re-aplicar system
+	// (idempotente vía OnConflict DoNothing) blinda el catálogo por si acaso.
 	if err := system.ApplySystem(sqlDB, ""); err != nil {
 		env.teardown(ctx)
 		return nil, fmt.Errorf("re-apply system: %w", err)
@@ -215,14 +218,35 @@ func startIdentityServer(db *gorm.DB) *httptest.Server {
 	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	c := identityBuilder.NewContainer(db, log, cfg, blacklist)
-	return httptest.NewServer(c.SetupRouter(cfg, log))
+	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
 // Grants es el sub-set tipado de `active_context.grants` del payload
 // `POST /auth/login`. Match 1:1 con `dto.GrantsDTO` y con `auth.Grants`.
+// ActorModeWard marca un contexto activo en el que el usuario autenticado
+// (representante) está viendo a un acudido (ADR 0026 DEC-R-A.1). "self" se omite.
+const ActorModeWard = "ward"
+
 type Grants struct {
 	Allow []string `json:"allow"`
 	Deny  []string `json:"deny"`
+}
+
+// School es una escuela del usuario (top-level `schools[]` del login) o una
+// escuela donde el vínculo guardián↔acudido está activo (`wards[].schools[]`).
+type School struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Ward es un acudido del usuario (representante) y las escuelas donde el
+// vínculo está activo (ADR 0026). El frontend lo usa para el selector de
+// sujeto (self/ward) en switch-context; los tests lo usan para fijar el
+// `subject`/`school_id` del switch.
+type Ward struct {
+	StudentID   string   `json:"student_id"`
+	StudentName string   `json:"student_name"`
+	Schools     []School `json:"schools"`
 }
 
 // LoginResponse es un sub-set tipado del payload `POST /auth/login`
@@ -234,12 +258,18 @@ type LoginResponse struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"schools"`
+	// Wards son los acudidos del usuario cuando actúa como representante
+	// (ADR 0026). Lista vacía para usuarios sin hijos.
+	Wards         []Ward `json:"wards"`
 	ActiveContext *struct {
-		RoleID     string `json:"role_id"`
-		RoleName   string `json:"role_name"`
-		SchoolID   string `json:"school_id"`
-		SchoolName string `json:"school_name"`
-		Grants     Grants `json:"grants"`
+		RoleID             string `json:"role_id"`
+		RoleName           string `json:"role_name"`
+		SchoolID           string `json:"school_id"`
+		SchoolName         string `json:"school_name"`
+		SubjectStudentID   string `json:"subject_student_id"`
+		SubjectStudentName string `json:"subject_student_name"`
+		ActorMode          string `json:"actor_mode"`
+		Grants             Grants `json:"grants"`
 	} `json:"active_context"`
 }
 
@@ -247,9 +277,12 @@ type LoginResponse struct {
 // si el status no es 200 o el body no parsea.
 func Login(t *testing.T, server *httptest.Server, email, password string) LoginResponse {
 	t.Helper()
+	// MP-08 DEC-C: el login exige `system` (gate por app). Todos los roles
+	// del seed base tienen acceso a "kmp" vía iam.system_roles (L4).
 	body, err := json.Marshal(map[string]string{
 		"email":    email,
 		"password": password,
+		"system":   "kmp",
 	})
 	require.NoError(t, err)
 
@@ -271,8 +304,194 @@ func Login(t *testing.T, server *httptest.Server, email, password string) LoginR
 	var out LoginResponse
 	require.NoError(t, json.Unmarshal(raw, &out), "login: parse body=%s", string(raw))
 	require.NotEmpty(t, out.AccessToken, "login: access_token empty")
-	require.NotNil(t, out.ActiveContext, "login: active_context nil")
+
+	// MP-08 DEC-A: con >1 escuela el login NO auto-selecciona contexto
+	// (ActiveContext queda nil; el frontend pinta el selector). El seed base
+	// hace multi-escuela a prof.martinez y est.carlos (S1+S3), así que para
+	// esos roles el contexto se resuelve con un switch-context explícito a la
+	// primera escuela disponible. No debilita la aserción: el contexto
+	// resuelto trae los grants reales del rol en esa escuela.
+	if out.ActiveContext == nil {
+		require.NotEmpty(t, out.Schools,
+			"login %s: active_context nil y sin escuelas para resolver contexto", email)
+		out = switchContext(t, server, out, out.Schools[0].ID)
+	}
+	require.NotNil(t, out.ActiveContext, "login: active_context nil tras switch-context")
 	return out
+}
+
+// LoginRaw ejecuta POST /api/v1/auth/login y devuelve la LoginResponse TAL CUAL
+// la emite el server, SIN el bloque de auto-resolución de contexto que aplica
+// `Login` (no hace switch-context). Es el login que necesitan los tests del
+// representante: un usuario solo-guardián (own/Schools vacío + ≥2 sujetos) llega
+// con `active_context = nil`, y `Login` reventaría en `require.NotEmpty(Schools)`.
+// LoginRaw expone el token + schools + wards + active_context (puede ser nil)
+// para que el test decida el `subject`/`school_id` del switch.
+func LoginRaw(t *testing.T, server *httptest.Server, email, password string) LoginResponse {
+	t.Helper()
+	// MP-08 DEC-C: el login exige `system` (gate por app). Igual que Login.
+	body, err := json.Marshal(map[string]string{
+		"email":    email,
+		"password": password,
+		"system":   "kmp",
+	})
+	require.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost,
+		server.URL+"/api/v1/auth/login",
+		bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	raw, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equalf(t, http.StatusOK, resp.StatusCode,
+		"login %s: expected 200, got %d body=%s", email, resp.StatusCode, string(raw))
+
+	var out LoginResponse
+	require.NoError(t, json.Unmarshal(raw, &out), "login: parse body=%s", string(raw))
+	require.NotEmpty(t, out.AccessToken, "login: access_token empty")
+	return out
+}
+
+// SwitchSubject ejecuta POST /api/v1/auth/switch-context con el body
+// `{subject, school_id?, academic_unit_id?}` (ADR 0026): `subject` selecciona
+// el sujeto a activar (`"self"` o `"ward:<student_id>"`), y `school_id`/
+// `academic_unit_id` se OMITEN si vienen vacíos (un ward 1-escuela auto-resuelve;
+// 2-escuelas exige school_id). Devuelve (status, body) crudos para que el test
+// pueda assertar 200 / 403 / 409 y parsear el contrato de cada caso.
+func SwitchSubject(t *testing.T, server *httptest.Server, bearer, subject, schoolID, unitID string) (int, []byte) {
+	t.Helper()
+	payload := map[string]string{}
+	if subject != "" {
+		payload["subject"] = subject
+	}
+	if schoolID != "" {
+		payload["school_id"] = schoolID
+	}
+	if unitID != "" {
+		payload["academic_unit_id"] = unitID
+	}
+	body, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost,
+		server.URL+"/api/v1/auth/switch-context",
+		bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+bearer)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	return resp.StatusCode, raw
+}
+
+// switchContext ejecuta POST /api/v1/auth/switch-context hacia schoolID y
+// devuelve una LoginResponse con el AccessToken y ActiveContext resueltos. Se
+// usa para usuarios multi-escuela, donde el login no auto-selecciona contexto.
+// Si la escuela tiene >1 unidad (DEC-A 409 CONTEXT_UNIT_REQUIRED), resuelve la
+// unidad listando las unidades de la escuela y reintenta con la primera; los
+// grants son por-rol e idénticos en cualquier unidad de la escuela.
+func switchContext(t *testing.T, server *httptest.Server, login LoginResponse, schoolID string) LoginResponse {
+	t.Helper()
+	status, raw := doSwitchContext(t, server, login.AccessToken, schoolID, "")
+	if status == http.StatusConflict {
+		unitID := firstSchoolUnitID(t, server, login.AccessToken, schoolID)
+		status, raw = doSwitchContext(t, server, login.AccessToken, schoolID, unitID)
+	}
+	require.Equalf(t, http.StatusOK, status,
+		"switch-context school=%s: expected 200, got %d body=%s", schoolID, status, string(raw))
+
+	var sc struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+		Context      *struct {
+			RoleID     string `json:"role_id"`
+			RoleName   string `json:"role_name"`
+			SchoolID   string `json:"school_id"`
+			SchoolName string `json:"school_name"`
+			Grants     Grants `json:"grants"`
+		} `json:"context"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &sc), "switch-context: parse body=%s", string(raw))
+	require.NotNil(t, sc.Context, "switch-context: context nil body=%s", string(raw))
+
+	login.AccessToken = sc.AccessToken
+	if sc.RefreshToken != "" {
+		login.RefreshToken = sc.RefreshToken
+	}
+	login.ActiveContext = &struct {
+		RoleID             string `json:"role_id"`
+		RoleName           string `json:"role_name"`
+		SchoolID           string `json:"school_id"`
+		SchoolName         string `json:"school_name"`
+		SubjectStudentID   string `json:"subject_student_id"`
+		SubjectStudentName string `json:"subject_student_name"`
+		ActorMode          string `json:"actor_mode"`
+		Grants             Grants `json:"grants"`
+	}{
+		RoleID:     sc.Context.RoleID,
+		RoleName:   sc.Context.RoleName,
+		SchoolID:   sc.Context.SchoolID,
+		SchoolName: sc.Context.SchoolName,
+		Grants:     sc.Context.Grants,
+	}
+	return login
+}
+
+// doSwitchContext hace el POST /auth/switch-context con (schoolID, unitID) y
+// retorna (status, body). Un unitID vacío deja que el server resuelva la unidad
+// si la escuela tiene exactamente una; con varias devuelve 409.
+func doSwitchContext(t *testing.T, server *httptest.Server, bearer, schoolID, unitID string) (int, []byte) {
+	t.Helper()
+	payload := map[string]string{"school_id": schoolID}
+	if unitID != "" {
+		payload["academic_unit_id"] = unitID
+	}
+	body, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	req, err := http.NewRequest(http.MethodPost,
+		server.URL+"/api/v1/auth/switch-context",
+		bytes.NewReader(body))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+bearer)
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	return resp.StatusCode, raw
+}
+
+// firstSchoolUnitID lista las unidades de la escuela vía
+// GET /auth/contexts/schools/:id/units y retorna el id de la primera. Falla el
+// test si la escuela no tiene unidades.
+func firstSchoolUnitID(t *testing.T, server *httptest.Server, bearer, schoolID string) string {
+	t.Helper()
+	status, raw := GetJSON(t, server,
+		"/api/v1/auth/contexts/schools/"+schoolID+"/units", bearer)
+	require.Equalf(t, http.StatusOK, status,
+		"list units school=%s: expected 200, got %d body=%s", schoolID, status, string(raw))
+
+	var out struct {
+		Units []struct {
+			ID string `json:"id"`
+		} `json:"units"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &out), "list units: parse body=%s", string(raw))
+	require.NotEmptyf(t, out.Units, "list units school=%s: ninguna unidad", schoolID)
+	return out.Units[0].ID
 }
 
 // GetJSON ejecuta GET con bearer y retorna (status, body bytes).

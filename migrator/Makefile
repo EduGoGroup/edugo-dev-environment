@@ -1,7 +1,7 @@
 # EduGo Migrator
 # Makefile independiente — ejecutar desde migrator/
 
-.PHONY: help build clean fmt vet lint tidy test test-postgres test-mongo run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground docker-playground-list docker-playground-v2 docker-playground-v2-list cloud-playground cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check
+.PHONY: help build clean fmt vet lint tidy test test-postgres test-mongo run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground-v2 docker-playground-v2-list cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check
 
 # Configuracion
 BINARY  := migrator
@@ -139,28 +139,6 @@ cloud-seed-layer: build ## Aplicar seeds hasta una capa específica en cloud (LA
 docker-seed-layer: build ## Aplicar seeds hasta una capa específica en docker local (LAYER=legacy|l0|l1|...)
 	@if [ -z "$(LAYER)" ]; then echo "Uso: make docker-seed-layer LAYER=<nombre>"; exit 1; fi
 	@POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY) --seed-up-to-layer=$(LAYER)
-
-# ── Playgrounds (datasets pequeños y focalizados) ────────────────────
-
-docker-playground: build ## Recrear BD docker con playground(s). P=all (default) | P=<name>
-	@PLAY="$${P:-all}"; \
-	printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"; \
-	docker compose -f docker-compose.local.yml up -d --wait; \
-	printf "$(YELLOW)Recreando BD con playground=$$PLAY (sistema completo + playground)...$(NC)\n"; \
-	POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY) --playground=$$PLAY; \
-	printf "$(GREEN)OK Playground(s) $$PLAY aplicado(s)$(NC)\n"
-
-docker-playground-list: build ## Listar playgrounds disponibles (dinámico, descubre del registry)
-	@printf "$(BLUE)Playgrounds disponibles:$(NC)\n"
-	@./$(BIN_DIR)/$(BINARY) --playground=__list__ 2>&1 | grep -oE 'disponibles: \[[^]]+\]' | head -1 | tr -d '[]' | sed 's/disponibles: //' | tr ' ' '\n' | sed 's/^/  /'
-	@printf "$(BLUE)Uso:$(NC)\n"
-	@printf "  make docker-playground P=all          (todos)\n"
-	@printf "  make docker-playground P=<name>       (uno)\n"
-	@printf "  make docker-playground                (default: all)\n"
-
-cloud-playground: build ## Aplicar playground(s) en cloud. P=all (default) | P=<name>
-	@PLAY="$${P:-all}"; \
-	set -a && . ./.env.cloud && set +a && ./$(BIN_DIR)/$(BINARY) --playground=$$PLAY
 
 # ── Playgrounds v2 (sobre sistema completo L0..L4) ───────────────────
 

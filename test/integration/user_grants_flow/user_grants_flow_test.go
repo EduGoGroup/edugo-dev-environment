@@ -2,7 +2,7 @@
 
 // Package user_grants_flow valida el feature `iam.user_grants` (P4-2):
 //
-//  1. Que los user_grants del seed demo se materializan en los grants
+//  1. Que los user_grants del seed base se materializan en los grants
 //     efectivos del usuario consultados vía `GET /api/v1/users/:id/permissions`
 //     (deny puntual para un student, allow extra para un teacher).
 //  2. Que los endpoints REST bajo `/api/v1/users/:user_id/grants`
@@ -15,7 +15,7 @@
 // (rama `Find*Context*`) como `GET /users/:id/permissions` (rama
 // `GetUserPermissions`) unen `role_grants ∪ user_grants` activos. Los
 // tests cubren ambos caminos: las aserciones de mutación REST consultan
-// `/users/:id/permissions` (más directo); los dos demos validan también
+// `/users/:id/permissions` (más directo); los dos casos validan también
 // que el login del usuario afectado refleja el override.
 //
 // El actor admin es `super@edugo.test` (super_admin con pattern `*`, cubre
@@ -51,7 +51,6 @@ const (
 type userGrantDTO struct {
 	ID                string  `json:"id"`
 	UserID            string  `json:"user_id"`
-	ScopePattern      string  `json:"scope_pattern"`
 	PermissionPattern string  `json:"permission_pattern"`
 	Effect            string  `json:"effect"`
 	ExpiresAt         *string `json:"expires_at,omitempty"`
@@ -77,18 +76,18 @@ func TestMain(m *testing.M) {
 	os.Exit(roleflow.Setup(m))
 }
 
-// TestUserGrants_DemoSeedDenyOverride — verifica que el seed demo emite un
+// TestUserGrants_BaseSeedDenyOverride — verifica que el seed base emite un
 // deny puntual sobre `academic.grades.read` para `est.carlos`, y que el
 // matcher aplica deny > allow al consultar `GrantsAllow` sobre el snapshot
 // efectivo (role_grants ∪ user_grants).
-func TestUserGrants_DemoSeedDenyOverride(t *testing.T) {
+func TestUserGrants_BaseSeedDenyOverride(t *testing.T) {
 	env := roleflow.Get()
 
 	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
 	grants := fetchEffectiveGrants(t, env.Server, studentID, super.AccessToken)
 
 	assert.Contains(t, grants.Deny, "academic.grades.read",
-		"seed demo: student debe tener deny puntual sobre academic.grades.read")
+		"seed base: student debe tener deny puntual sobre academic.grades.read")
 
 	assert.False(t, roleflow.GrantsAllow(grants, "academic.grades.read"),
 		"deny > allow: GrantsAllow debe retornar false sobre el permiso negado")
@@ -105,17 +104,17 @@ func TestUserGrants_DemoSeedDenyOverride(t *testing.T) {
 		"login.ActiveContext.Grants debe incluir el deny puntual del seed")
 }
 
-// TestUserGrants_DemoSeedAllowOverride — verifica que el seed demo concede
+// TestUserGrants_BaseSeedAllowOverride — verifica que el seed base concede
 // `admin.users.create` (que NO está en el rol teacher) a `prof.martinez`
 // vía user_grant con expires_at futuro.
-func TestUserGrants_DemoSeedAllowOverride(t *testing.T) {
+func TestUserGrants_BaseSeedAllowOverride(t *testing.T) {
 	env := roleflow.Get()
 
 	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
 	grants := fetchEffectiveGrants(t, env.Server, teacherSeedID, super.AccessToken)
 
 	assert.Contains(t, grants.Allow, "admin.users.create",
-		"seed demo: teacher debe recibir allow extra sobre admin.users.create")
+		"seed base: teacher debe recibir allow extra sobre admin.users.create")
 	assert.True(t, roleflow.GrantsAllow(grants, "admin.users.create"),
 		"GrantsAllow debe permitir el permiso concedido por user_grant")
 
@@ -195,7 +194,7 @@ func TestUserGrants_API_RejectWildcardStar(t *testing.T) {
 		"POST '*' grant: expected 400, got %d body=%s", status, string(body))
 }
 
-// TestUserGrants_API_Duplicate — un (user_id, scope_pattern, permission_pattern, effect)
+// TestUserGrants_API_Duplicate — un (user_id, permission_pattern, effect)
 // duplicado retorna 409. Se hace cleanup best-effort al final.
 func TestUserGrants_API_Duplicate(t *testing.T) {
 	env := roleflow.Get()
