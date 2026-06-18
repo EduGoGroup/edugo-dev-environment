@@ -28,12 +28,12 @@ const (
 // Category names (constants) — design.md §4 "Categorías canónicas".
 // Each maps to one B-REQ and one detector function.
 const (
-	CategoryScreenKeyPhantom     = "screen_key_phantom"      // B-REQ-1
-	CategoryScreenKeyDead        = "screen_key_dead"         // B-REQ-2
-	CategoryPermissionPhantom    = "permission_phantom"      // B-REQ-3
-	CategoryPermissionZombie     = "permission_zombie"       // B-REQ-4
-	CategoryRolePhantom          = "role_phantom"            // B-REQ-5
-	CategoryRoleUnused           = "role_unused"             // B-REQ-6
+	CategoryScreenKeyPhantom      = "screen_key_phantom"      // B-REQ-1
+	CategoryScreenKeyDead         = "screen_key_dead"         // B-REQ-2
+	CategoryPermissionPhantom     = "permission_phantom"      // B-REQ-3
+	CategoryPermissionZombie      = "permission_zombie"       // B-REQ-4
+	CategoryRolePhantom           = "role_phantom"            // B-REQ-5
+	CategoryRoleUnused            = "role_unused"             // B-REQ-6
 	CategoryServicePrefixMismatch = "service_prefix_mismatch" // B-REQ-7
 )
 

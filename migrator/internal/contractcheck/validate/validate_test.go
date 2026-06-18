@@ -73,9 +73,9 @@ func TestValidate_TableDriven(t *testing.T) {
 			s: seed.Snapshot{
 				ResourceScreens: []seed.ResourceScreen{
 					{ScreenKey: "schools-form", ScreenType: "form"},
-					{ScreenKey: "dashboard-orphan", ScreenType: "dashboard"},     // -> error
+					{ScreenKey: "dashboard-orphan", ScreenType: "dashboard"},             // -> error
 					{ScreenKey: "settings-default", ScreenType: "form", IsDefault: true}, // -> error
-					{ScreenKey: "calendar-extra", ScreenType: "list"},            // -> warning
+					{ScreenKey: "calendar-extra", ScreenType: "list"},                    // -> warning
 				},
 			},
 			want: []driftKey{
@@ -179,7 +179,7 @@ func TestValidate_TableDriven(t *testing.T) {
 				Roles: []seed.Role{
 					{Code: "teacher", Scope: "tenant"},
 					{Code: "platform_admin", Scope: "system"}, // → error
-					{Code: "tenant_lead", Scope: "tenant"},     // → warning
+					{Code: "tenant_lead", Scope: "tenant"},    // → warning
 				},
 			},
 			want: []driftKey{

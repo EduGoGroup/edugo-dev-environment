@@ -100,11 +100,11 @@ func run(cfg cliFlags, stdout, stderr io.Writer) error {
 	// KMP extractor and seed loader are I/O-bound and independent;
 	// run them in parallel.
 	var (
-		kmpSnap   kmp.Snapshot
-		kmpErrs   []kmp.ExtractError
-		kmpErr    error
-		seedSnap  seed.Snapshot
-		seedErr   error
+		kmpSnap  kmp.Snapshot
+		kmpErrs  []kmp.ExtractError
+		kmpErr   error
+		seedSnap seed.Snapshot
+		seedErr  error
 	)
 	var wg sync.WaitGroup
 	wg.Add(2)

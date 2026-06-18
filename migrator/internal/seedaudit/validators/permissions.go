@@ -35,8 +35,8 @@ func ValidatePermissions(s *loader.SeedSnapshot) []report.Violation {
 				Entity:   "Permission",
 				EntityID: p.ID.String(),
 				References: map[string]string{
-					"permission_name":      p.Name,
-					"missing_resource_id":  p.ResourceID.String(),
+					"permission_name":     p.Name,
+					"missing_resource_id": p.ResourceID.String(),
 				},
 			})
 		}

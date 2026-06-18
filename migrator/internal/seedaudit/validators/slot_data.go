@@ -157,9 +157,9 @@ func (w *slotWalker) resolveRef(path, value, kind string) {
 			Entity:   "ScreenInstance",
 			EntityID: w.entityID,
 			References: map[string]string{
-				"screen_key":      w.screenKey,
+				"screen_key":         w.screenKey,
 				"missing_permission": value,
-				"ref_kind":        kind,
+				"ref_kind":           kind,
 			},
 			Path: path,
 		})
