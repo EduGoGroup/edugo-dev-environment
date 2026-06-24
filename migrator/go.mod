@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/EduGoGroup/edugo-infrastructure/mongodb v0.1.0
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.11
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/stretchr/testify v1.11.1
