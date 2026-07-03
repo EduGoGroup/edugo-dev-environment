@@ -6,8 +6,8 @@ github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEK
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7OputlJIzU=
 github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15 h1:3k1BelbHN1FUg+7xJcWX97L0md+6JSZJSTsVLDSVdmM=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15/go.mod h1:ROf5CVNnHHvo4GznlV3oSXxuNx5MbO5iMB2SnVxzj1k=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.17 h1:R0vvucsk0kEMoiP1IAcxsIN6UJubxpZjXhS+JPDs37g=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.17/go.mod h1:ROf5CVNnHHvo4GznlV3oSXxuNx5MbO5iMB2SnVxzj1k=
 github.com/EduGoGroup/edugo-shared/audit v0.900.0 h1:mTzSI9syPFmex7o0bg+W26FVLwc22/AjtF0uKjZhV/I=
 github.com/EduGoGroup/edugo-shared/audit v0.900.0/go.mod h1:1jIY8jS7+QNXodPAHUYFcaTG/EXHxrJDdJ1pyCTR+Fc=
 github.com/EduGoGroup/edugo-shared/auth v0.900.2 h1:iZXZTVnnGBUsBq4jsxSyKpJ2+cAwwyGP3k4eBjqK33E=

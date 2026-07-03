@@ -3,7 +3,7 @@ module github.com/EduGoGroup/edugo-dev-environment/test
 go 1.25.0
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.17
 	github.com/EduGoGroup/edugo-shared/audit v0.900.0
 	github.com/EduGoGroup/edugo-shared/auth v0.900.2
 	github.com/EduGoGroup/edugo-shared/logger v0.900.0

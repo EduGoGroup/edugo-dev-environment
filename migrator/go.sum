@@ -6,8 +6,8 @@ github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEK
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/EduGoGroup/edugo-infrastructure/mongodb v0.1.0 h1:hf4C7YPJ+gw+zwIQlZFJWY8IhFJRd3NIjvAXFWtCJsU=
 github.com/EduGoGroup/edugo-infrastructure/mongodb v0.1.0/go.mod h1:i2Z9ha97Xbm6sSigl8Rlyj7fqnDggBUcbwUT9tUXy5I=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15 h1:3k1BelbHN1FUg+7xJcWX97L0md+6JSZJSTsVLDSVdmM=
-github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.15/go.mod h1:ROf5CVNnHHvo4GznlV3oSXxuNx5MbO5iMB2SnVxzj1k=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.17 h1:R0vvucsk0kEMoiP1IAcxsIN6UJubxpZjXhS+JPDs37g=
+github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.17/go.mod h1:ROf5CVNnHHvo4GznlV3oSXxuNx5MbO5iMB2SnVxzj1k=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
