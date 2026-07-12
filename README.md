@@ -36,7 +36,12 @@ Documentación detallada en [`migrator/README.md`](./migrator/README.md).
 
 ## Estado del ecosistema
 
-- **APIs nuevas**: en desarrollo, todavía sin despliegue.
-- **APIs viejas** (api-mobile, api-administracion, worker): el stack `docker-compose` que las levantaba está en [`archived/docker/`](./archived/docker/) y no representa el estado actual.
+- **APIs por dominio** (identity, academic, learning, platform): **desplegadas en Cloud Run** desde
+  2026-07-03. `edugo-api-messaging` es la 5ª API, con BD propia aislada.
+- **`edugo-worker`**: vivo y vigente (imagen lista en Artifact Registry); su despliegue en Cloud Run está
+  pospuesto por costo, no archivado.
+- **APIs viejas** (`api-mobile`, `api-administracion`): deprecadas. El stack `docker-compose` que las
+  levantaba está en [`archived/docker/`](./archived/docker/) y no representa el estado actual.
 
-Cuando las APIs nuevas tengan despliegue se reintroducirá un flujo de orquestación; por ahora `migrator/` es la única superficie activa.
+Dentro de este repo, `migrator/` es la superficie activa (migraciones + seeds). La orquestación de las
+APIs vive en `../Makefile` + `../process-compose.yaml` (backend local) y en Cloud Run (nube).
