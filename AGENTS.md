@@ -6,13 +6,14 @@
 ## Propósito
 
 Ambiente de desarrollo de EduGo. Hoy la pieza activa es **`migrator/`**: migraciones de **PostgreSQL
-(Neon)** y **MongoDB (Atlas)** + seeds E2E para levantar datos de prueba del ecosistema.
+(Neon)** + seeds E2E para levantar datos de prueba del ecosistema. (MongoDB fue retirado del
+ecosistema — plan 037, D-037.11.)
 
 ## Estructura
 
 ```
 edugo-dev-environment/
-  migrator/    # migraciones Postgres/Mongo + seeds E2E (cmd/, internal/{config,orchestrator,postgres})
+  migrator/    # migraciones Postgres + seeds E2E (cmd/, internal/{config,orchestrator,postgres})
   archived/    # material del ecosistema previo (no en uso) — ver archived/README.md
 ```
 

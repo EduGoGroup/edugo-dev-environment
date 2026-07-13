@@ -12,12 +12,6 @@ type PostgresConfig struct {
 	User    string // Usuario (para logs y operaciones DROP/GRANT)
 }
 
-// MongoConfig contiene la configuración de conexión a MongoDB.
-type MongoConfig struct {
-	URI    string
-	DBName string
-}
-
 // DefaultPlaygroundV2 es el fixture de datos que se siembra cuando el migrador
 // corre sin flags de seed (p.ej. `make docker-recreate`). MP-09 F1: el default
 // pasó de `demo` a `playground_v2/base`.
@@ -29,13 +23,10 @@ type Config struct {
 	ForceMigration bool
 	SeedUpToLayer  string // Aplicar system seed hasta esta capa (vacío = todas)
 	PlaygroundV2   string // Si se setea, aplica el playground v2 tras ApplySystem. Default = base.
-	PostgresOnly   bool
-	MongoOnly      bool
 	StatusOnly     bool
 
 	// Configuración de bases de datos
 	Postgres PostgresConfig
-	Mongo    MongoConfig
 }
 
 // Load carga la configuración completa desde variables de entorno.
@@ -47,11 +38,8 @@ func Load() Config {
 	return Config{
 		ForceMigration: os.Getenv("FORCE_MIGRATION") == "true",
 		PlaygroundV2:   DefaultPlaygroundV2,
-		PostgresOnly:   os.Getenv("POSTGRES_ONLY") == "true",
-		MongoOnly:      os.Getenv("MONGO_ONLY") == "true",
 		StatusOnly:     os.Getenv("STATUS_ONLY") == "true",
 		Postgres:       loadPostgresConfig(),
-		Mongo:          loadMongoConfig(),
 	}
 }
 
@@ -81,22 +69,6 @@ func loadPostgresConfig() PostgresConfig {
 		host, port, user, password, dbname, sslmode,
 	)
 	return PostgresConfig{ConnStr: connStr, User: user}
-}
-
-func loadMongoConfig() MongoConfig {
-	dbName := envOrDefault("MONGO_DB_NAME", "edugo")
-
-	if uri := os.Getenv("MONGO_URI"); uri != "" {
-		return MongoConfig{URI: uri, DBName: dbName}
-	}
-
-	host := envOrDefault("MONGO_HOST", "localhost")
-	port := envOrDefault("MONGO_PORT", "27017")
-	user := envOrDefault("MONGO_USER", "edugo")
-	password := envOrDefault("MONGO_PASSWORD", "edugo123")
-
-	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", user, password, host, port)
-	return MongoConfig{URI: uri, DBName: dbName}
 }
 
 func envOrDefault(key, fallback string) string {

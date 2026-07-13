@@ -1,7 +1,7 @@
 # EduGo Migrator
 # Makefile independiente — ejecutar desde migrator/
 
-.PHONY: help build clean fmt vet lint tidy tools test test-postgres test-mongo run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground-v2 docker-playground-v2-list cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check ci-local ci-docker
+.PHONY: help build clean fmt vet lint tidy tools test test-postgres run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground-v2 docker-playground-v2-list cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check ci-local ci-docker
 
 # Configuracion
 BINARY      := migrator
@@ -79,10 +79,6 @@ test-postgres: ## Ejecutar solo tests de PostgreSQL
 	@printf "$(BLUE)Tests PostgreSQL...$(NC)\n"
 	@$(GO) test -v -count=1 -timeout 120s $(TEST_PKG) -run TestPostgresIntegration
 
-test-mongo: ## Ejecutar solo tests de MongoDB
-	@printf "$(BLUE)Tests MongoDB...$(NC)\n"
-	@$(GO) test -v -count=1 -timeout 120s $(TEST_PKG) -run TestMongoDBIntegration
-
 # ── Ejecucion ────────────────────────────────────────────────────────
 
 run: build ## Compilar y ejecutar localmente
@@ -94,8 +90,8 @@ status: build ## Ver estado de la BD sin aplicar cambios
 
 # ── Docker Local ─────────────────────────────────────────────────────
 
-docker-up: ## Levantar PostgreSQL + MongoDB locales para testing
-	@printf "$(BLUE)Levantando bases de datos locales...$(NC)\n"
+docker-up: ## Levantar PostgreSQL local para testing
+	@printf "$(BLUE)Levantando base de datos local...$(NC)\n"
 	@docker compose -f docker-compose.local.yml up -d
 	@printf "$(GREEN)OK Bases de datos listas$(NC)\n"
 
@@ -108,14 +104,14 @@ docker-migrate: build ## Levantar DBs y aplicar migraciones (flujo completo loca
 	@printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"
 	@docker compose -f docker-compose.local.yml up -d --wait
 	@printf "$(BLUE)Aplicando migraciones en BD local...$(NC)\n"
-	@POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY)
+	@POSTGRES_PORT=5433 ./$(BIN_DIR)/$(BINARY)
 	@printf "$(GREEN)OK Migraciones aplicadas$(NC)\n"
 
 docker-recreate: build ## Recrear BDs desde cero con datos reales (BORRA DATOS)
 	@printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"
 	@docker compose -f docker-compose.local.yml up -d --wait
 	@printf "$(YELLOW)Recreando bases de datos...$(NC)\n"
-	@POSTGRES_PORT=5433 MONGO_PORT=27018 FORCE_MIGRATION=true ./$(BIN_DIR)/$(BINARY)
+	@POSTGRES_PORT=5433 FORCE_MIGRATION=true ./$(BIN_DIR)/$(BINARY)
 	@printf "$(GREEN)OK Bases de datos recreadas$(NC)\n"
 
 # ── Cloud (Neon + Atlas) ─────────────────────────────────────────────
@@ -140,7 +136,7 @@ cloud-seed-layer: build ## Aplicar seeds hasta una capa específica en cloud (LA
 
 docker-seed-layer: build ## Aplicar seeds hasta una capa específica en docker local (LAYER=legacy|l0|l1|...)
 	@if [ -z "$(LAYER)" ]; then echo "Uso: make docker-seed-layer LAYER=<nombre>"; exit 1; fi
-	@POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY) --seed-up-to-layer=$(LAYER)
+	@POSTGRES_PORT=5433 ./$(BIN_DIR)/$(BINARY) --seed-up-to-layer=$(LAYER)
 
 # ── Playgrounds v2 (sobre sistema completo L0..L4) ───────────────────
 
@@ -149,7 +145,7 @@ docker-playground-v2: build ## Recrear BD docker con playground v2. P=all (defau
 	printf "$(BLUE)Levantando bases de datos y esperando healthchecks...$(NC)\n"; \
 	docker compose -f docker-compose.local.yml up -d --wait; \
 	printf "$(YELLOW)Recreando BD con playground-v2=$$PLAY (sistema completo + playground v2)...$(NC)\n"; \
-	POSTGRES_PORT=5433 MONGO_PORT=27018 ./$(BIN_DIR)/$(BINARY) --playground-v2=$$PLAY; \
+	POSTGRES_PORT=5433 ./$(BIN_DIR)/$(BINARY) --playground-v2=$$PLAY; \
 	printf "$(GREEN)OK Playground(s) v2 $$PLAY aplicado(s)$(NC)\n"
 
 docker-playground-v2-list: build ## Listar playgrounds v2 disponibles (dinámico, descubre del registry)

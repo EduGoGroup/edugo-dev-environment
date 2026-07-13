@@ -23,29 +23,8 @@ services:
     networks:
       - migrator-net
 
-  mongodb:
-    image: mongo:7
-    container_name: edugo-migrator-mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: edugo
-      MONGO_INITDB_ROOT_PASSWORD: edugo123
-      MONGO_INITDB_DATABASE: edugo
-    ports:
-      - "27018:27017"
-    volumes:
-      - migrator_mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--username", "edugo", "--password", "edugo123", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - migrator-net
-
 volumes:
   migrator_postgres_data:
-    driver: local
-  migrator_mongo_data:
     driver: local
 
 networks:

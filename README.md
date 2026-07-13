@@ -6,7 +6,7 @@ Repositorio del ambiente de desarrollo de EduGo. Hoy contiene una sola pieza act
 
 ```
 edugo-dev-environment/
-├── migrator/      # Migraciones de PostgreSQL (Neon) y MongoDB (Atlas) + seeds E2E
+├── migrator/      # Migraciones de PostgreSQL (Neon) + seeds E2E
 └── archived/      # Material del ecosistema previo (no en uso) — ver archived/README.md
 ```
 
@@ -24,8 +24,8 @@ Comandos clave (ejecutar desde `migrator/`):
 | Comando | Descripción |
 |---|---|
 | `make build` | Compilar el binario |
-| `make docker-migrate` | Levantar Postgres+Mongo locales y aplicar migraciones |
-| `make cloud-migrate` | Aplicar migraciones en Neon + Atlas (requiere `migrator/.env.cloud`) |
+| `make docker-migrate` | Levantar Postgres local y aplicar migraciones |
+| `make cloud-migrate` | Aplicar migraciones en Neon (requiere `migrator/.env.cloud`) |
 | `make cloud-status` | Ver estado de la BD cloud |
 | `make cloud-recreate` | Recrear BDs cloud desde cero (BORRA DATOS) |
 | `make cloud-seed-scenario SCENARIO=legacy_e2e` | Aplicar fixtures E2E (scenario canónico) |

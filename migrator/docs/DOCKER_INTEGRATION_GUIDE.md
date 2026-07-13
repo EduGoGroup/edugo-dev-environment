@@ -1,5 +1,9 @@
 # Guía de Integración con Docker Compose
 
+> **Nota (plan 037, D-037.11):** MongoDB fue **retirado** del ecosistema. Ignora las referencias
+> a `mongodb`/`MONGO_*` que puedan quedar más abajo en esta guía; el migrator ya solo aplica
+> PostgreSQL.
+
 ## 📋 Pasos para Integrar el Migrator en Docker Compose
 
 ### Paso 1: Agregar el Servicio al docker-compose.yml
@@ -22,8 +26,6 @@ Abre el archivo `docker/docker-compose.yml` y agrega el siguiente servicio despu
     depends_on:
       postgres:
         condition: service_healthy
-      mongodb:
-        condition: service_healthy
     environment:
       # PostgreSQL
       - DB_HOST=postgres
@@ -31,13 +33,6 @@ Abre el archivo `docker/docker-compose.yml` y agrega el siguiente servicio despu
       - DB_NAME=${POSTGRES_DB:-edugo}
       - DB_USER=${POSTGRES_USER:-edugo}
       - DB_PASSWORD=${POSTGRES_PASSWORD:-edugo123}
-      
-      # MongoDB
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_USER=${MONGO_USER:-edugo}
-      - MONGO_PASSWORD=${MONGO_PASSWORD:-edugo123}
-      - MONGO_DB_NAME=${MONGO_DB:-edugo}
     networks:
       - edugo-network
     restart: "no"
@@ -95,12 +90,8 @@ docker compose --profile full up -d
 
 **Orden de ejecución:**
 1. PostgreSQL inicia y pasa healthcheck ✅
-2. MongoDB inicia y pasa healthcheck ✅
-3. RabbitMQ inicia y pasa healthcheck ✅
-4. **Migrator ejecuta migraciones** ✅
-5. API Mobile inicia ✅
-6. API Admin inicia ✅
-7. Worker inicia ✅
+2. **Migrator ejecuta migraciones** ✅
+3. Las APIs inician ✅
 
 ### Re-ejecutar Migraciones
 
@@ -137,7 +128,7 @@ docker compose --profile db-only up -d
 
 ### Migraciones fallan con "database does not exist"
 
-**Causa**: PostgreSQL/MongoDB no están listos
+**Causa**: PostgreSQL no está listo
 
 **Solución**: El `depends_on` con `condition: service_healthy` debería manejarlo. Si persiste:
 ```bash
@@ -169,10 +160,6 @@ docker compose up migrator
 
 ## ⚙️ Configuración Avanzada
 
-### Ejecutar solo migraciones de PostgreSQL
-
-Modifica temporalmente `cmd/main.go` comentando la sección de MongoDB.
-
 ### Usar una versión específica de infraestructura
 
 Modifica `cmd/main.go` para hacer checkout de un tag específico:
@@ -200,11 +187,6 @@ docker compose logs -f migrator
 **PostgreSQL:**
 ```bash
 docker compose exec postgres psql -U edugo -d edugo -c "\dt"
-```
-
-**MongoDB:**
-```bash
-docker compose exec mongodb mongosh -u edugo -p edugo123 --authenticationDatabase admin edugo --eval "show collections"
 ```
 
 ## 🎯 Recomendaciones
