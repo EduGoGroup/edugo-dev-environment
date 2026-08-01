@@ -105,23 +105,36 @@ func TestUserGrants_BaseSeedDenyOverride(t *testing.T) {
 }
 
 // TestUserGrants_BaseSeedAllowOverride — verifica que el seed base concede
-// `admin.users.create` (que NO está en el rol teacher) a `prof.martinez`
-// vía user_grant con expires_at futuro.
+// `academic.join_request_approvals.unit.teacher` (que NO está en el rol teacher)
+// a `prof.martinez` vía user_grant con expires_at futuro.
+//
+// Plan 052 F4 (QA-09): el permiso de esta demo era `admin.users.create`, que le
+// destapaba al profesor el ítem de menú «Administración > Usuarios» y por eso el
+// recorrido de QA lo fichó como fuga del rol `teacher` —cuando el rol nunca lo
+// tuvo—. El sustituto cuelga de un recurso que NO es `is_menu_visible`, así que
+// ejercita el mismo mecanismo sin inventarle un ítem de menú al profesor.
 func TestUserGrants_BaseSeedAllowOverride(t *testing.T) {
 	env := roleflow.Get()
+
+	const demoGrant = "academic.join_request_approvals.unit.teacher"
 
 	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
 	grants := fetchEffectiveGrants(t, env.Server, teacherSeedID, super.AccessToken)
 
-	assert.Contains(t, grants.Allow, "admin.users.create",
-		"seed base: teacher debe recibir allow extra sobre admin.users.create")
-	assert.True(t, roleflow.GrantsAllow(grants, "admin.users.create"),
+	assert.Contains(t, grants.Allow, demoGrant,
+		"seed base: teacher debe recibir allow extra sobre "+demoGrant)
+	assert.True(t, roleflow.GrantsAllow(grants, demoGrant),
 		"GrantsAllow debe permitir el permiso concedido por user_grant")
+
+	// El permiso NO debe venir del rol: si estuviera en el rol, este test pasaría
+	// sin ejercitar el user_grant, que es justo lo que pretende cubrir.
+	assert.NotContains(t, grants.Allow, "admin.users.create",
+		"el rol teacher no debe conceder admin.users.create (QA-09)")
 
 	// El login del propio teacher también refleja el override.
 	teacherLogin := roleflow.Login(t, env.Server, "prof.martinez@edugo.test", roleflow.DemoPassword)
 	require.NotNil(t, teacherLogin.ActiveContext)
-	assert.Contains(t, teacherLogin.ActiveContext.Grants.Allow, "admin.users.create",
+	assert.Contains(t, teacherLogin.ActiveContext.Grants.Allow, demoGrant,
 		"login.ActiveContext.Grants debe incluir el allow extra del seed")
 }
 
