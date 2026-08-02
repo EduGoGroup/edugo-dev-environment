@@ -286,11 +286,11 @@ func startPlatformServer(db *gorm.DB) *httptest.Server {
 // noOpLogger silencia los logs de los AppServer en tests.
 type noOpLogger struct{}
 
-func newNoOpLogger() logger.Logger                  { return &noOpLogger{} }
-func (l *noOpLogger) Debug(_ string, _ ...any)     {}
-func (l *noOpLogger) Info(_ string, _ ...any)      {}
-func (l *noOpLogger) Warn(_ string, _ ...any)      {}
-func (l *noOpLogger) Error(_ string, _ ...any)     {}
-func (l *noOpLogger) Fatal(_ string, _ ...any)     {}
-func (l *noOpLogger) With(_ ...any) logger.Logger  { return l }
-func (l *noOpLogger) Sync() error                  { return nil }
+func newNoOpLogger() logger.Logger                { return &noOpLogger{} }
+func (l *noOpLogger) Debug(_ string, _ ...any)    {}
+func (l *noOpLogger) Info(_ string, _ ...any)     {}
+func (l *noOpLogger) Warn(_ string, _ ...any)     {}
+func (l *noOpLogger) Error(_ string, _ ...any)    {}
+func (l *noOpLogger) Fatal(_ string, _ ...any)    {}
+func (l *noOpLogger) With(_ ...any) logger.Logger { return l }
+func (l *noOpLogger) Sync() error                 { return nil }

@@ -549,7 +549,7 @@ func GrantsAllow(grants Grants, request string) bool {
 // noOpLogger silencia los logs de las APIs en tests.
 type noOpLogger struct{}
 
-func newNoOpLogger() logger.Logger                 { return &noOpLogger{} }
+func newNoOpLogger() logger.Logger                { return &noOpLogger{} }
 func (l *noOpLogger) Debug(_ string, _ ...any)    {}
 func (l *noOpLogger) Info(_ string, _ ...any)     {}
 func (l *noOpLogger) Warn(_ string, _ ...any)     {}

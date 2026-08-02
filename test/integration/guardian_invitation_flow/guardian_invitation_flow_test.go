@@ -14,7 +14,8 @@
 //     GET /me/wards/grades devuelve 200 (el vínculo recién creado lo habilita).
 //
 // T2 — caso negativo: crear invitación "guardian" SIN student_id → 400
-//      STUDENT_REQUIRED_FOR_GUARDIAN.
+//
+//	STUDENT_REQUIRED_FOR_GUARDIAN.
 //
 // Las filas insertadas se limpian con defer (la BD del container es compartida
 // por subtests del process).

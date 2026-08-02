@@ -9,17 +9,22 @@
 // Sofia) y se pega contra ACADEMIC, igual que el flow de grades.
 //
 // T1 — caso feliz: mendoza (login auto-resuelve a ward sofia) → 200 con ≥1
-//      registro de asistencia de Sofia; ninguno de otro alumno (carlos). El seed
-//      base SÍ trae asistencia para Sofia (3 filas en Matematicas 5A), así que
-//      tomamos el camino "SÍ hay": verificamos por SELECT al pool y afirmamos
-//      Total>=1 + records de la membership de Sofia. (El camino "NO hay" inserta 1
-//      fila con defer de limpieza; queda como red de seguridad si el seed cambia.)
+//
+//	registro de asistencia de Sofia; ninguno de otro alumno (carlos). El seed
+//	base SÍ trae asistencia para Sofia (3 filas en Matematicas 5A), así que
+//	tomamos el camino "SÍ hay": verificamos por SELECT al pool y afirmamos
+//	Total>=1 + records de la membership de Sofia. (El camino "NO hay" inserta 1
+//	fila con defer de limpieza; queda como red de seguridad si el seed cambia.)
+//
 // T2 — revalidación por-request (el corazón de F3): con el token ward ya emitido,
-//      se revoca el vínculo en la BD (status→'revoked') y se re-pega con el MISMO
-//      token → 403 GUARDIAN_LINK_NOT_FOUND. Restaura el vínculo al final.
+//
+//	se revoca el vínculo en la BD (status→'revoked') y se re-pega con el MISMO
+//	token → 403 GUARDIAN_LINK_NOT_FOUND. Restaura el vínculo al final.
+//
 // T3 — gate de autorización: prof.martinez (teacher, contexto válido con unidad
-//      pero SIN el permiso academic.my_wards_attendance.read:own) → 403
-//      INSUFFICIENT_PERMISSIONS (lo corta RequirePermission antes del handler).
+//
+//	pero SIN el permiso academic.my_wards_attendance.read:own) → 403
+//	INSUFFICIENT_PERMISSIONS (lo corta RequirePermission antes del handler).
 package guardian_ward_grades_flow_test
 
 import (

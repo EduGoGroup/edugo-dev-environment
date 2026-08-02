@@ -4,23 +4,25 @@
 // (academic.school_guardian_policy) altera la admision de un ALUMNO.
 //
 // T1 — on_enrollment + gates_activation (caso feliz end-to-end), sobre S1 con una
-//      fila de politica TEST-LOCAL (DML de prueba, NO edita el seed):
-//   - admin de San Ignacio crea una invitacion 'student' para 5to A.
-//   - un usuario nuevo (el alumno) redime → join-request pending → doble-gate
-//     approve. ASSERT: su membership nace 'pending' (gates_activation).
-//   - ASSERT: existe una school_invitations de tipo 'guardian' con student_id=el
-//     alumno (la auto-generada por on_enrollment).
-//   - un usuario nuevo (el representante) redime ESA invitacion guardian →
-//     join-request pending → doble-gate approve.
-//   - ASSERT: hay guardian_relations (guardian↔student, school) status='active'.
-//   - ASSERT: la membership del alumno ahora es 'active' (activada por el vinculo,
-//     gating_approver='any').
+//
+//	   fila de politica TEST-LOCAL (DML de prueba, NO edita el seed):
+//	- admin de San Ignacio crea una invitacion 'student' para 5to A.
+//	- un usuario nuevo (el alumno) redime → join-request pending → doble-gate
+//	  approve. ASSERT: su membership nace 'pending' (gates_activation).
+//	- ASSERT: existe una school_invitations de tipo 'guardian' con student_id=el
+//	  alumno (la auto-generada por on_enrollment).
+//	- un usuario nuevo (el representante) redime ESA invitacion guardian →
+//	  join-request pending → doble-gate approve.
+//	- ASSERT: hay guardian_relations (guardian↔student, school) status='active'.
+//	- ASSERT: la membership del alumno ahora es 'active' (activada por el vinculo,
+//	  gating_approver='any').
 //
 // T2 — default (sin politica) = sin cambio de comportamiento, sobre S1 SIN la fila
-//      test-local:
-//   - admite un alumno (invitacion student → redencion → doble-gate approve).
-//   - ASSERT: su membership nace 'active' de inmediato.
-//   - ASSERT: NO se creo ninguna school_invitations de tipo guardian para ese alumno.
+//
+//	   test-local:
+//	- admite un alumno (invitacion student → redencion → doble-gate approve).
+//	- ASSERT: su membership nace 'active' de inmediato.
+//	- ASSERT: NO se creo ninguna school_invitations de tipo guardian para ese alumno.
 //
 // DECISION DE APROBADOR (documentada): se usa el camino (ii) del prompt — S1 con una
 // fila school_guardian_policy test-local. S1 tiene un school_admin sembrado

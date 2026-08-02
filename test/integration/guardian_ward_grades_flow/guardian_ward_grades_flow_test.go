@@ -7,13 +7,18 @@
 // academic (para pegar el endpoint). El Setup multi-API vive en setup_test.go.
 //
 // T1 — caso feliz: mendoza (login auto-resuelve a ward sofia) → 200 con la nota
-//      de Sofia (Matematicas 5A); NO trae notas de otro alumno.
+//
+//	de Sofia (Matematicas 5A); NO trae notas de otro alumno.
+//
 // T2 — revalidación por-request (el corazón de F3): con el token ward ya emitido,
-//      se revoca el vínculo en la BD (status→'revoked') y se re-pega con el MISMO
-//      token → 403 GUARDIAN_LINK_NOT_FOUND. Restaura el vínculo al final.
+//
+//	se revoca el vínculo en la BD (status→'revoked') y se re-pega con el MISMO
+//	token → 403 GUARDIAN_LINK_NOT_FOUND. Restaura el vínculo al final.
+//
 // T3 — gate de autorización: prof.martinez (teacher, contexto válido con unidad
-//      pero SIN el permiso academic.my_wards_grades.read:own) → 403
-//      INSUFFICIENT_PERMISSIONS (lo corta RequirePermission antes del handler).
+//
+//	pero SIN el permiso academic.my_wards_grades.read:own) → 403
+//	INSUFFICIENT_PERMISSIONS (lo corta RequirePermission antes del handler).
 package guardian_ward_grades_flow_test
 
 import (
@@ -37,9 +42,9 @@ const (
 	guardianMendozaID = "00000000-0000-0000-0000-000000000011" // Laura Mendoza (guardián)
 	studentSofiaID    = "00000000-0000-0000-0000-000000000009" // Sofia (acudida)
 
-	sofiaMembershipID = "bb000000-0000-0000-0000-000000000003" // membership de alumna de Sofia
+	sofiaMembershipID  = "bb000000-0000-0000-0000-000000000003" // membership de alumna de Sofia
 	carlosMembershipID = "bb000000-0000-0000-0000-000000000001" // membership de Carlos (NO debe aparecer)
-	mateSubjectID     = "dd000000-0000-0000-0000-000000000001" // Matematicas (materia de la nota)
+	mateSubjectID      = "dd000000-0000-0000-0000-000000000001" // Matematicas (materia de la nota)
 )
 
 // myGradeListBody es el sub-set tipado del 200 (dto.MyGradeListResponse): la

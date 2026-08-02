@@ -5,17 +5,17 @@
 // (school_id NOT NULL desde F1); este flujo —POST /guardian-relations/request +
 // POST /:id/approve— era PRE-F1 y no persistía school_id. S1 lo cierra:
 //
-//   T1 — feliz: el guardián castro (sin vínculo previo a Sofia) solicita el
-//        vínculo con Sofia → 201 PENDING con school_id = San Ignacio (la única
-//        escuela activa de Sofia, resuelto automáticamente). Luego el school_admin
-//        de San Ignacio (Carmen, contexto activo en S1) aprueba → 200 y el vínculo
-//        queda ACTIVE con el school_id correcto.
-//   T2 — escuela ajena: un PENDING con school_id = otra escuela (S3) no puede ser
-//        aprobado por Carmen (cuyo ActiveContext.SchoolID = S1) → 403
-//        APPROVER_SCHOOL_MISMATCH (el aprobador solo gobierna vínculos de SU escuela).
-//   T3 — lazo con F2/F3: tras aprobar T1, castro hace switch-context a ward Sofia y
-//        GET /me/wards/grades → 200 (el vínculo recién activado habilita la lectura
-//        ":own" del acudido).
+//	T1 — feliz: el guardián castro (sin vínculo previo a Sofia) solicita el
+//	     vínculo con Sofia → 201 PENDING con school_id = San Ignacio (la única
+//	     escuela activa de Sofia, resuelto automáticamente). Luego el school_admin
+//	     de San Ignacio (Carmen, contexto activo en S1) aprueba → 200 y el vínculo
+//	     queda ACTIVE con el school_id correcto.
+//	T2 — escuela ajena: un PENDING con school_id = otra escuela (S3) no puede ser
+//	     aprobado por Carmen (cuyo ActiveContext.SchoolID = S1) → 403
+//	     APPROVER_SCHOOL_MISMATCH (el aprobador solo gobierna vínculos de SU escuela).
+//	T3 — lazo con F2/F3: tras aprobar T1, castro hace switch-context a ward Sofia y
+//	     GET /me/wards/grades → 200 (el vínculo recién activado habilita la lectura
+//	     ":own" del acudido).
 //
 // Reusa el harness multi-API de setup_test.go (identityServer + academicServer
 // sobre el mismo testcontainer sembrado con `base`) y el acceso directo al pool
