@@ -1,7 +1,7 @@
 # EduGo Migrator
 # Makefile independiente — ejecutar desde migrator/
 
-.PHONY: help build clean fmt vet lint tidy tools test test-postgres run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground-v2 docker-playground-v2-list cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check ci-local ci-docker
+.PHONY: help build clean fmt vet lint tidy tools test test-postgres run status docker-up docker-down docker-migrate docker-recreate cloud-migrate cloud-recreate cloud-status cloud-seed-layer docker-seed-layer cloud-seed-scenario docker-playground-v2 docker-playground-v2-list cloud-playground-v2 seed-audit seed-audit-strict seed-audit-test contract-check contract-check-strict contract-check-update-baseline contract-check-test check vuln ci-local ci-docker
 
 # Configuracion
 BINARY      := migrator
@@ -10,8 +10,9 @@ CMD_PKG     := ./cmd
 TEST_PKG    := ./tests
 GO          := go
 LDFLAGS     := -ldflags="-s -w"
-GO_VERSION  := 1.25
-LINT_VERSION := v2.4.0
+GO_VERSION  := 1.27.4
+LINT_VERSION := v2.14.0
+GOVULNCHECK_VERSION := v1.9.0
 
 # Colores
 BLUE   := \033[0;34m
@@ -242,13 +243,19 @@ contract-check-test: ## Tests del cross-checker (falla si cobertura < 80%)
 tools: ## Instalar golangci-lint con la versión fijada
 	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINT_VERSION)
 
-ci-local: ## CI local: fmt + vet + lint + build + tests unitarios (sin integración)
+vuln: ## Ejecutar govulncheck ($(GOVULNCHECK_VERSION)): falla si hay vulnerabilidades alcanzables
+	@printf "$(BLUE)govulncheck...$(NC)\n"
+	@GOWORK=off $(GO) run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) ./...
+	@printf "$(GREEN)OK sin vulnerabilidades alcanzables$(NC)\n"
+
+ci-local: ## CI local: fmt + vet + lint + build + tests unitarios + govulncheck (sin integración)
 	@printf "$(YELLOW)Ejecutando CI local...$(NC)\n"
 	@$(GO) fmt ./...
 	@$(GO) vet ./...
 	@golangci-lint run ./...
 	@$(GO) build ./...
 	@$(GO) test -short -count=1 -race ./internal/... ./cmd/...
+	@$(MAKE) vuln
 	@printf "$(GREEN)CI local OK$(NC)\n"
 
 ci-docker: ## CI en Docker (Go $(GO_VERSION)) — replica GitHub Actions exacto
@@ -257,13 +264,15 @@ ci-docker: ## CI en Docker (Go $(GO_VERSION)) — replica GitHub Actions exacto
 		-v "$(CURDIR)":/workspace \
 		-w /workspace \
 		-e GOPRIVATE=github.com/EduGoGroup/* \
+		-e GOWORK=off \
 		golang:$(GO_VERSION)-bookworm \
 		sh -c " \
 			go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(LINT_VERSION) && \
 			golangci-lint run ./... && \
 			go vet ./... && \
 			go build ./... && \
-			go test -short -count=1 -race ./internal/... ./cmd/... \
+			go test -short -count=1 -race ./internal/... ./cmd/... && \
+			go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) ./... \
 		"
 	@printf "$(GREEN)CI Docker OK$(NC)\n"
 
