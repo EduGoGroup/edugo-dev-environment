@@ -1,7 +1,8 @@
 name: CI Migrator
 
 # Valida el módulo migrator/ (plan 054, HU-E3.9). El módulo test/ no entra aquí:
-# lo cubre cross-api-integration.yml.
+# es un gate LOCAL (sus replace apuntan a los repos edugo-api-* hermanos, que la CI
+# no clona). Se corre con `make cross-api-check` y `make cross-api-test`; ver AGENTS.md.
 
 on:
   pull_request:
