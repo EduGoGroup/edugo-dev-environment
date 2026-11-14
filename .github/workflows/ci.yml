@@ -1,0 +1,73 @@
+name: CI Migrator
+
+# Valida el módulo migrator/ (plan 054, HU-E3.9). El módulo test/ no entra aquí:
+# lo cubre cross-api-integration.yml.
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "migrator/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+
+env:
+  GO_VERSION: '1.27.4'
+  GOLANGCI_LINT_VERSION: 'v2.14.0'
+  GOVULNCHECK_VERSION: 'v1.9.0'
+  GOWORK: 'off'
+
+jobs:
+  validate:
+    name: Validate migrator
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: migrator
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: migrator/go.sum
+
+      - name: Descargar dependencias
+        run: go mod download
+
+      - name: Verificar formato
+        run: |
+          if gofmt -l . | grep -q .; then
+            echo "Codigo no esta formateado:"
+            gofmt -l .
+            exit 1
+          fi
+
+      - name: Analisis estatico (go vet)
+        run: go vet ./...
+
+      - name: Compilar
+        run: go build ./...
+
+      # Tests unitarios, igual que make ci-local. La integracion (./tests, testcontainers) corre en local.
+      - name: Ejecutar tests con race detection
+        run: go test -short -count=1 -race ./internal/... ./cmd/...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: migrator
+          args: --timeout=5m
+
+      # Sin continue-on-error: una vulnerabilidad alcanzable pone el job en rojo (plan 054, H.2).
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@${{ env.GOVULNCHECK_VERSION }}
+          "$(go env GOPATH)/bin/govulncheck" ./...
