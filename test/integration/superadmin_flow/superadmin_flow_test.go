@@ -30,8 +30,8 @@ import (
 //
 // El test es secuencial — cada paso depende del anterior:
 //
-//	step 1 (login)              → schools[] poblado con las escuelas del
-//	                              sistema y active_context nil (DEC-A).
+//	step 1 (login)              → schools[] vacío (ADR 0028: global puro sin
+//	                              membership) y active_context nil (DEC-A).
 //	step 2 (switch-context)     → resuelve contexto sobre una escuela del
 //	                              seed (multi-unidad → 409 CONTEXT_UNIT_REQUIRED
 //	                              → reintento con unidad). El rol global
@@ -85,10 +85,11 @@ func TestSuperAdminGlobalFlow_CrossAPI(t *testing.T) {
 	require.Nil(t, login.ActiveContext,
 		"step 1 (DEC-A): active_context must be nil for the multi-school global super_admin")
 
-	// El super_admin global no tiene membership, pero hasActiveSystemRole→
-	// findAllActiveSchools le devuelve TODAS las escuelas activas del sistema.
-	require.GreaterOrEqual(t, len(login.Schools), 1,
-		"step 1 (DEC-A): schools[] must list the system schools for the global super_admin")
+	// ADR 0028: el super_admin global puro (sin membership) recibe schools[]
+	// VACÍO en el login; las escuelas se exploran con context.browse_schools
+	// contra academic /schools.
+	require.Empty(t, login.Schools,
+		"step 1 (ADR 0028): schools[] must be empty for the pure global super_admin")
 
 	loginToken := login.AccessToken
 
@@ -101,7 +102,21 @@ func TestSuperAdminGlobalFlow_CrossAPI(t *testing.T) {
 	// (idéntica a roleflow.switchContext) para que el test sea estable ante
 	// el orden de listado.
 	// ----------------------------------------------------------------
-	switched, pickedSchoolID, pickedUnitID := resolveUnitContext(t, loginToken, login.Schools)
+	// El token de login no trae contexto ni grants, así que academic /schools
+	// (schools.read | context.browse_schools) responde 403 con él: las escuelas
+	// candidatas se leen del seed. El browse real se valida en el step 3, ya
+	// con el token rotado.
+	var seedSchools []struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	require.NoError(t, testDB.Raw(
+		"SELECT id::text AS id, name FROM academic.schools WHERE is_active = true AND deleted_at IS NULL ORDER BY name",
+	).Scan(&seedSchools).Error, "step 2: reading seed schools")
+	require.GreaterOrEqual(t, len(seedSchools), 1,
+		"step 2: the seed must have at least 1 active school")
+
+	switched, pickedSchoolID, pickedUnitID := resolveUnitContext(t, loginToken, seedSchools)
 
 	require.NotEmpty(t, switched.AccessToken, "step 2: new access_token must not be empty")
 	require.NotNil(t, switched.Context, "step 2: context must not be nil")
@@ -219,42 +234,71 @@ type switchContextResult struct {
 }
 
 // resolveUnitContext replica la cascada del SchoolSelector real: recorre las
-// escuelas disponibles y para cada una intenta switch-context. Si la escuela es
-// multi-unidad (409 CONTEXT_UNIT_REQUIRED) resuelve su primera unidad vía
-// GET /auth/contexts/schools/:id/units y reintenta. Devuelve el primer contexto
-// resuelto a nivel unidad (con academic_unit_id), junto a la escuela y unidad
-// elegidas. Falla el test si ninguna escuela resuelve a una unidad.
+// escuelas candidatas y para cada una hace switch-context SIN unidad. El global
+// puro llega con un token de login sin grants, así que ese primer switch le da
+// el contexto a nivel escuela (y con él context.browse_units); con ese token
+// lista las unidades vía GET /auth/contexts/schools/:id/units y repite el
+// switch con la primera. Si el server exige unidad de entrada
+// (409 CONTEXT_UNIT_REQUIRED), las unidades se listan con el token de login.
+// Devuelve el primer contexto resuelto a nivel unidad (con academic_unit_id),
+// junto a la escuela y unidad elegidas. Falla el test si ninguna escuela
+// resuelve a una unidad.
 func resolveUnitContext(t *testing.T, loginToken string, schools []struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }) (switchContextResult, string, string) {
 	t.Helper()
 	for _, candidate := range schools {
-		unitID := firstSchoolUnit(t, loginToken, candidate.ID)
+		bearer := loginToken
+		status, schoolLevel := postSwitchContext(t, loginToken, candidate.ID, "")
+		switch status {
+		case http.StatusOK:
+			if schoolLevel.Context != nil && schoolLevel.Context.AcademicUnitID != "" {
+				return schoolLevel, candidate.ID, schoolLevel.Context.AcademicUnitID
+			}
+			require.NotEmpty(t, schoolLevel.AccessToken,
+				"switch-context school=%s: access_token empty", candidate.ID)
+			bearer = schoolLevel.AccessToken
+		case http.StatusConflict:
+			// La escuela exige unidad: se listan con el token de login.
+		default:
+			require.FailNowf(t, "switch-context without unit",
+				"school=%s: unexpected status %d", candidate.ID, status)
+		}
+
+		unitID := firstSchoolUnit(t, bearer, candidate.ID)
 		if unitID == "" {
 			continue
 		}
-		switchBody := mustJSON(t, map[string]string{
-			"school_id":        candidate.ID,
-			"academic_unit_id": unitID,
-		})
-		switchResp := mustPost(t, identityServer.URL+"/api/v1/auth/switch-context",
-			loginToken, switchBody)
-		require.Equalf(t, http.StatusOK, switchResp.status,
-			"switch-context school=%s unit=%s: expected 200, body=%s",
-			candidate.ID, unitID, string(switchResp.body))
-
-		var switched switchContextResult
-		require.NoError(t, json.Unmarshal(switchResp.body, &switched),
-			"switch-context: parse body=%s", string(switchResp.body))
+		status, switched := postSwitchContext(t, bearer, candidate.ID, unitID)
+		require.Equalf(t, http.StatusOK, status,
+			"switch-context school=%s unit=%s: expected 200", candidate.ID, unitID)
 		require.NotNil(t, switched.Context,
-			"switch-context: context nil body=%s", string(switchResp.body))
+			"switch-context school=%s unit=%s: context nil", candidate.ID, unitID)
 		if switched.Context.AcademicUnitID != "" {
 			return switched, candidate.ID, unitID
 		}
 	}
 	require.FailNow(t, "no school resolved a unit-level context for the global super_admin")
 	return switchContextResult{}, "", ""
+}
+
+// postSwitchContext hace POST /auth/switch-context con (schoolID, unitID) y
+// devuelve el status y el payload tipado (vacío si el status no es 200).
+func postSwitchContext(t *testing.T, bearer, schoolID, unitID string) (int, switchContextResult) {
+	t.Helper()
+	payload := map[string]string{"school_id": schoolID}
+	if unitID != "" {
+		payload["academic_unit_id"] = unitID
+	}
+	resp := mustPost(t, identityServer.URL+"/api/v1/auth/switch-context",
+		bearer, mustJSON(t, payload))
+	var out switchContextResult
+	if resp.status == http.StatusOK {
+		require.NoError(t, json.Unmarshal(resp.body, &out),
+			"switch-context: parse body=%s", string(resp.body))
+	}
+	return resp.status, out
 }
 
 // firstSchoolUnit lista las unidades de la escuela y devuelve el id de la

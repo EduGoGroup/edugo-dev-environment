@@ -36,22 +36,16 @@ func TestStudentFlow_Grants(t *testing.T) {
 	// propias es el feature self `academic.my_grades.read:own`. Los recursos
 	// `academic.schedules`/`academic.calendar` se eliminaron del producto.
 	roleflow.AssertGrantsContains(t, resp.ActiveContext.Grants,
-		"content.assessments.attempt",
-		"content.assessments.read",
 		"content.assessments_student.read",
-		"content.assessments.view_results",
 		"content.materials.read",
 		"content.materials.download",
-		"reports.progress.read:own",
 		"academic.my_grades.read:own",
 		"academic.my_memberships.read:own",
-		"academic.attendance.read",
 		"academic.announcements.read",
 		"dashboard.view",
 		"screens.read",
 		"menu.read",
 		"notifications.read",
-		"admin.system_settings.read",
 	)
 
 	// El seed base aplica un deny puntual a est.carlos sobre

@@ -311,13 +311,36 @@ func Login(t *testing.T, server *httptest.Server, email, password string) LoginR
 	// esos roles el contexto se resuelve con un switch-context explícito a la
 	// primera escuela disponible. No debilita la aserción: el contexto
 	// resuelto trae los grants reales del rol en esa escuela.
+	//
+	// ADR 0028: un global puro (super_admin sin membership) recibe schools[]
+	// vacío; el cliente explora las escuelas con context.browse_schools contra
+	// academic /schools. Este env sólo levanta identity, así que la escuela se
+	// toma del seed (la primera activa por nombre). El recorrido real de browse
+	// lo cubre superadmin_flow.
 	if out.ActiveContext == nil {
-		require.NotEmpty(t, out.Schools,
-			"login %s: active_context nil y sin escuelas para resolver contexto", email)
-		out = switchContext(t, server, out, out.Schools[0].ID)
+		schoolID := ""
+		if len(out.Schools) > 0 {
+			schoolID = out.Schools[0].ID
+		} else {
+			schoolID = firstSeedSchoolID(t)
+		}
+		out = switchContext(t, server, out, schoolID)
 	}
 	require.NotNil(t, out.ActiveContext, "login: active_context nil tras switch-context")
 	return out
+}
+
+// firstSeedSchoolID devuelve el id de la primera escuela activa del seed,
+// ordenada por nombre. Sustituye al browse de escuelas para un global puro.
+func firstSeedSchoolID(t *testing.T) string {
+	t.Helper()
+	var id string
+	err := Get().DB.Raw(
+		"SELECT id::text FROM academic.schools WHERE is_active = true AND deleted_at IS NULL ORDER BY name LIMIT 1",
+	).Scan(&id).Error
+	require.NoError(t, err, "roleflow: reading first seed school")
+	require.NotEmpty(t, id, "roleflow: the seed has no active school")
+	return id
 }
 
 // LoginRaw ejecuta POST /api/v1/auth/login y devuelve la LoginResponse TAL CUAL

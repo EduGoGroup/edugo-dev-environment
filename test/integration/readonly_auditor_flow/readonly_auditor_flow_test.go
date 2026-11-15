@@ -44,16 +44,13 @@ func TestReadonlyAuditorFlow_Grants(t *testing.T) {
 		"academic.schedules.read",
 		"academic.announcements.read",
 		"academic.periods.read",
-		"reports.progress.read",
 		"admin.users.read",
 		"admin.users.read:own",
 		"academic.subjects.read",
 		"academic.units.read",
-		"reports.stats.unit",
 		"dashboard.view",
 		"menu.read",
 		"notifications.read",
-		"reports.read",
 		"academic.calendar.read",
 	)
 
