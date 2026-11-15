@@ -1,0 +1,46 @@
+# Contexto de build del migrator. El Dockerfile hace `COPY . .`, así que todo lo
+# que no se excluya aquí entra en la imagen (deuda 091, plan 054 S.8).
+# La imagen solo necesita: go.mod, go.sum, cmd/, internal/, tests/ y el Makefile.
+
+# Variables de entorno y credenciales: nunca dentro de la imagen.
+# Tampoco la plantilla .env.local.example: nada de la imagen la lee.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Control de versiones
+.git
+.gitignore
+
+# Binarios y artefactos de build
+bin/
+migrator
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Clon local de edugo-infrastructure (el migrator lo vuelve a clonar)
+.infrastructure/
+
+# Reportes generados en local
+audit-reports/
+
+# IDEs y sistema operativo
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+**/.DS_Store
+Thumbs.db
+
+# Lo que la imagen no usa
+Dockerfile
+.dockerignore
+docker-compose*.yml
+docs/
+README.md

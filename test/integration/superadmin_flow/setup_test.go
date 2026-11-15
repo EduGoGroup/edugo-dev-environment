@@ -249,7 +249,10 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
-	c := academicBuilder.NewContainer(db, log, cfg, blacklist, auditLog)
+	c, err := academicBuilder.NewContainer(db, log, cfg, blacklist, auditLog)
+	if err != nil {
+		panic(fmt.Sprintf("academic container: %v", err))
+	}
 	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 
@@ -279,7 +282,10 @@ func startPlatformServer(db *gorm.DB) *httptest.Server {
 	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
-	c := platformBuilder.NewContainer(db, log, cfg, blacklist, auditLog, nil)
+	c, err := platformBuilder.NewContainer(db, log, cfg, blacklist, auditLog, nil)
+	if err != nil {
+		panic(fmt.Sprintf("platform container: %v", err))
+	}
 	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 }
 

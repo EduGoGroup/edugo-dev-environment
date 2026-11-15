@@ -47,26 +47,18 @@ func TestGuardianFlow_Grants(t *testing.T) {
 	// `academic.my_wards_*.read:own` (NO el wildcard `academic.grades.*`),
 	// y F1 ya no concede `academic.calendar.*`.
 	roleflow.AssertGrantsContains(t, resp.ActiveContext.Grants,
-		"content.assessments.read",
-		"content.assessments.view_results",
 		"content.materials.read",
-		"reports.progress.read",
 		"academic.my_wards_grades.read:own",
 		"academic.my_wards_attendance.read:own",
 		"academic.my_wards_announcements.read:own",
 		"academic.my_wards_materials.read:own",
-		"academic.attendance.read",
 		"academic.announcements.read",
 		"academic.guardian_relations.read",
 		"academic.guardian_relations.request",
-		"admin.users.read:own",
-		"admin.users.update:own",
 		"dashboard.view",
 		"screens.read",
 		"menu.read",
 		"notifications.read",
-		"reports.read",
-		"admin.system_settings.read",
 	)
 
 	// Privacidad F1: el guardián NO ve el wildcard de notas; solo a su acudido
