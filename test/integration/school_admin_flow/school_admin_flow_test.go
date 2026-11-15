@@ -66,9 +66,6 @@ func TestSchoolAdminFlow_Grants(t *testing.T) {
 		"content.assessments.create",
 		"content.assessments.delete",
 		"admin.roles.read",
-		"admin.roles.create",
-		"admin.roles.update",
-		"admin.roles.delete",
 		"admin.system_settings.read",
 		"admin.system_settings.update",
 		"dashboard.view",
@@ -76,9 +73,13 @@ func TestSchoolAdminFlow_Grants(t *testing.T) {
 		"notifications.read",
 	)
 
-	// Sanity: deny vacío (school_admin no recibe denies en seed).
-	assert.Empty(t, resp.ActiveContext.Grants.Deny,
-		"school_admin: grants.deny must be empty")
+	// Plan 027 F4.8: el school_admin lee roles pero NO los define. El seed le
+	// siembra denies sobre admin.roles.{create,update,delete}; se pregunta con
+	// el matcher real (deny > allow) en vez de comparar la lista literal.
+	for _, probe := range []string{"admin.roles.create", "admin.roles.update", "admin.roles.delete"} {
+		assert.Falsef(t, roleflow.GrantsAllow(resp.ActiveContext.Grants, probe),
+			"school_admin must NOT be granted %q", probe)
+	}
 
 	// E2E: el endpoint autenticado debe responder 200 con el token.
 	status, _ := roleflow.GetJSON(t, env.Server,
