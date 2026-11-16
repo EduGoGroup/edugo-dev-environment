@@ -119,7 +119,7 @@ type pendingJoinRequest struct {
 // (school.<tipo> + unit.<tipo>) sobre la unidad de la solicitud.
 func adminTokenOn5toA(t *testing.T) string {
 	t.Helper()
-	login := roleflow.Login(t, identityServer, adminSanIgnacioEmail, roleflow.DemoPassword)
+	login := roleflow.Login(t, identityServer, adminSanIgnacioEmail)
 	require.NotNil(t, login.ActiveContext, "login admin debe traer active_context")
 
 	status, raw := roleflow.SwitchSubject(t, identityServer, login.AccessToken, "self", schoolS1ID, unit5toA)
@@ -174,7 +174,7 @@ func signupKmpUser(t *testing.T, label string) (userID, token string) {
 		grantID, su.ID, roleStudentID)
 	require.NoErrorf(t, err, "conceder user_role kmp a %s", email)
 
-	login := roleflow.LoginRaw(t, identityServer, email, defaultPassword)
+	login := roleflow.LoginRaw(t, identityServer, email)
 	require.NotEmpty(t, login.AccessToken, "%s debe poder loguear tras la concesion de rol", email)
 	return su.ID, login.AccessToken
 }

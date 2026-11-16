@@ -64,7 +64,7 @@ type guardianRelationBody struct {
 // auto-solicitud exige, junto con el user_id del JWT = castro).
 func loginCastro(t *testing.T) string {
 	t.Helper()
-	raw := roleflow.LoginRaw(t, identityServer, tutorCastroEmail, roleflow.DemoPassword)
+	raw := roleflow.LoginRaw(t, identityServer, tutorCastroEmail)
 	require.NotEmpty(t, raw.AccessToken, "castro: token vacío")
 
 	status, body := roleflow.SwitchSubject(t, identityServer, raw.AccessToken,
@@ -130,7 +130,7 @@ func TestRequestApprove_PerSchool_HappyPath(t *testing.T) {
 		"school_id del pending debe ser San Ignacio (única escuela de Sofia) body=%s", string(raw))
 
 	// 3. Carmen (admin de San Ignacio) loguea: single-school → contexto activo en S1.
-	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail, roleflow.DemoPassword)
+	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail)
 	require.NotNil(t, admin.ActiveContext, "admin: active_context debe estar resuelto")
 	require.Equalf(t, schoolSanIgnacioID, admin.ActiveContext.SchoolID,
 		"precondición: el admin debe estar en contexto de San Ignacio, got %s", admin.ActiveContext.SchoolID)
@@ -163,7 +163,7 @@ func TestApprove_ForeignSchool_Forbidden(t *testing.T) {
 	defer deleteRelation(t, relID)
 
 	// Carmen (admin de San Ignacio, contexto en S1) intenta aprobar el pending de S3.
-	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail, roleflow.DemoPassword)
+	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail)
 	require.Equal(t, schoolSanIgnacioID, admin.ActiveContext.SchoolID,
 		"precondición: admin en contexto de San Ignacio")
 
@@ -201,13 +201,13 @@ func TestRequestApprove_ThenWardGradesReadable(t *testing.T) {
 	defer deleteRelation(t, created.ID)
 
 	// 2. Carmen aprueba en S1.
-	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail, roleflow.DemoPassword)
+	admin := roleflow.Login(t, identityServer, adminSanIgnacioEmail)
 	status, raw = doPost(t, academicServer.URL, "/api/v1/guardian-relations/"+created.ID+"/approve", admin.AccessToken, nil)
 	require.Equalf(t, http.StatusOK, status, "approve: esperaba 200, got %d body=%s", status, string(raw))
 
 	// 3. castro impersona a Sofia (ward) y lee sus notas. Re-login para que el token
 	//    refleje el vínculo recién activado (los wards se calculan al firmar).
-	castroRaw := roleflow.LoginRaw(t, identityServer, tutorCastroEmail, roleflow.DemoPassword)
+	castroRaw := roleflow.LoginRaw(t, identityServer, tutorCastroEmail)
 	sw, swRaw := roleflow.SwitchSubject(t, identityServer, castroRaw.AccessToken,
 		"ward:"+studentSofiaID, schoolSanIgnacioID, "")
 	require.Equalf(t, http.StatusOK, sw,

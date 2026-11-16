@@ -83,7 +83,7 @@ func TestMain(m *testing.M) {
 func TestUserGrants_BaseSeedDenyOverride(t *testing.T) {
 	env := roleflow.Get()
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 	grants := fetchEffectiveGrants(t, env.Server, studentID, super.AccessToken)
 
 	assert.Contains(t, grants.Deny, "academic.grades.read",
@@ -98,7 +98,7 @@ func TestUserGrants_BaseSeedDenyOverride(t *testing.T) {
 
 	// El login del propio student también refleja el override:
 	// ActiveContext.Grants debe unir role_grants ∪ user_grants.
-	studentLogin := roleflow.Login(t, env.Server, "est.carlos@edugo.test", roleflow.DemoPassword)
+	studentLogin := roleflow.Login(t, env.Server, "est.carlos@edugo.test")
 	require.NotNil(t, studentLogin.ActiveContext)
 	assert.Contains(t, studentLogin.ActiveContext.Grants.Deny, "academic.grades.read",
 		"login.ActiveContext.Grants debe incluir el deny puntual del seed")
@@ -118,7 +118,7 @@ func TestUserGrants_BaseSeedAllowOverride(t *testing.T) {
 
 	const demoGrant = "academic.join_request_approvals.unit.teacher"
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 	grants := fetchEffectiveGrants(t, env.Server, teacherSeedID, super.AccessToken)
 
 	assert.Contains(t, grants.Allow, demoGrant,
@@ -132,7 +132,7 @@ func TestUserGrants_BaseSeedAllowOverride(t *testing.T) {
 		"el rol teacher no debe conceder admin.users.create (QA-09)")
 
 	// El login del propio teacher también refleja el override.
-	teacherLogin := roleflow.Login(t, env.Server, "prof.martinez@edugo.test", roleflow.DemoPassword)
+	teacherLogin := roleflow.Login(t, env.Server, "prof.martinez@edugo.test")
 	require.NotNil(t, teacherLogin.ActiveContext)
 	assert.Contains(t, teacherLogin.ActiveContext.Grants.Allow, demoGrant,
 		"login.ActiveContext.Grants debe incluir el allow extra del seed")
@@ -144,7 +144,7 @@ func TestUserGrants_BaseSeedAllowOverride(t *testing.T) {
 func TestUserGrants_API_CreateListDelete(t *testing.T) {
 	env := roleflow.Get()
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 	bearer := super.AccessToken
 
 	// Baseline: no debe existir el deny pre-existente.
@@ -194,7 +194,7 @@ func TestUserGrants_API_CreateListDelete(t *testing.T) {
 func TestUserGrants_API_RejectWildcardStar(t *testing.T) {
 	env := roleflow.Get()
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 
 	status, body := postJSON(t, env.Server,
 		"/api/v1/users/"+teacherCleanID+"/grants",
@@ -212,7 +212,7 @@ func TestUserGrants_API_RejectWildcardStar(t *testing.T) {
 func TestUserGrants_API_Duplicate(t *testing.T) {
 	env := roleflow.Get()
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 	bearer := super.AccessToken
 	path := "/api/v1/users/" + teacherCleanID + "/grants"
 
@@ -246,7 +246,7 @@ func TestUserGrants_API_Duplicate(t *testing.T) {
 func TestUserGrants_API_ExpiredIgnored(t *testing.T) {
 	env := roleflow.Get()
 
-	super := roleflow.Login(t, env.Server, superAdminEmail, roleflow.DemoPassword)
+	super := roleflow.Login(t, env.Server, superAdminEmail)
 	bearer := super.AccessToken
 	path := "/api/v1/users/" + teacherCleanID + "/grants"
 

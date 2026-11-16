@@ -10,7 +10,9 @@
 //   - ward con school_id válido → 200, contexto del guardián impersonando al hijo.
 //   - ward con 1 sola escuela y sin school_id → 200 (auto-resuelve la escuela).
 //   - student no vinculado al usuario → 403 GUARDIAN_LINK_NOT_FOUND.
-//   - refresh preserva la terna sujeto/actor (viaja firmada en el access_token).
+//   - la renovación (re-exchange con desired_context) preserva la terna
+//     sujeto/actor (viaja firmada en el access_token).
+//   - las rutas retiradas /auth/login, /auth/refresh y /auth/logout dan 404.
 //
 // Reusa el TestMain/roleflow.Setup del paquete (guardian_flow_test.go).
 package guardian_flow_test
@@ -19,9 +21,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -47,9 +47,8 @@ const (
 // switchContextBody es el sub-set tipado del 200 de switch-context: la clave de
 // respuesta es `context` (igual que el helper doSwitchContext interno).
 type switchContextBody struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Context      *struct {
+	AccessToken string `json:"access_token"`
+	Context     *struct {
 		RoleName         string `json:"role_name"`
 		SchoolID         string `json:"school_id"`
 		SubjectStudentID string `json:"subject_student_id"`
@@ -81,7 +80,7 @@ type errorBody struct {
 // las 2 escuelas candidatas en el body.
 func TestGuardianSwitch_WardMultiSchool_RequiresSelection(t *testing.T) {
 	env := roleflow.Get()
-	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail, roleflow.DemoPassword)
+	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail)
 
 	status, raw := roleflow.SwitchSubject(t, env.Server, login.AccessToken,
 		"ward:"+studentCarlosID, "", "")
@@ -108,7 +107,7 @@ func TestGuardianSwitch_WardMultiSchool_RequiresSelection(t *testing.T) {
 // subject=carlos, school=S1).
 func TestGuardianSwitch_WardWithSchool_Resolves(t *testing.T) {
 	env := roleflow.Get()
-	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail, roleflow.DemoPassword)
+	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail)
 
 	status, raw := roleflow.SwitchSubject(t, env.Server, login.AccessToken,
 		"ward:"+studentCarlosID, schoolS1ID, "")
@@ -128,7 +127,7 @@ func TestGuardianSwitch_WardWithSchool_Resolves(t *testing.T) {
 // school_id → 200, la escuela se auto-resuelve (caso inequívoco).
 func TestGuardianSwitch_WardSingleSchool_Auto(t *testing.T) {
 	env := roleflow.Get()
-	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail, roleflow.DemoPassword)
+	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail)
 
 	status, raw := roleflow.SwitchSubject(t, env.Server, login.AccessToken,
 		"ward:"+studentDiegoID, "", "")
@@ -148,7 +147,7 @@ func TestGuardianSwitch_WardSingleSchool_Auto(t *testing.T) {
 // pide impersonar a carlos → 403 GUARDIAN_LINK_NOT_FOUND.
 func TestGuardianSwitch_NoLink_Forbidden(t *testing.T) {
 	env := roleflow.Get()
-	login := roleflow.LoginRaw(t, env.Server, tutorMendozaEmail, roleflow.DemoPassword)
+	login := roleflow.LoginRaw(t, env.Server, tutorMendozaEmail)
 
 	status, raw := roleflow.SwitchSubject(t, env.Server, login.AccessToken,
 		"ward:"+studentCarlosID, schoolS1ID, "")
@@ -160,64 +159,74 @@ func TestGuardianSwitch_NoLink_Forbidden(t *testing.T) {
 	assert.Equal(t, "GUARDIAN_LINK_NOT_FOUND", body.Code, "code del 403 body=%s", string(raw))
 }
 
-// TestGuardianSwitch_Refresh_PreservesSubject: mendoza auto-resuelve a su acudido
-// sofia en el login; tras un refresh, el nuevo access_token debe conservar la
-// terna sujeto/actor. El refresh SOLO renueva tokens (no devuelve active_context;
-// la terna viaja FIRMADA dentro del access_token), así que decodificamos el
-// payload del JWT (base64url del segmento central, sin verificar firma) y exigimos
-// que active_context.subject_student_id persista y actor_mode siga siendo "ward".
-func TestGuardianSwitch_Refresh_PreservesSubject(t *testing.T) {
+// TestGuardianSwitch_Renewal_PreservesSubject: la renovación de sesión conserva
+// la terna sujeto/actor. Hasta el plan 053 T3.3 se renovaba con POST
+// /auth/refresh; ya no existe (404): el refresh es de identity-core y el
+// cliente RE-CANJEA un Identity Token nuevo con `desired_context` = el contexto
+// que tenía. Se usa castro (no mendoza) para que la aserción discrimine: castro
+// tiene 2 acudidos, así que su exchange inicial NO auto-resuelve a ningún ward;
+// si el re-exchange ignorara desired_context, el contexto sería otro (o nil).
+//
+// Pasos: exchange → switch-context a ward carlos en S3 → re-exchange con el
+// desired_context de ese token → el token nuevo (claims firmados, decodificados
+// sin verificar) y el active_context de la respuesta conservan
+// subject_student_id=carlos, actor_mode=ward, school_id=S3 y el rol.
+func TestGuardianSwitch_Renewal_PreservesSubject(t *testing.T) {
 	env := roleflow.Get()
 
-	// Login (no Raw): mendoza es 1 acudido/1 escuela → auto-resuelve a ward sofia.
-	login := roleflow.Login(t, env.Server, tutorMendozaEmail, roleflow.DemoPassword)
-	require.NotNil(t, login.ActiveContext, "login debe traer active_context (auto-resuelto)")
-	require.Equal(t, roleflow.ActorModeWard, login.ActiveContext.ActorMode,
-		"precondición: login de mendoza auto-resuelve a ward")
-	wardSubject := login.ActiveContext.SubjectStudentID
-	require.NotEmpty(t, wardSubject, "precondición: subject_student_id (sofia) no vacío")
+	login := roleflow.LoginRaw(t, env.Server, tutorCastroEmail)
+	require.Nil(t, login.ActiveContext,
+		"precondición: castro (2 acudidos) no auto-resuelve contexto en el exchange")
 
-	// Refresh: rota tokens. La respuesta NO incluye active_context (RefreshResponse
-	// solo renueva); la terna persiste firmada en el nuevo access_token.
-	newAccess := doRefresh(t, env.Server, login.RefreshToken)
-	require.NotEmpty(t, newAccess, "refresh debe devolver un access_token nuevo")
+	status, raw := roleflow.SwitchSubject(t, env.Server, login.AccessToken,
+		"ward:"+studentCarlosID, schoolS3ID, "")
+	require.Equalf(t, http.StatusOK, status,
+		"switch a ward carlos en S3: esperaba 200, got %d body=%s", status, string(raw))
+	var switched switchContextBody
+	require.NoError(t, json.Unmarshal(raw, &switched), "parse switch body=%s", string(raw))
+	before, ok := decodeJWTPayload(t, switched.AccessToken)["active_context"].(map[string]any)
+	require.Truef(t, ok, "el token del switch debe traer active_context")
+	require.Equal(t, studentCarlosID, before["subject_student_id"], "precondición: sujeto carlos")
+	roleID, _ := before["role_id"].(string)
+	require.NotEmpty(t, roleID, "precondición: role_id en el token del switch")
 
-	// Decodifica el payload del JWT (sin verificar firma) y lee el active_context.
-	claims := decodeJWTPayload(t, newAccess)
-	ac, ok := claims["active_context"].(map[string]any)
-	require.Truef(t, ok, "el access_token refrescado debe traer active_context claims=%v", claims)
-	assert.Equal(t, wardSubject, ac["subject_student_id"],
-		"refresh debe preservar subject_student_id (sofia)")
+	// Renovación: re-exchange con un Identity Token nuevo + desired_context.
+	status, raw = roleflow.Exchange(t, env.Server, tutorCastroEmail, &roleflow.DesiredContext{
+		SchoolID: schoolS3ID,
+		RoleID:   roleID,
+		Subject:  "ward:" + studentCarlosID,
+	})
+	require.Equalf(t, http.StatusOK, status,
+		"re-exchange con desired_context: esperaba 200, got %d body=%s", status, string(raw))
+	var renewed roleflow.LoginResponse
+	require.NoError(t, json.Unmarshal(raw, &renewed), "parse re-exchange body=%s", string(raw))
+	require.NotEmpty(t, renewed.AccessToken, "re-exchange debe devolver un access_token nuevo")
+	require.NotNil(t, renewed.ActiveContext, "re-exchange debe devolver active_context")
+	assert.Equal(t, studentCarlosID, renewed.ActiveContext.SubjectStudentID,
+		"active_context de la respuesta: subject_student_id = carlos")
+	assert.Equal(t, roleflow.ActorModeWard, renewed.ActiveContext.ActorMode,
+		"active_context de la respuesta: actor_mode = ward")
+
+	ac, ok := decodeJWTPayload(t, renewed.AccessToken)["active_context"].(map[string]any)
+	require.Truef(t, ok, "el access_token renovado debe traer active_context")
+	assert.Equal(t, studentCarlosID, ac["subject_student_id"],
+		"la renovación debe preservar subject_student_id (carlos)")
 	assert.Equal(t, roleflow.ActorModeWard, ac["actor_mode"],
-		"refresh debe preservar actor_mode=ward")
+		"la renovación debe preservar actor_mode=ward")
+	assert.Equal(t, schoolS3ID, ac["school_id"], "la renovación debe preservar school_id = S3")
+	assert.Equal(t, roleID, ac["role_id"], "la renovación debe preservar el rol")
 }
 
-// doRefresh ejecuta POST /api/v1/auth/refresh con el refresh_token y devuelve el
-// access_token nuevo. Falla el test si el status no es 200 o el body no parsea.
-func doRefresh(t *testing.T, server *httptest.Server, refreshToken string) string {
-	t.Helper()
-	reqBody, err := json.Marshal(map[string]string{"refresh_token": refreshToken})
-	require.NoError(t, err)
-
-	req, err := http.NewRequest(http.MethodPost,
-		server.URL+"/api/v1/auth/refresh",
-		bytes.NewReader(reqBody))
-	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	require.NoError(t, err)
-	defer resp.Body.Close()
-	raw, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-	require.Equalf(t, http.StatusOK, resp.StatusCode,
-		"refresh: esperaba 200, got %d body=%s", resp.StatusCode, string(raw))
-
-	var out struct {
-		AccessToken string `json:"access_token"`
+// TestLegacyAuthRoutes_Gone: plan 053 T3.3 retiró el login, el refresh y el
+// logout propios de identity; las rutas ya no existen.
+func TestLegacyAuthRoutes_Gone(t *testing.T) {
+	env := roleflow.Get()
+	for _, path := range []string{"/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout"} {
+		resp, err := http.Post(env.Server.URL+path, "application/json", bytes.NewReader([]byte("{}")))
+		require.NoError(t, err)
+		_ = resp.Body.Close()
+		assert.Equalf(t, http.StatusNotFound, resp.StatusCode, "POST %s debe dar 404", path)
 	}
-	require.NoError(t, json.Unmarshal(raw, &out), "refresh: parse body=%s", string(raw))
-	return out.AccessToken
 }
 
 // decodeJWTPayload decodifica el segmento central (payload) de un JWT como

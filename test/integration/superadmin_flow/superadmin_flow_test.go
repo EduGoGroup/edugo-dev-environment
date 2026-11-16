@@ -45,38 +45,12 @@ import (
 //	                              el token que ya trae contexto.
 func TestSuperAdminGlobalFlow_CrossAPI(t *testing.T) {
 	// ----------------------------------------------------------------
-	// Step 1: POST identity /auth/login con global-super@e2e.test.
-	// MP-08 DEC-C: el login exige `system`; el super_admin tiene acceso
-	// a "kmp" vía iam.system_roles (L4).
+	// Step 1: POST identity /auth/exchange para global-super@e2e.test.
+	// Plan 053 T3.3: el login propio ya no existe; la sesión nace del canje
+	// de un Identity Token (system edu2go.kmp) que firma un identity-core
+	// falso (roleflow.StartIdentityServer).
 	// ----------------------------------------------------------------
-	loginBody := mustJSON(t, map[string]string{
-		"email":    globalUserEmail,
-		"password": globalUserPassword,
-		"system":   "kmp",
-	})
-
-	loginResp := mustPost(t, identityServer.URL+"/api/v1/auth/login", "", loginBody)
-	require.Equalf(t, http.StatusOK, loginResp.status,
-		"step 1 login: expected 200, body=%s", string(loginResp.body))
-
-	var login struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-		Schools      []struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
-		} `json:"schools"`
-		ActiveContext *struct {
-			RoleID   string `json:"role_id"`
-			RoleName string `json:"role_name"`
-			Grants   struct {
-				Allow []string `json:"allow"`
-				Deny  []string `json:"deny"`
-			} `json:"grants"`
-		} `json:"active_context"`
-	}
-	require.NoError(t, json.Unmarshal(loginResp.body, &login),
-		"step 1 login: parse response body=%s", string(loginResp.body))
+	login := roleflow.LoginRaw(t, identityServer, globalUserEmail)
 
 	require.NotEmpty(t, login.AccessToken, "step 1: access_token must not be empty")
 

@@ -73,7 +73,7 @@ func postJSON(t *testing.T, server *httptest.Server, path, bearer string, payloa
 // solicitud (la unidad de la invitación guardian = la de Sofia).
 func adminTokenOnSofiaUnit(t *testing.T) string {
 	t.Helper()
-	login := roleflow.Login(t, identityServer, adminSanIgnacioEmail, roleflow.DemoPassword)
+	login := roleflow.Login(t, identityServer, adminSanIgnacioEmail)
 	require.NotNil(t, login.ActiveContext, "login admin debe traer active_context")
 
 	// Fija el contexto en la unidad de Sofia (5to A). switch-context permite a un
@@ -149,7 +149,7 @@ func TestGuardianInvitation_HappyPath(t *testing.T) {
 	// 2. El representante (castro) redime el code → join-request pending. Castro
 	//    es guardián en S1 (membresía activa) → el sello de colegio nace firmado
 	//    (auto); queda pendiente el de unidad.
-	castroLogin := roleflow.LoginRaw(t, identityServer, tutorCastroEmail, roleflow.DemoPassword)
+	castroLogin := roleflow.LoginRaw(t, identityServer, tutorCastroEmail)
 	require.NotEmpty(t, castroLogin.AccessToken, "castro debe poder loguear")
 
 	status, raw = postJSON(t, academicServer, "/api/v1/invitations/redeem", castroLogin.AccessToken, map[string]any{
