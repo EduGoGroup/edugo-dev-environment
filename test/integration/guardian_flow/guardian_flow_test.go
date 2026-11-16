@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 func TestGuardianFlow_Grants(t *testing.T) {
 	env := roleflow.Get()
 
-	resp := roleflow.Login(t, env.Server, userEmail, roleflow.DemoPassword)
+	resp := roleflow.Login(t, env.Server, userEmail)
 	require.NotNil(t, resp.ActiveContext, "active_context must be present")
 	assert.Equal(t, roleName, resp.ActiveContext.RoleName)
 

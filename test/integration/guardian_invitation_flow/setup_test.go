@@ -39,10 +39,9 @@ import (
 	infraMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
 
+	"github.com/EduGoGroup/edugo-dev-environment/test/integration/internal/roleflow"
 	academicBuilder "github.com/edugo/edugo-api-academic/cmd/builder"
 	academicConfig "github.com/edugo/edugo-api-academic/cmd/config"
-	identityBuilder "github.com/edugo/edugo-api-identity/cmd/builder"
-	identityConfig "github.com/edugo/edugo-api-identity/cmd/config"
 )
 
 // JWT compartido por identity y academic: un token emitido por identity debe ser
@@ -154,33 +153,15 @@ func startPostgres(ctx context.Context) (*tcpostgres.PostgresContainer, *gorm.DB
 	return container, gdb, sqlDB, nil
 }
 
+// startIdentityServer delega en roleflow.StartIdentityServer: identity con el
+// exchange contra un identity-core falso (plan 053 T3.3, sin login propio).
+// Exporta AUTH_CONTEXT_PUBLIC_KEYS, así que va ANTES de los demás servers.
 func startIdentityServer(db *gorm.DB) *httptest.Server {
-	cfg := &identityConfig.Config{
-		Environment: "development",
-		Server: identityConfig.ServerConfig{
-			Port: 0,
-			Host: "127.0.0.1",
-		},
-		Auth: identityConfig.AuthConfig{
-			JWT: identityConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
-				Issuer:               sharedJWTIssuer,
-				AccessTokenDuration:  accessTokenDuration,
-				RefreshTokenDuration: refreshTokenDuration,
-			},
-		},
-		Logging: identityConfig.LoggingConfig{Level: "error", Format: "text"},
-		CORS: identityConfig.CORSConfig{
-			AllowedOrigins: "*",
-			AllowedMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-			AllowedHeaders: "Content-Type,Authorization,X-Request-ID",
-		},
+	server, err := roleflow.StartIdentityServer(db, sharedJWTSecret, sharedJWTIssuer)
+	if err != nil {
+		panic(fmt.Sprintf("identity server: %v", err))
 	}
-
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
-	log := newNoOpLogger()
-	c := identityBuilder.NewContainer(db, log, cfg, blacklist)
-	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
+	return server
 }
 
 func startAcademicServer(db *gorm.DB) *httptest.Server {
