@@ -149,7 +149,7 @@ func TestWardAttendance_LinkRevoked_Forbidden(t *testing.T) {
 // INSUFFICIENT_PERMISSIONS ANTES de llegar al handler (no es NOT_WARD_CONTEXT,
 // que aplicaría a alguien con el permiso pero sin contexto ward).
 func TestWardAttendance_NonGuardian_Forbidden(t *testing.T) {
-	login := roleflow.Login(t, identityServer, profMartinezEmail, roleflow.DemoPassword)
+	login := roleflow.Login(t, identityServer, profMartinezEmail)
 	require.NotNil(t, login.ActiveContext, "login de martinez debe traer active_context")
 
 	status, raw := roleflow.GetJSON(t, academicServer, "/api/v1/me/wards/attendance", login.AccessToken)

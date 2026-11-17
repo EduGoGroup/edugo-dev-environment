@@ -16,7 +16,7 @@ reales contra un Postgres de testcontainers).
 
 ```
 edugo-dev-environment/
-  migrator/    # migraciones Postgres + seeds E2E (cmd/, internal/{config,orchestrator,postgres})
+  migrator/    # migraciones Postgres + seeds E2E (cmd/, internal/{config,orchestrator,postgres,ontop,provision})
   test/        # tests de integración cross-API (módulo Go aparte; gate LOCAL, no de CI)
   archived/    # material del ecosistema previo (no en uso) — ver archived/README.md
 ```
@@ -31,6 +31,12 @@ make help     # lista de comandos
 ```
 
 Detalle de comandos y flujo en `README.md`.
+
+**Escenarios on-top (plan 053 T5.2):** los seis escenarios con usuarios no van por `--playground-v2`.
+Flujo local en cinco pasos: `make docker-recreate`, arrancar `edugo-api-identity` con
+`AUTH_IDENTITY_SYNC_ENABLED=true`, `make docker-provision-users P=<escenario>` (alta por API;
+`cmd/provision_users`), `make docker-on-top P=<escenario>` (`migrator --on-top`, sin force) y dejar que
+identity drene el outbox. Detalle en `migrator/README.md`. No hay targets cloud para el alta.
 
 ## `test/` es un gate local, no de CI
 

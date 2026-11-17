@@ -49,6 +49,9 @@ github.com/EduGoGroup/edugo-infrastructure/postgres v0.65.0
 | `--seed-up-to-layer` | string | `""` (todas) | Aplica capas del sistema hasta la capa indicada. Ejemplo: `--seed-up-to-layer=legacy`. |
 | `--seed-demo` | bool | `true` | Aplica seeds de desarrollo (`demo.ApplyDemo`). Si `APPLY_MOCK_DATA=false` en ENV y el flag no se pasa explícito, toma el valor de la variable de entorno. |
 
+| `--playground-v2` | string | `""` (siembra `base`) | Recrea la BD (force) y aplica un fixture autónomo: `base`, `mp10_material`, `f6_representante` o `all` (los tres). Un escenario on-top por aquí falla listando sus usuarios. |
+| `--on-top` | string | `""` | Aplica un escenario on-top **sin force** sobre una BD ya migrada a la `SchemaVersion` actual. Excluyente con los otros dos flags y con `FORCE_MIGRATION=true`. Ver «Escenarios on-top». |
+
 > **Nota de migración**: `seeds.ApplyProduction` y `seeds.ApplyDevelopment` fueron eliminados.
 > Usar `system.ApplySystem(db, upTo)` y `demo.ApplyDemo(gdb)` respectivamente.
 > `MigrateOptions.ApplyMock` fue renombrado a `MigrateOptions.SeedDemo`.
@@ -73,6 +76,50 @@ El migrator corre una sola vez y termina. Si las bases de datos ya tienen datos,
 ```bash
 FORCE_MIGRATION=true docker compose up
 ```
+
+## Escenarios on-top (plan 053 T5.2)
+
+Los seis escenarios con usuarios (`onboarding`, `n1_inscripcion`, `n17_secciones`, `n4_evaluacion`,
+`multi_unidad`, `n0n1_escuelas`) ya no crean usuarios: sus usuarios los da de alta la API de identidad,
+con el UUID que asigna identity-core, y el escenario se siembra encima de `base`. Solo hay targets
+locales; contra Neon lo decide el dueño.
+
+1. **Migrar con base:** `make docker-recreate`.
+2. **Arrancar `edugo-api-identity` en local** contra esa BD con `AUTH_IDENTITY_SYNC_ENABLED=true` (y el
+   exchange) apuntando al identity-core de desarrollo.
+3. **Alta de los usuarios:** `make docker-provision-users P=<escenario>` (`YES=1` salta la
+   confirmación). Por cada usuario hace el signup de `edugo-api-identity`, el de identity-core (que
+   adopta la cuenta con la contraseña de prueba) y comprueba que el id de `auth.users` es el de
+   identity-core.
+4. **Sembrar el escenario:** `make docker-on-top P=<escenario>` (`migrator --on-top=<escenario>`). Exige
+   la BD migrada a la `SchemaVersion` actual y falla listando los usuarios que falten.
+5. **identity drena el outbox** (`PUT /users/{id}/systems` en identity-core) por su cuenta.
+
+Variables del paso 3 (además de las `POSTGRES_*` de arriba, para leer `auth.users`):
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `EDUGO_IDENTITY_URL` | `http://localhost:8070` | Base de `edugo-api-identity` |
+| `IDENTITY_CORE_BASE_URL` | — (obligatoria) | Base del identity-core de desarrollo |
+| `SCENARIO_TEST_PASSWORD` | — (obligatoria) | Contraseña de prueba: solo del entorno, nunca en un fichero versionado. Entre 12 caracteres y 72 bytes tras NFKC, la política de identity-core |
+
+Flags de `provision_users`: `-scenario` (obligatorio), `-yes`, `-interval` (2s, pausa entre signups de
+identity-core), `-retry-wait` (30s, espera tras un 429; identity-core no manda `Retry-After`, y si lo
+manda se respeta), `-max-retries` (5) y `-timeout` (15s por petición).
+
+Cómo lee cada respuesta:
+
+- `edugo-api-identity` 201 = creado; 409 `EMAIL_ALREADY_EXISTS` = ya existía (re-ejecución, no es fallo);
+  409 `IDENTITY_USER_MISMATCH` o 502 `IDENTITY_SYNC_FAILED` = fallo, y no se llama a identity-core para
+  ese usuario.
+- identity-core 201 `{"id"}` = cuenta adoptada (caso B) o ya reconocida (caso C): el cuerpo es el mismo y
+  el resumen los cuenta juntos. 409 = otra contraseña (caso D) o cuenta bloqueada o inactiva: se reporta,
+  no se reintenta (sumaría al lockout) y se sigue con el resto. 429 = se reintenta.
+- Si el id de `auth.users` no coincide con el de identity-core, el sync estaba apagado: la herramienta
+  **aborta** sin tocar a los usuarios que quedan. Recrea la BD y repite con el sync encendido.
+
+El resumen final cuenta creados, ya existían, identity-core 201 y fallidos; sale con código distinto de
+0 si algo falló. La contraseña no aparece en ningún log.
 
 ## Tests de integracion
 

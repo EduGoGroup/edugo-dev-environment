@@ -2,7 +2,7 @@
 
 // Tests del endpoint GET /me/wards/grades de academic (plan 024 · F3 · S1).
 //
-// Reutiliza los helpers de roleflow (Login/GetJSON/DemoPassword/ActorModeWard)
+// Reutiliza los helpers de roleflow (Login/GetJSON/ActorModeWard)
 // apuntándolos a NUESTRO identity (para emitir el token ward) y a NUESTRO
 // academic (para pegar el endpoint). El Setup multi-API vive en setup_test.go.
 //
@@ -72,7 +72,7 @@ type errorBody struct {
 // del endpoint). Devuelve el token y valida la terna del contexto.
 func loginWardMendoza(t *testing.T) string {
 	t.Helper()
-	login := roleflow.Login(t, identityServer, tutorMendozaEmail, roleflow.DemoPassword)
+	login := roleflow.Login(t, identityServer, tutorMendozaEmail)
 	require.NotNil(t, login.ActiveContext, "login de mendoza debe traer active_context (auto-resuelto)")
 	require.Equal(t, roleflow.ActorModeWard, login.ActiveContext.ActorMode,
 		"precondición: login de mendoza debe estar en modo ward")
@@ -153,7 +153,7 @@ func TestWardGrades_LinkRevoked_Forbidden(t *testing.T) {
 // INSUFFICIENT_PERMISSIONS ANTES de llegar al handler (no es NOT_WARD_CONTEXT,
 // que aplicaría a alguien con el permiso pero sin contexto ward).
 func TestWardGrades_NonGuardian_Forbidden(t *testing.T) {
-	login := roleflow.Login(t, identityServer, profMartinezEmail, roleflow.DemoPassword)
+	login := roleflow.Login(t, identityServer, profMartinezEmail)
 	require.NotNil(t, login.ActiveContext, "login de martinez debe traer active_context")
 
 	status, raw := roleflow.GetJSON(t, academicServer, "/api/v1/me/wards/grades", login.AccessToken)

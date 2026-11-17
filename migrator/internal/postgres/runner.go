@@ -10,6 +10,7 @@ import (
 	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/config"
+	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/ontop"
 )
 
 // Runner ejecuta las migraciones de PostgreSQL.
@@ -79,6 +80,22 @@ func (r *Runner) Run(force bool, seedUpToLayer string, playgroundV2 string) erro
 		fmt.Printf("✅ PostgreSQL migrado → Version: %s | Hash: %s | Execution: %s\n",
 			result.Version, result.ContentHash, result.ExecutionID)
 	}
+	return nil
+}
+
+// ApplyOnTop aplica el escenario on-top name sobre la BD ya migrada, sin forzar.
+func (r *Runner) ApplyOnTop(name string) error {
+	db, err := r.connect()
+	if err != nil {
+		return err
+	}
+	defer r.closeDB(db)
+
+	fmt.Printf("✓ Conectado a PostgreSQL (user=%s)\n", r.cfg.User)
+	if err := ontop.Apply(db, name); err != nil {
+		return fmt.Errorf("escenario on-top %q: %w", name, err)
+	}
+	fmt.Printf("✅ Escenario on-top %s aplicado; identity drena el outbox por su cuenta\n", name)
 	return nil
 }
 

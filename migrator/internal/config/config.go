@@ -10,6 +10,9 @@ import (
 type PostgresConfig struct {
 	ConnStr string // Connection string listo para database/sql
 	User    string // Usuario (para logs y operaciones DROP/GRANT)
+	// Target describe el destino como host:puerto/bd, sin credenciales. Es lo
+	// único que se puede imprimir: ConnStr lleva la contraseña.
+	Target string
 }
 
 // DefaultPlaygroundV2 es el fixture de datos que se siembra cuando el migrador
@@ -54,7 +57,13 @@ func loadPostgresConfig() PostgresConfig {
 		if user == "" {
 			user = "postgres"
 		}
-		return PostgresConfig{ConnStr: uri, User: user}
+		target := "(POSTGRES_URI ilegible)"
+		// Un DSN "host=… password=…" también lo acepta url.Parse (todo en Path):
+		// solo se usa si hay host, para no imprimir la contraseña.
+		if parsed, err := url.Parse(uri); err == nil && parsed.Host != "" {
+			target = parsed.Host + parsed.Path
+		}
+		return PostgresConfig{ConnStr: uri, User: user, Target: target}
 	}
 
 	host := envOrDefault("POSTGRES_HOST", "localhost")
@@ -68,7 +77,7 @@ func loadPostgresConfig() PostgresConfig {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode,
 	)
-	return PostgresConfig{ConnStr: connStr, User: user}
+	return PostgresConfig{ConnStr: connStr, User: user, Target: fmt.Sprintf("%s:%s/%s", host, port, dbname)}
 }
 
 func envOrDefault(key, fallback string) string {

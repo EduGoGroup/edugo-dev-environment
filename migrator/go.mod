@@ -3,11 +3,12 @@ module github.com/EduGoGroup/edugo-dev-environment/migrator
 go 1.27.4
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.27
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.30
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/stretchr/testify v1.12.1
 	github.com/testcontainers/testcontainers-go v0.45.0
+	golang.org/x/text v0.44.0
 	gorm.io/driver/postgres v1.6.3
 	gorm.io/gorm v1.31.2
 )
@@ -66,5 +67,4 @@ require (
 	golang.org/x/crypto v0.59.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	golang.org/x/text v0.44.0 // indirect
 )

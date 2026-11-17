@@ -11,11 +11,12 @@
 //     iam.role_grants). `base` reemplaza al difunto seed `demo` (MP-09 F2):
 //     conserva los mismos UUIDs/emails de los roles con flow-test, podando
 //     los datos muertos (3ª escuela, edge users, guardians → 024·F1).
-//  3. Levanta UN solo identity server contra esa BD; ya no existe
-//     "path legacy": el server siempre devuelve `Grants{Allow, Deny}`.
+//  3. Levanta UN solo identity server contra esa BD (StartIdentityServer, con
+//     el exchange contra un identity-core falso); el server siempre devuelve
+//     `Grants{Allow, Deny}`.
 //
 // Las suites per-rol llaman `Setup(m)` desde su `TestMain` y luego usan
-// `Login(t, env.Server, email, password)` que retorna `LoginResponse`
+// `Login(t, env.Server, email)` que retorna `LoginResponse`
 // con `ActiveContext.Grants.Allow/Deny` (patrones path-based literales).
 //
 // La aserción central es `AssertGrantsContains` — verifica que el set
@@ -50,13 +51,9 @@ import (
 
 	infraMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/system"
-
-	identityBuilder "github.com/edugo/edugo-api-identity/cmd/builder"
-	identityConfig "github.com/edugo/edugo-api-identity/cmd/config"
 )
 
 const (
-	sharedJWTSecret = "roleflow-cross-role-jwt-secret-32chars"
 	sharedJWTIssuer = "edugo-test-roleflow"
 
 	testDBName     = "test_roleflow"
@@ -64,13 +61,7 @@ const (
 	testDBPassword = "test"
 	testDBImage    = "postgres:16-alpine"
 
-	accessTokenDuration  = 15 * time.Minute
-	refreshTokenDuration = 7 * 24 * time.Hour
-
-	// DemoPassword es el password plano de todos los usuarios sembrados
-	// en `seeds/playground_v2/base` (defaultPasswordHash hashea exactamente
-	// este string vía bcrypt). Documentado en seeds/README.md.
-	DemoPassword = "12345678"
+	accessTokenDuration = 15 * time.Minute
 )
 
 // Env mantiene el handle al identity server más el container postgres.
@@ -141,7 +132,12 @@ func bootstrap(ctx context.Context) (*Env, error) {
 		return nil, fmt.Errorf("re-apply system: %w", err)
 	}
 
-	env.Server = startIdentityServer(gdb)
+	server, err := StartIdentityServer(gdb, sharedJWTIssuer)
+	if err != nil {
+		env.teardown(ctx)
+		return nil, fmt.Errorf("identity server: %w", err)
+	}
+	env.Server = server
 	return env, nil
 }
 
@@ -192,37 +188,8 @@ func startPostgres(ctx context.Context) (*tcpostgres.PostgresContainer, *gorm.DB
 	return container, gdb, sqlDB, nil
 }
 
-func startIdentityServer(db *gorm.DB) *httptest.Server {
-	cfg := &identityConfig.Config{
-		Environment: "development",
-		Server: identityConfig.ServerConfig{
-			Port: 0,
-			Host: "127.0.0.1",
-		},
-		Auth: identityConfig.AuthConfig{
-			JWT: identityConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
-				Issuer:               sharedJWTIssuer,
-				AccessTokenDuration:  accessTokenDuration,
-				RefreshTokenDuration: refreshTokenDuration,
-			},
-		},
-		Logging: identityConfig.LoggingConfig{Level: "error", Format: "text"},
-		CORS: identityConfig.CORSConfig{
-			AllowedOrigins: "*",
-			AllowedMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-			AllowedHeaders: "Content-Type,Authorization,X-Request-ID",
-		},
-	}
-
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
-	log := newNoOpLogger()
-	c := identityBuilder.NewContainer(db, log, cfg, blacklist)
-	return httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
-}
-
 // Grants es el sub-set tipado de `active_context.grants` del payload
-// `POST /auth/login`. Match 1:1 con `dto.GrantsDTO` y con `auth.Grants`.
+// `POST /auth/exchange`. Match 1:1 con `dto.GrantsDTO` y con `auth.Grants`.
 // ActorModeWard marca un contexto activo en el que el usuario autenticado
 // (representante) está viendo a un acudido (ADR 0026 DEC-R-A.1). "self" se omite.
 const ActorModeWard = "ward"
@@ -249,12 +216,11 @@ type Ward struct {
 	Schools     []School `json:"schools"`
 }
 
-// LoginResponse es un sub-set tipado del payload `POST /auth/login`
+// LoginResponse es un sub-set tipado del payload `POST /auth/exchange`
 // que cubre los campos usados por los tests per-rol.
 type LoginResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Schools      []struct {
+	AccessToken string `json:"access_token"`
+	Schools     []struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"schools"`
@@ -273,38 +239,13 @@ type LoginResponse struct {
 	} `json:"active_context"`
 }
 
-// Login ejecuta POST /api/v1/auth/login contra `server`. Falla el test
-// si el status no es 200 o el body no parsea.
-func Login(t *testing.T, server *httptest.Server, email, password string) LoginResponse {
+// Login abre la sesión de email contra `server` por POST /api/v1/auth/exchange
+// (plan 053 T3.3: el login propio ya no existe) y, si el exchange no
+// auto-selecciona contexto, lo resuelve con switch-context. Falla el test si el
+// status no es 200 o el body no parsea.
+func Login(t *testing.T, server *httptest.Server, email string) LoginResponse {
 	t.Helper()
-	// MP-08 DEC-C: el login exige `system` (gate por app). Todos los roles
-	// del seed base tienen acceso a "kmp" vía iam.system_roles (L4).
-	body, err := json.Marshal(map[string]string{
-		"email":    email,
-		"password": password,
-		"system":   "kmp",
-	})
-	require.NoError(t, err)
-
-	req, err := http.NewRequest(http.MethodPost,
-		server.URL+"/api/v1/auth/login",
-		bytes.NewReader(body))
-	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	require.NoError(t, err)
-	defer resp.Body.Close()
-
-	raw, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-	require.Equalf(t, http.StatusOK, resp.StatusCode,
-		"login %s: expected 200, got %d body=%s", email, resp.StatusCode, string(raw))
-
-	var out LoginResponse
-	require.NoError(t, json.Unmarshal(raw, &out), "login: parse body=%s", string(raw))
-	require.NotEmpty(t, out.AccessToken, "login: access_token empty")
-
+	out := LoginRaw(t, server, email)
 	// MP-08 DEC-A: con >1 escuela el login NO auto-selecciona contexto
 	// (ActiveContext queda nil; el frontend pinta el selector). El seed base
 	// hace multi-escuela a prof.martinez y est.carlos (S1+S3), así que para
@@ -322,7 +263,7 @@ func Login(t *testing.T, server *httptest.Server, email, password string) LoginR
 		if len(out.Schools) > 0 {
 			schoolID = out.Schools[0].ID
 		} else {
-			schoolID = firstSeedSchoolID(t)
+			schoolID = firstSeedSchoolID(t, benchFor(t, server).db)
 		}
 		out = switchContext(t, server, out, schoolID)
 	}
@@ -332,10 +273,10 @@ func Login(t *testing.T, server *httptest.Server, email, password string) LoginR
 
 // firstSeedSchoolID devuelve el id de la primera escuela activa del seed,
 // ordenada por nombre. Sustituye al browse de escuelas para un global puro.
-func firstSeedSchoolID(t *testing.T) string {
+func firstSeedSchoolID(t *testing.T, db *gorm.DB) string {
 	t.Helper()
 	var id string
-	err := Get().DB.Raw(
+	err := db.Raw(
 		"SELECT id::text FROM academic.schools WHERE is_active = true AND deleted_at IS NULL ORDER BY name LIMIT 1",
 	).Scan(&id).Error
 	require.NoError(t, err, "roleflow: reading first seed school")
@@ -343,41 +284,25 @@ func firstSeedSchoolID(t *testing.T) string {
 	return id
 }
 
-// LoginRaw ejecuta POST /api/v1/auth/login y devuelve la LoginResponse TAL CUAL
-// la emite el server, SIN el bloque de auto-resolución de contexto que aplica
-// `Login` (no hace switch-context). Es el login que necesitan los tests del
-// representante: un usuario solo-guardián (own/Schools vacío + ≥2 sujetos) llega
-// con `active_context = nil`, y `Login` reventaría en `require.NotEmpty(Schools)`.
-// LoginRaw expone el token + schools + wards + active_context (puede ser nil)
-// para que el test decida el `subject`/`school_id` del switch.
-func LoginRaw(t *testing.T, server *httptest.Server, email, password string) LoginResponse {
+// LoginRaw abre la sesión de email por POST /api/v1/auth/exchange y devuelve la
+// respuesta TAL CUAL la emite el server, SIN el bloque de auto-resolución de
+// contexto que aplica `Login` (no hace switch-context). Es la sesión que
+// necesitan los tests del representante: un usuario solo-guardián (own/Schools
+// vacío + ≥2 sujetos) llega con `active_context = nil`. Expone el token +
+// schools + wards + active_context (puede ser nil) para que el test decida el
+// `subject`/`school_id` del switch.
+//
+// El exchange tiene el mismo shape de sesión que el login retirado salvo
+// refresh_token, que ya no existe (la renovación es un re-exchange).
+func LoginRaw(t *testing.T, server *httptest.Server, email string) LoginResponse {
 	t.Helper()
-	// MP-08 DEC-C: el login exige `system` (gate por app). Igual que Login.
-	body, err := json.Marshal(map[string]string{
-		"email":    email,
-		"password": password,
-		"system":   "kmp",
-	})
-	require.NoError(t, err)
-
-	req, err := http.NewRequest(http.MethodPost,
-		server.URL+"/api/v1/auth/login",
-		bytes.NewReader(body))
-	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	require.NoError(t, err)
-	defer resp.Body.Close()
-
-	raw, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-	require.Equalf(t, http.StatusOK, resp.StatusCode,
-		"login %s: expected 200, got %d body=%s", email, resp.StatusCode, string(raw))
+	status, raw := Exchange(t, server, email, nil)
+	require.Equalf(t, http.StatusOK, status,
+		"exchange %s: expected 200, got %d body=%s", email, status, string(raw))
 
 	var out LoginResponse
-	require.NoError(t, json.Unmarshal(raw, &out), "login: parse body=%s", string(raw))
-	require.NotEmpty(t, out.AccessToken, "login: access_token empty")
+	require.NoError(t, json.Unmarshal(raw, &out), "exchange: parse body=%s", string(raw))
+	require.NotEmpty(t, out.AccessToken, "exchange: access_token empty")
 	return out
 }
 
@@ -434,9 +359,8 @@ func switchContext(t *testing.T, server *httptest.Server, login LoginResponse, s
 		"switch-context school=%s: expected 200, got %d body=%s", schoolID, status, string(raw))
 
 	var sc struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-		Context      *struct {
+		AccessToken string `json:"access_token"`
+		Context     *struct {
 			RoleID     string `json:"role_id"`
 			RoleName   string `json:"role_name"`
 			SchoolID   string `json:"school_id"`
@@ -448,9 +372,6 @@ func switchContext(t *testing.T, server *httptest.Server, login LoginResponse, s
 	require.NotNil(t, sc.Context, "switch-context: context nil body=%s", string(raw))
 
 	login.AccessToken = sc.AccessToken
-	if sc.RefreshToken != "" {
-		login.RefreshToken = sc.RefreshToken
-	}
 	login.ActiveContext = &struct {
 		RoleID             string `json:"role_id"`
 		RoleName           string `json:"role_name"`
