@@ -140,8 +140,8 @@ func (s *PostgresIntegrationSuite) TestOnTop() {
 	for _, u := range users {
 		id := uuid.NewString()
 		ids = append(ids, id)
-		_, err := s.db.Exec(`INSERT INTO auth.users (id, email, password_hash, first_name, last_name, is_active, created_at, updated_at)
-			VALUES ($1, $2, '!unusable', $3, $4, true, now(), now())`, id, u.Email, u.FirstName, u.LastName)
+		_, err := s.db.Exec(`INSERT INTO auth.users (id, email, first_name, last_name, is_active, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, true, now(), now())`, id, u.Email, u.FirstName, u.LastName)
 		s.Require().NoError(err, "insertando %s", u.Email)
 	}
 

@@ -54,7 +54,6 @@ import (
 )
 
 const (
-	sharedJWTSecret = "roleflow-cross-role-jwt-secret-32chars"
 	sharedJWTIssuer = "edugo-test-roleflow"
 
 	testDBName     = "test_roleflow"
@@ -62,8 +61,7 @@ const (
 	testDBPassword = "test"
 	testDBImage    = "postgres:16-alpine"
 
-	accessTokenDuration  = 15 * time.Minute
-	refreshTokenDuration = 7 * 24 * time.Hour
+	accessTokenDuration = 15 * time.Minute
 )
 
 // Env mantiene el handle al identity server más el container postgres.
@@ -134,7 +132,7 @@ func bootstrap(ctx context.Context) (*Env, error) {
 		return nil, fmt.Errorf("re-apply system: %w", err)
 	}
 
-	server, err := StartIdentityServer(gdb, sharedJWTSecret, sharedJWTIssuer)
+	server, err := StartIdentityServer(gdb, sharedJWTIssuer)
 	if err != nil {
 		env.teardown(ctx)
 		return nil, fmt.Errorf("identity server: %w", err)

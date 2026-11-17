@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-shared/audit"
-	"github.com/EduGoGroup/edugo-shared/auth"
 	"github.com/EduGoGroup/edugo-shared/logger"
 	"github.com/testcontainers/testcontainers-go"
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -45,11 +44,11 @@ import (
 	academicConfig "github.com/edugo/edugo-api-academic/cmd/config"
 )
 
-// JWT compartido por identity y academic: un token ward emitido por identity
-// debe ser aceptado por academic. Si los secretos divergen, el primer GET con
-// Authorization rompe en 401.
+// Issuer compartido: identity firma el Context Token ES256 con el par de
+// roleflow.StartIdentityServer y exporta su pública en AUTH_CONTEXT_PUBLIC_KEYS,
+// que academic lee al construirse. Si el issuer o la clave divergen, el
+// primer GET con Authorization rompe en 401.
 const (
-	sharedJWTSecret = "guardian-ward-grades-flow-secret-32chars"
 	sharedJWTIssuer = "edugo-test-guardian-ward-grades-flow"
 
 	testDBName     = "test_guardian_ward_grades_flow"
@@ -158,7 +157,7 @@ func startPostgres(ctx context.Context) (*tcpostgres.PostgresContainer, *gorm.DB
 // exchange contra un identity-core falso (plan 053 T3.3, sin login propio).
 // Exporta AUTH_CONTEXT_PUBLIC_KEYS, así que va ANTES de los demás servers.
 func startIdentityServer(db *gorm.DB) *httptest.Server {
-	server, err := roleflow.StartIdentityServer(db, sharedJWTSecret, sharedJWTIssuer)
+	server, err := roleflow.StartIdentityServer(db, sharedJWTIssuer)
 	if err != nil {
 		panic(fmt.Sprintf("identity server: %v", err))
 	}
@@ -174,7 +173,6 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 		},
 		Auth: academicConfig.AuthConfig{
 			JWT: academicConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
 				Issuer:               sharedJWTIssuer,
 				AccessTokenDuration:  accessTokenDuration,
 				RefreshTokenDuration: refreshTokenDuration,
@@ -188,10 +186,9 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 		},
 	}
 
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
-	c, err := academicBuilder.NewContainer(db, log, cfg, blacklist, auditLog)
+	c, err := academicBuilder.NewContainer(db, log, cfg, auditLog)
 	if err != nil {
 		panic(fmt.Sprintf("academic container: %v", err))
 	}
