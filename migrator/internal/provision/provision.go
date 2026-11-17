@@ -4,7 +4,7 @@
 // Por cada usuario:
 //  1. POST {identity}/api/v1/auth/signup de edugo-api-identity. Con el sync
 //     encendido, identity pide el UUID a identity-core (ensure) y crea la fila
-//     de auth.users con ese id y una contraseña inutilizable.
+//     de auth.users con ese id, sin credenciales (auth.users ya no guarda contraseña).
 //  2. POST {identity-core}/api/v1/auth/signup de identity-core, que adopta esa
 //     cuenta (caso B) con la contraseña de prueba, o la reconoce (caso C) si ya
 //     la tenía.
