@@ -9,6 +9,8 @@ import (
 
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/config"
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/orchestrator"
+	pgRunner "github.com/EduGoGroup/edugo-dev-environment/migrator/internal/postgres"
+	postgresMigrations "github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
 )
 
@@ -25,11 +27,39 @@ func main() {
 			strings.Join(playground_v2.Available(), "|"),
 		),
 	)
+	onTopFlag := fs.String(
+		"on-top",
+		"",
+		fmt.Sprintf(
+			"escenario on-top a aplicar SIN forzar sobre una BD ya migrada con base (%s). "+
+				"Sus usuarios deben existir antes en auth.users (cmd/provision_users). "+
+				"Excluyente con -playground-v2 y -seed-up-to-layer.",
+			strings.Join(playground_v2.OnTopScenarios(), "|"),
+		),
+	)
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		log.Fatalf("flag parse: %v", err)
 	}
 
 	cfg := config.Load()
+
+	// Modo on-top (plan 053 T5.2): ramifica antes del switch de abajo, cuyo
+	// default fuerza la migración. Nunca recrea ni migra: solo siembra el
+	// escenario encima de lo que hay.
+	if *onTopFlag != "" {
+		if *playgroundV2Flag != "" || *seedUpToLayer != "" {
+			log.Fatalf("❌ -on-top es excluyente con -playground-v2 y -seed-up-to-layer")
+		}
+		if cfg.ForceMigration {
+			log.Fatalf("❌ -on-top no fuerza: quita FORCE_MIGRATION=true del entorno")
+		}
+		fmt.Println("=== EduGo Migrator (on-top) ===")
+		fmt.Printf("📋 Schema version esperada: %s | destino: %s\n", postgresMigrations.SchemaVersion, cfg.Postgres.Target)
+		if err := pgRunner.New(cfg.Postgres).ApplyOnTop(*onTopFlag); err != nil {
+			log.Fatalf("❌ Error: %v\n", err)
+		}
+		return
+	}
 	cfg.SeedUpToLayer = *seedUpToLayer
 
 	// Default (sin flags de seed): se siembra playground_v2/base, ya fijado por

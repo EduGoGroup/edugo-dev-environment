@@ -30,7 +30,13 @@ Comandos clave (ejecutar desde `migrator/`):
 | `make cloud-recreate` | Recrear BDs cloud desde cero (BORRA DATOS) |
 | `make cloud-seed-scenario SCENARIO=legacy_e2e` | Aplicar fixtures E2E (scenario canónico) |
 | `make cloud-seed-layer LAYER=legacy` | Aplicar capas del sistema hasta la indicada |
+| `make docker-provision-users P=<escenario>` | Alta por API de los usuarios de un escenario on-top (local) |
+| `make docker-on-top P=<escenario>` | Sembrar un escenario on-top sin force sobre la BD local migrada |
 | `make check` | Pipeline completo: fmt + vet + lint + test + build |
+
+Los escenarios on-top (plan 053 T5.2) siguen un flujo de cinco pasos: migrar con base, arrancar
+identity con el sync encendido, dar de alta sus usuarios por API, sembrar el escenario y dejar que
+identity drene el outbox. Está en la sección «Escenarios on-top» del README del migrator.
 
 Documentación detallada en [`migrator/README.md`](./migrator/README.md).
 
