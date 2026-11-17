@@ -58,7 +58,9 @@ func loadPostgresConfig() PostgresConfig {
 			user = "postgres"
 		}
 		target := "(POSTGRES_URI ilegible)"
-		if parsed, err := url.Parse(uri); err == nil {
+		// Un DSN "host=… password=…" también lo acepta url.Parse (todo en Path):
+		// solo se usa si hay host, para no imprimir la contraseña.
+		if parsed, err := url.Parse(uri); err == nil && parsed.Host != "" {
 			target = parsed.Host + parsed.Path
 		}
 		return PostgresConfig{ConnStr: uri, User: user, Target: target}
