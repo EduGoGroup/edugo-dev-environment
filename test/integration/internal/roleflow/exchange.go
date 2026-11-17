@@ -13,16 +13,16 @@ package roleflow
 //   - un identity-core falso que sirve un JWKS con una clave P-256 generada en
 //     memoria y acuña Identity Tokens con identity-shared (el mismo emisor que
 //     usa identity-core);
-//   - un keyring ES256 del Context Token para identity, generado en memoria;
-//   - AUTH_CONTEXT_PUBLIC_KEYS exportada al proceso con la clave pública de ese
-//     keyring, para que academic y platform (que la leen de os.LookupEnv en su
+//   - un par ES256 del Context Token para identity (edugo-shared/auth/authtest),
+//     generado en memoria;
+//   - AUTH_CONTEXT_PUBLIC_KEYS exportada al proceso con la pública de ese par,
+//     para que academic y platform (que la leen de os.LookupEnv en su
 //     NewContainer) acepten el Context Token.
 //
 // Ninguna clave se escribe a disco.
 
 import (
 	"bytes"
-	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -38,6 +38,7 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-shared/auth"
+	"github.com/EduGoGroup/edugo-shared/auth/authtest"
 	identjwt "github.com/EduGoGroup/identity-shared/auth/jwt"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -55,7 +56,6 @@ const (
 	SystemKMP = "edu2go.kmp"
 
 	identityCoreKID = "identity-core-test-kid"
-	contextKID      = "context-test-kid"
 
 	// identityTokenTTL: el exchange rechaza un Identity Token con menos de un
 	// minuto de vida; una hora cubre de sobra cualquier suite.
@@ -87,27 +87,37 @@ func benchFor(t *testing.T, server *httptest.Server) *Bench {
 }
 
 // StartIdentityServer levanta edugo-api-identity in-process sobre db con el
-// exchange encendido contra un identity-core falso y un keyring ES256 propio.
+// exchange encendido contra un identity-core falso. identity firma el Context
+// Token ES256 con un par de authtest (edugo-shared/auth/authtest) generado en
+// memoria, cargado por el mismo camino que en producción
+// (identityBuilder.LoadContextTokenManager con AUTH_CONTEXT_SIGNING_KEY/_KID).
 //
-// EFECTO EN EL PROCESO: exporta AUTH_CONTEXT_PUBLIC_KEYS con la clave pública
-// del keyring. Llamarlo ANTES de construir academic/platform, que leen esa
-// variable en su NewContainer; si se construyen antes, rechazan el Context
-// Token con 401.
-func StartIdentityServer(db *gorm.DB, jwtSecret, jwtIssuer string) (*httptest.Server, error) {
+// EFECTO EN EL PROCESO: exporta AUTH_CONTEXT_PUBLIC_KEYS con la pública del par
+// (y quita AUTH_CONTEXT_PUBLIC_KEYS_FILE, que junto a ella es un error).
+// Llamarlo ANTES de construir academic/platform, que leen esa variable en su
+// NewContainer; si se construyen antes, no arrancan o rechazan el token.
+func StartIdentityServer(db *gorm.DB, jwtIssuer string) (*httptest.Server, error) {
 	bench, err := newBench(db)
 	if err != nil {
 		return nil, err
 	}
 
-	signing, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	keys, err := authtest.New(jwtIssuer)
 	if err != nil {
-		return nil, fmt.Errorf("context key: %w", err)
+		return nil, fmt.Errorf("context keys: %w", err)
 	}
-	keyring, err := auth.NewContextKeyring(&auth.ContextSigningKey{ID: contextKID, Private: signing}, nil)
+	signEnv := map[string]string{
+		auth.EnvContextSigningKey: keys.PrivateKeyPEM(),
+		auth.EnvContextSigningKID: keys.KID(),
+	}
+	jwtManager, err := identityBuilder.LoadContextTokenManager(jwtIssuer, func(name string) (string, bool) {
+		v, ok := signEnv[name]
+		return v, ok
+	})
 	if err != nil {
-		return nil, fmt.Errorf("context keyring: %w", err)
+		return nil, fmt.Errorf("context token manager: %w", err)
 	}
-	if err := exportContextPublicKey(&signing.PublicKey); err != nil {
+	if err := exportContextPublicKeys(keys); err != nil {
 		return nil, err
 	}
 
@@ -119,10 +129,8 @@ func StartIdentityServer(db *gorm.DB, jwtSecret, jwtIssuer string) (*httptest.Se
 		},
 		Auth: identityConfig.AuthConfig{
 			JWT: identityConfig.JWTConfig{
-				Secret:               jwtSecret,
-				Issuer:               jwtIssuer,
-				AccessTokenDuration:  accessTokenDuration,
-				RefreshTokenDuration: refreshTokenDuration,
+				Issuer:              jwtIssuer,
+				AccessTokenDuration: accessTokenDuration,
 			},
 			Exchange: identityConfig.ExchangeConfig{Enabled: true, IdentityURL: bench.identity.URL},
 		},
@@ -133,13 +141,12 @@ func StartIdentityServer(db *gorm.DB, jwtSecret, jwtIssuer string) (*httptest.Se
 			AllowedHeaders: "Content-Type,Authorization,X-Request-ID",
 		},
 	}
-	if err := identityBuilder.ValidateExchangeSetup(cfg.Auth.Exchange, keyring); err != nil {
+	if err := identityBuilder.ValidateExchangeSetup(cfg.Auth.Exchange, jwtManager.ContextKeyring()); err != nil {
 		return nil, err
 	}
 
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
-	c := identityBuilder.NewContainer(db, log, cfg, blacklist, identityBuilder.WithContextKeyring(keyring))
+	c := identityBuilder.NewContainer(db, log, cfg, jwtManager)
 	server := httptest.NewServer(c.SetupRouter(cfg, log, "dev", "dev"))
 
 	benchesMu.Lock()
@@ -182,16 +189,14 @@ func (b *Bench) serveJWKS(w http.ResponseWriter, _ *http.Request) {
 	_ = json.NewEncoder(w).Encode(doc)
 }
 
-func exportContextPublicKey(pub *ecdsa.PublicKey) error {
-	pemKey, err := auth.MarshalECPublicKeyPEM(pub)
-	if err != nil {
+// exportContextPublicKeys publica la pública del par para las APIs que
+// verifican (academic, platform) y deja el proceso hermético frente a un .env
+// local con la variante _FILE.
+func exportContextPublicKeys(keys *authtest.KeyPair) error {
+	if err := os.Unsetenv(auth.EnvContextPublicKeys + "_FILE"); err != nil {
 		return err
 	}
-	raw, err := json.Marshal(map[string]string{contextKID: pemKey})
-	if err != nil {
-		return err
-	}
-	return os.Setenv(auth.EnvContextPublicKeys, string(raw))
+	return os.Setenv(auth.EnvContextPublicKeys, keys.PublicKeysJSON())
 }
 
 // MintIdentityToken acuña un Identity Token de identity-core para el usuario

@@ -36,7 +36,6 @@ import (
 	"time"
 
 	"github.com/EduGoGroup/edugo-shared/audit"
-	"github.com/EduGoGroup/edugo-shared/auth"
 	"github.com/EduGoGroup/edugo-shared/logger"
 	"github.com/testcontainers/testcontainers-go"
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -57,11 +56,11 @@ import (
 	platformConfig "github.com/edugo/edugo-api-platform/cmd/config"
 )
 
-// JWT compartido por las 3 APIs. El test obliga a que un token emitido por
-// identity sea aceptado por academic y platform — si los secretos divergen,
-// la cadena rompe en el primer GET con Authorization.
+// Issuer compartido: identity firma el Context Token ES256 con el par de
+// roleflow.StartIdentityServer y exporta su pública en AUTH_CONTEXT_PUBLIC_KEYS,
+// que academic y platform lee al construirse. Si el issuer o la clave divergen, el
+// primer GET con Authorization rompe en 401.
 const (
-	sharedJWTSecret = "superadmin-flow-cross-api-secret-32chars"
 	sharedJWTIssuer = "edugo-test-superadmin-flow"
 
 	testDBName     = "test_superadmin_flow"
@@ -142,7 +141,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// 4. Levantar los 3 AppServer en httptest.Server distintos,
-	//    compartiendo gorm.DB y JWT secret.
+	//    compartiendo gorm.DB y el issuer del Context Token.
 	identityServer = startIdentityServer(testDB)
 	defer identityServer.Close()
 
@@ -194,7 +193,7 @@ func startPostgres(ctx context.Context) (*tcpostgres.PostgresContainer, *gorm.DB
 // exchange contra un identity-core falso (plan 053 T3.3, sin login propio).
 // Exporta AUTH_CONTEXT_PUBLIC_KEYS, así que va ANTES de los demás servers.
 func startIdentityServer(db *gorm.DB) *httptest.Server {
-	server, err := roleflow.StartIdentityServer(db, sharedJWTSecret, sharedJWTIssuer)
+	server, err := roleflow.StartIdentityServer(db, sharedJWTIssuer)
 	if err != nil {
 		panic(fmt.Sprintf("identity server: %v", err))
 	}
@@ -210,7 +209,6 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 		},
 		Auth: academicConfig.AuthConfig{
 			JWT: academicConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
 				Issuer:               sharedJWTIssuer,
 				AccessTokenDuration:  accessTokenDuration,
 				RefreshTokenDuration: refreshTokenDuration,
@@ -224,10 +222,9 @@ func startAcademicServer(db *gorm.DB) *httptest.Server {
 		},
 	}
 
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
-	c, err := academicBuilder.NewContainer(db, log, cfg, blacklist, auditLog)
+	c, err := academicBuilder.NewContainer(db, log, cfg, auditLog)
 	if err != nil {
 		panic(fmt.Sprintf("academic container: %v", err))
 	}
@@ -243,7 +240,6 @@ func startPlatformServer(db *gorm.DB) *httptest.Server {
 		},
 		Auth: platformConfig.AuthConfig{
 			JWT: platformConfig.JWTConfig{
-				Secret:               sharedJWTSecret,
 				Issuer:               sharedJWTIssuer,
 				AccessTokenDuration:  accessTokenDuration,
 				RefreshTokenDuration: refreshTokenDuration,
@@ -257,10 +253,9 @@ func startPlatformServer(db *gorm.DB) *httptest.Server {
 		},
 	}
 
-	blacklist := auth.NewInMemoryBlacklist(context.Background())
 	log := newNoOpLogger()
 	auditLog := audit.NewNoopAuditLogger()
-	c, err := platformBuilder.NewContainer(db, log, cfg, blacklist, auditLog, nil)
+	c, err := platformBuilder.NewContainer(db, log, cfg, auditLog, nil)
 	if err != nil {
 		panic(fmt.Sprintf("platform container: %v", err))
 	}
