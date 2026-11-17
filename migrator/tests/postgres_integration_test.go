@@ -3,9 +3,14 @@ package tests
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"testing"
 
+	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/ontop"
+	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/provision"
 	"github.com/EduGoGroup/edugo-infrastructure/postgres/migrations"
+	"github.com/EduGoGroup/edugo-infrastructure/postgres/seeds/playground_v2"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -16,6 +21,7 @@ import (
 type PostgresIntegrationSuite struct {
 	suite.Suite
 	db        *sql.DB
+	connStr   string
 	container testcontainers.Container
 	ctx       context.Context
 }
@@ -33,7 +39,10 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 			"POSTGRES_PASSWORD": "testpass",
 			"POSTGRES_DB":       "testdb",
 		},
-		WaitingFor: wait.ForListeningPort("5432/tcp"),
+		// El entrypoint de postgres arranca, inicializa y reinicia: el puerto
+		// escucha antes de que acepte conexiones (57P03). Se espera el segundo
+		// "ready", como hacen los tests de integración de infra.
+		WaitingFor: wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
 	}
 
 	container, err := testcontainers.GenericContainer(s.ctx, testcontainers.GenericContainerRequest{
@@ -56,6 +65,7 @@ func (s *PostgresIntegrationSuite) SetupSuite() {
 	s.Require().NoError(err, "Failed to connect to PostgreSQL")
 
 	s.db = db
+	s.connStr = connStr
 
 	// Aplicar migraciones completas con system seeds + datos de prueba (fixture base) vía Migrate(Force=true).
 	_, err = migrations.Migrate(s.db, migrations.MigrateOptions{
@@ -107,6 +117,67 @@ func (s *PostgresIntegrationSuite) TestMockDataExists() {
 	err := s.db.QueryRow("SELECT COUNT(*) FROM auth.users").Scan(&count)
 	s.NoError(err, "Failed to query users")
 	s.Greater(count, 0, "Expected mock data in auth.users table")
+}
+
+// TestOnTop cubre el flag -on-top (plan 053 T5.2) sobre la BD migrada con base:
+// sin los usuarios del escenario falla listándolos; con ellos (insertados como
+// lo haría la API: UUID nuevo, hash inutilizable) siembra y encola su sync, y
+// el lookup del alta resuelve esos mismos ids.
+func (s *PostgresIntegrationSuite) TestOnTop() {
+	const name = "onboarding"
+	users, err := playground_v2.ScenarioUsers(name)
+	s.Require().NoError(err)
+
+	err = ontop.Apply(s.db, name)
+	s.Require().Error(err, "sin usuarios debía fallar")
+	for _, u := range users {
+		s.Contains(err.Error(), u.Email)
+	}
+
+	s.Require().Error(ontop.Apply(s.db, "base"), "base no es on-top")
+
+	ids := make([]string, 0, len(users))
+	for _, u := range users {
+		id := uuid.NewString()
+		ids = append(ids, id)
+		_, err := s.db.Exec(`INSERT INTO auth.users (id, email, password_hash, first_name, last_name, is_active, created_at, updated_at)
+			VALUES ($1, $2, '!unusable', $3, $4, true, now(), now())`, id, u.Email, u.FirstName, u.LastName)
+		s.Require().NoError(err, "insertando %s", u.Email)
+	}
+
+	lookup := provision.SQLLookup{DB: s.db}
+	for i, u := range users {
+		got, found, err := lookup.UserIDByEmail(s.ctx, u.Email)
+		s.Require().NoError(err)
+		s.True(found)
+		s.Equal(ids[i], got)
+	}
+	_, found, err := lookup.UserIDByEmail(s.ctx, "nadie@edugo.local")
+	s.Require().NoError(err)
+	s.False(found)
+
+	s.Require().NoError(ontop.Apply(s.db, name))
+	var outbox int
+	s.Require().NoError(s.db.QueryRow(
+		`SELECT COUNT(*) FROM auth.identity_sync_outbox WHERE user_id::text = ANY(string_to_array($1, ','))`,
+		strings.Join(ids, ",")).Scan(&outbox))
+	s.Equal(len(users), outbox, "una fila de outbox por usuario del escenario")
+
+	// Re-ejecutable.
+	s.Require().NoError(ontop.Apply(s.db, name))
+}
+
+// TestOnTopRejectsUnmigratedDB: -on-top no migra; sobre una BD vacía se niega.
+func (s *PostgresIntegrationSuite) TestOnTopRejectsUnmigratedDB() {
+	_, err := s.db.Exec(`CREATE DATABASE ontop_empty`)
+	s.Require().NoError(err)
+	empty, err := sql.Open("postgres", strings.Replace(s.connStr, "dbname=testdb", "dbname=ontop_empty", 1))
+	s.Require().NoError(err)
+	defer empty.Close()
+
+	err = ontop.Apply(empty, "onboarding")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "no está migrada")
 }
 
 // TestPostgresIntegration ejecuta la suite de tests
