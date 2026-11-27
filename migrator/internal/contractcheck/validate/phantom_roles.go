@@ -15,7 +15,7 @@ func detectPhantomRoles(k kmp.Snapshot, s seed.Snapshot) []Drift {
 	seedRoles := make(map[string]struct{}, len(s.Roles))
 	for _, r := range s.Roles {
 		if r.Code != "" {
-			seedRoles[r.Code] = struct{}{}
+			seedRoles[normalizeRoleCode(r.Code)] = struct{}{}
 		}
 	}
 
@@ -27,7 +27,10 @@ func detectPhantomRoles(k kmp.Snapshot, s seed.Snapshot) []Drift {
 
 	out := make([]Drift, 0)
 	for _, code := range codes {
-		if _, ok := seedRoles[code]; ok {
+		if _, ok := seedRoles[normalizeRoleCode(code)]; ok {
+			continue
+		}
+		if isGenericDashboardSuffix(code) {
 			continue
 		}
 		out = append(out, Drift{
