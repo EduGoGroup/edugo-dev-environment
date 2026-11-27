@@ -9,42 +9,24 @@ import (
 	"github.com/EduGoGroup/edugo-dev-environment/migrator/internal/contractcheck/seed"
 )
 
-// canonicalActions enumera las acciones que el FE infiere automáticamente
-// para cada `resource` declarado en un BaseCrudContract (B-REQ-3.1 +
-// findings.md §3.2).
-var canonicalActions = []string{"read", "create", "update", "delete"}
-
-// frontendPermissionSet construye el set unión de permisos que el FE
-// declara o infiere:
+// frontendPermissionSet construye el set de permisos que el FE declara
+// con literales `requiredPermission = "..."` (B-REQ-3.2). El segundo
+// retorno mapea cada permiso a las locations donde aparece.
 //
-//   - literales `requiredPermission = "..."` capturados por el extractor
-//     KMP (B-REQ-3.2).
-//   - inferencia canónica `<resource>:{read,create,update,delete}` por
-//     cada ContractDecl con resource no vacío (B-REQ-3.1).
-//
-// El segundo retorno mapea cada permiso a las locations donde se origina
-// (literal explícito o ContractDecl.File para los inferidos), de modo
-// que el reporte pueda mostrar evidencia concreta.
+// Ya no infiere `<resource>:{read,create,update,delete}` por cada
+// contrato (antigua B-REQ-3.1): desde el ADR 0003 el permiso de una
+// pantalla sale solo de `slot.permission` del seed, y en KMP `resource`
+// solo da el `formScreenKey()` por defecto. La inferencia producía
+// fantasmas como `records:read` (deuda 194).
 func frontendPermissionSet(k kmp.Snapshot) (map[string]struct{}, map[string][]kmp.Location) {
 	perms := make(map[string]struct{})
 	evidence := make(map[string][]kmp.Location)
-
 	for code, locs := range k.Permissions {
 		if code == "" {
 			continue
 		}
 		perms[code] = struct{}{}
 		evidence[code] = append(evidence[code], locs...)
-	}
-	for _, c := range k.Contracts {
-		if c.Resource == "" {
-			continue
-		}
-		for _, action := range canonicalActions {
-			code := c.Resource + ":" + action
-			perms[code] = struct{}{}
-			evidence[code] = append(evidence[code], c.File)
-		}
 	}
 	return perms, evidence
 }

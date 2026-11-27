@@ -85,48 +85,31 @@ func TestValidate_TableDriven(t *testing.T) {
 			},
 		},
 		{
-			name: "phantom_permissions_canonical_inference_and_explicit",
+			name: "phantom_permissions_explicit_only_no_resource_inference",
 			k: kmp.Snapshot{
 				Permissions: map[string][]kmp.Location{
 					"assessments:publish": {loc("AssessmentsContract.kt", 12)},
+					"schools:update":      {loc("SchoolsContract.kt", 9)},
 				},
 				Contracts: []kmp.ContractDecl{
 					{
 						ScreenKey: "ghost-form",
 						APIPrefix: "academic:",
 						BasePath:  "/api/v1/ghosts",
-						Resource:  "ghosts", // resource no existe
+						Resource:  "ghosts", // resource no existe: ya no infiere ghosts:*
 						File:      loc("GhostContract.kt", 1),
-					},
-					{
-						ScreenKey: "schools-form",
-						APIPrefix: "academic:",
-						BasePath:  "/api/v1/schools",
-						Resource:  "schools",
-						File:      loc("SchoolsContract.kt", 1),
 					},
 				},
 			},
 			s: seed.Snapshot{
-				Resources: []seed.Resource{{Key: "schools"}},
-				Permissions: []seed.Permission{
-					{Code: "schools:read"},
-					{Code: "schools:create"},
-					// schools:update y schools:delete NO seedados → warning
-				},
+				Resources:   []seed.Resource{{Key: "schools"}},
+				Permissions: []seed.Permission{{Code: "schools:read"}},
 			},
-			// canónicos generados:
-			//   ghosts:{read,create,update,delete} → error (resource no existe)
-			//   schools:{read,create,update,delete} → schools:read/create OK; schools:update/delete warning
-			// explícito:
+			// Deuda 194 (ADR 0003): solo cuentan los literales.
 			//   assessments:publish → error (resource no existe en seed)
+			//   schools:update      → warning (resource existe, acción no)
 			want: []driftKey{
 				{CategoryPermissionPhantom, SeverityError, "assessments:publish", DirectionFEOnly},
-				{CategoryPermissionPhantom, SeverityError, "ghosts:create", DirectionFEOnly},
-				{CategoryPermissionPhantom, SeverityError, "ghosts:delete", DirectionFEOnly},
-				{CategoryPermissionPhantom, SeverityError, "ghosts:read", DirectionFEOnly},
-				{CategoryPermissionPhantom, SeverityError, "ghosts:update", DirectionFEOnly},
-				{CategoryPermissionPhantom, SeverityWarning, "schools:delete", DirectionFEOnly},
 				{CategoryPermissionPhantom, SeverityWarning, "schools:update", DirectionFEOnly},
 			},
 		},
