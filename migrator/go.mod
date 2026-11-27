@@ -3,7 +3,7 @@ module github.com/EduGoGroup/edugo-dev-environment/migrator
 go 1.27.4
 
 require (
-	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.32
+	github.com/EduGoGroup/edugo-infrastructure/postgres v0.900.34
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/stretchr/testify v1.12.1
