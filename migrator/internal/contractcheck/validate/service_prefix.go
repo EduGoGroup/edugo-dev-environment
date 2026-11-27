@@ -16,7 +16,7 @@ import (
 //   - academic: schools, units, subjects, periods, calendar, schedules,
 //     attendance, grades, memberships, guardian_relations, concepts.
 //   - learning: assessments, materials, courses.
-//   - iam:      users, roles, permissions, audit, screens,
+//   - identity: users, roles, permissions, audit, screens,
 //     system_settings, screen_instances, screen_templates, user_roles.
 //   - platform: announcements, notifications, menu, screen_config.
 //
@@ -43,16 +43,16 @@ var serviceRoutingTable = map[string]string{
 	"materials":   "learning:",
 	"courses":     "learning:",
 
-	// iam / identity
-	"users":            "iam:",
-	"roles":            "iam:",
-	"permissions":      "iam:",
-	"user_roles":       "iam:",
-	"audit":            "iam:",
-	"screens":          "iam:",
-	"screen_instances": "iam:",
-	"screen_templates": "iam:",
-	"system_settings":  "iam:",
+	// identity (antes iam:, nomenclatura histórica)
+	"users":            "identity:",
+	"roles":            "identity:",
+	"permissions":      "identity:",
+	"user_roles":       "identity:",
+	"audit":            "identity:",
+	"screens":          "identity:",
+	"screen_instances": "identity:",
+	"screen_templates": "identity:",
+	"system_settings":  "identity:",
 
 	// platform
 	"announcements": "platform:",

@@ -32,6 +32,9 @@ func detectDeadScreenKeys(k kmp.Snapshot, s seed.Snapshot) []Drift {
 		if _, ok := feKeys[rs.ScreenKey]; ok {
 			continue
 		}
+		if isNativeScreen(rs.ScreenKey) {
+			continue
+		}
 		m, exists := grouped[rs.ScreenKey]
 		if !exists {
 			order = append(order, rs.ScreenKey)

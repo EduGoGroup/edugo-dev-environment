@@ -15,7 +15,7 @@ import (
 func detectUnusedRoles(k kmp.Snapshot, s seed.Snapshot) []Drift {
 	feRoles := make(map[string]struct{}, len(k.Roles))
 	for code := range k.Roles {
-		feRoles[code] = struct{}{}
+		feRoles[normalizeRoleCode(code)] = struct{}{}
 	}
 
 	type meta struct {
@@ -32,7 +32,7 @@ func detectUnusedRoles(k kmp.Snapshot, s seed.Snapshot) []Drift {
 			continue
 		}
 		seen[r.Code] = struct{}{}
-		if _, used := feRoles[r.Code]; used {
+		if _, used := feRoles[normalizeRoleCode(r.Code)]; used {
 			continue
 		}
 		grouped[r.Code] = meta{scope: r.Scope}

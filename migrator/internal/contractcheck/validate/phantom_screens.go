@@ -18,6 +18,14 @@ func detectPhantomScreenKeys(k kmp.Snapshot, s seed.Snapshot) []Drift {
 	for _, rs := range s.ResourceScreens {
 		seedKeys[rs.ScreenKey] = struct{}{}
 	}
+	// Una pantalla con screen_instance existe en el seed aunque no tenga
+	// mapping de menú (landing por defecto, pantallas a las que se llega
+	// por evento como grades-batch). Deuda 194.
+	for _, si := range s.ScreenInstances {
+		if si.ScreenKey != "" {
+			seedKeys[si.ScreenKey] = struct{}{}
+		}
+	}
 
 	keys := make([]string, 0, len(k.ScreenKeys))
 	for key := range k.ScreenKeys {
